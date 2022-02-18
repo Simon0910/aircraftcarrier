@@ -1,0 +1,46 @@
+package ${cfg.ExportCmdExe_p};
+
+import cn.hutool.core.collection.CollUtil;
+import com.aircraftcarrier.framework.model.response.MultiResponse;
+import com.aircraftcarrier.framework.tookit.BeanUtils;
+import ${cfg.ExportCmd_f};
+import ${cfg.Export_f};
+import ${cfg.ExportQry_f};
+import ${cfg.mapper_f};
+import ${cfg.Do_f};
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.List;
+
+
+/**
+ * 批量导出 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.ExportCmdExe_n} {
+    /**
+     * ${cfg.mapper_n}
+     */
+    @Resource
+    private ${cfg.mapper_n} ${cfg.mapper_n_i};
+
+
+    public MultiResponse<${cfg.Export_n}> execute(${cfg.ExportCmd_n} exportCmd) {
+        ${cfg.ExportQry_n} exportQry = exportCmd.get${cfg.ExportQry_n}();
+        List<Long> idList = exportQry.getIdList();
+        if (CollUtil.isNotEmpty(idList)) {
+            LambdaQueryWrapper<${entity}> queryWrapper = new LambdaQueryWrapper<${entity}>()
+                    .in(${entity}::getId, idList);
+            List<${entity}> list = ${cfg.mapper_n_i}.selectList(queryWrapper);
+            return MultiResponse.ok(BeanUtils.convertList(list, ${cfg.Export_n}.class));
+        }
+        List<${entity}> list = ${cfg.mapper_n_i}.excelExport(exportQry);
+        return MultiResponse.ok(BeanUtils.convertList(list, ${cfg.Export_n}.class));
+    }
+}

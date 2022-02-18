@@ -1,0 +1,48 @@
+1. 表中带有删除标识的左连接查询方式：
+错误：
+SELECT * FROM a LEFT JOIN b ON a.name = b.name WHERE a.del = 0 AND b.del = 0 ORDER BY a.id;
+正确：
+SELECT * FROM a LEFT JOIN b ON a.name = b.name AND b.del = 0 WHERE a.del = 0 ORDER BY a.id;
+
+=======================================================
+
+2. 表中有字段 start_time end_time 范围字段的怎么查
+序号 start_time end_time
+1   01          15
+2   05          25
+3   20          28
+
+需求: 开始时间在我选择的范围08~10, 结束时间在我选择的范围25~28
+SELECT * FROM table
+WHERE
+start_time between 08 and 10
+and end_time between 25 and 28
+以上只能匹配到第二条数据, 提前知道前后的大概的范围属于精确查找了, 好像也不太达到用户想要的目的
+
+需求: 是只要在这个我选择的范围08~23内正在生效的都要显示(但是存在快要失效的数据)
+第一种:
+SELECT * FROM table
+WHERE yn = 0 and
+((start_time >= 08 AND start_time <= 23)  匹配第3条
+OR (start_time <= 08 AND end_time >= 23)  匹配第2条
+OR (end_time >= 08 AND end_time <= 23))   匹配第1条
+第二种:
+反向查询的sql思路：
+SELECT * FROM table
+WHERE yn = 0 and
+NOT ( start_time > 23 OR (end_time < 08) )
+第三种: 参考: https://www.flipflops.org/2008/05/01/finding-overlapping-dates-and-times-in-mysql/
+其实是第二种的取反
+SELECT * FROM table
+WHERE yn = 0 and
+(start_time <= 23 and end_time >= 08)
+以上没有测试过效率情况, 测试用例分为: 匹配比例 1:0:0, 0:1:0, 0:0:1, 1:1:0, 1:0:1, 0:1:1, 1:1:1, 0:0:0
+总结:
+透过现象看本质上好像转化成了数学上的逻辑
+!(a==0 || b==0)     ==>     (a!=0 && b!=0)
+!(a || b)           ==>     (!a && !a)
+!(男 || 女)==其他     ==>     (!男 && !女)==其他
+其实我们生活中讲话说,问你个问题这世界上除了男人和女人是不是就没人了, 有个人开完笑的说还有变性人!
+生活中我们总往往用的司空见惯的最简单的交流方式, 其实是经过总结之后留下的最底层的思维逻辑, 上层的逻辑只不过是对底层逻辑的实现或者变种转换
+
+=======================================================

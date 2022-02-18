@@ -1,0 +1,194 @@
+package ${cfg.controller_p};
+
+import com.aircraftcarrier.framework.model.BatchResult;
+import com.aircraftcarrier.framework.model.response.MultiResponse;
+import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+#if(${superControllerClassPackage})
+import ${superControllerClassPackage};
+#end
+import ${cfg.service_f};
+import ${cfg.AddCmd_f};
+import ${cfg.DeleteCmd_f};
+import ${cfg.EditCmd_f};
+import ${cfg.ExportCmd_f};
+import ${cfg.ImportCmd_f};
+import ${cfg.Export_f};
+import ${cfg.Import_f};
+import ${cfg.DetailQry_f};
+import ${cfg.ExportQry_f};
+import ${cfg.PageQry_f};
+import ${cfg.PageCo_f};
+import ${cfg.Co_f};
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+#if(${restControllerStyle})
+import org.springframework.web.bind.annotation.RestController;
+#else
+import org.springframework.stereotype.Controller;
+#end
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+
+/**
+ * $!{table.comment} 前端控制器
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Api(tags = "$!{table.comment}", produces = "application/json")
+#if(${restControllerStyle})
+@RestController
+#else
+@Controller
+#end
+#set ($namespace = ${table.originEntityName.substring(0, 1).toLowerCase()} + ${table.originEntityName.substring(1)})
+@RequestMapping("/web/${cfg.moduleName}/${namespace}")
+#if(${kotlin})
+class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()#end
+
+#else
+#if(${superControllerClass})
+public class ${table.controllerName} extends ${superControllerClass} {
+#else
+public class ${table.controllerName} {
+#end
+
+    /**
+     * ${table.serviceName}
+     */
+    @Resource
+    #set ($serviceI = ${table.serviceName.substring(0, 1).toLowerCase()} + ${table.serviceName.substring(1)})
+    private ${table.serviceName} ${serviceI};
+
+    /**
+     * 分页列表
+     */
+    @ApiOperation(value = "分页列表")
+    @PostMapping(value = "/listPage")
+    public PageResponse<${cfg.PageCo_n}> listPage(@RequestBody @Valid ${cfg.PageQry_n} pageQry) {
+        return ${serviceI}.listPage(pageQry);
+    }
+
+    /**
+     * 手工添加
+     */
+    @ApiOperation(value = "手工添加")
+    @PostMapping(value = "/add${table.originEntityName}")
+    public SingleResponse<Void> add${table.originEntityName}(@RequestBody @Valid ${cfg.AddCmd_n} addCmd,
+                                                  HttpServletRequest request) {
+        addCmd.initCreate(getOperator(request));
+        return ${serviceI}.add${table.originEntityName}(addCmd);
+    }
+
+    /**
+     * 获取详情
+     */
+    @ApiOperation(value = "获取详情")
+    @PostMapping(value = "/getDetail")
+    public SingleResponse<${cfg.Co_n}> getDetail(@RequestBody @Valid ${cfg.DetailQry_n} detailQry) {
+        return ${serviceI}.getDetail(detailQry);
+    }
+
+    /**
+     * 编辑保存
+     */
+    @ApiOperation(value = "编辑保存")
+    @PostMapping(value = "/editSave")
+    public SingleResponse<Void> editSave(@RequestBody @Valid ${cfg.EditCmd_n} editCmd,
+                                         HttpServletRequest request) {
+        editCmd.initUpdate(getOperator(request));
+        return ${serviceI}.editSave(editCmd);
+    }
+
+    /**
+     * 批量删除
+     */
+    @ApiOperation(value = "批量删除")
+    @PostMapping(value = "/deleteBatch")
+    public SingleResponse<Void> deleteBatch(@RequestBody @Valid ${cfg.DeleteCmd_n} deleteCmd,
+                                            HttpServletRequest request) {
+        deleteCmd.initUpdate(getOperator(request));
+        return ${serviceI}.delete(deleteCmd);
+    }
+
+    /**
+     * 导出
+     */
+    @ApiOperation(value = "导出", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PostMapping(value = "/exportExcel")
+    public void exportExcel(@RequestBody ${cfg.ExportQry_n} exportQry,
+                            HttpServletResponse response) throws Exception {
+        // 查询下载集合
+        ${cfg.ExportCmd_n} exportCmd = new ${cfg.ExportCmd_n}(exportQry);
+        MultiResponse<${cfg.Export_n}> multiResponse = ${serviceI}.excelExport(exportCmd);
+        List<${cfg.Export_n}> list = (List<${cfg.Export_n}>) multiResponse.getData();
+        exportExcel(response, "$!{table.comment}", "$!{table.comment}", list, ${cfg.Export_n}.class);
+    }
+
+
+    /**
+     * 导出模板
+     */
+    @ApiOperation(value = "导出模板", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping("exportTemplate")
+    public void exportTemplate(HttpServletResponse response) throws IOException {
+        ${cfg.Import_n} importExcel = new ${cfg.Import_n}();
+#foreach($field in ${table.fields})
+    #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
+#if("$!field.propertyType" == "String")
+        importExcel.set${sfN}("${field.propertyName}");
+#elseif("$!field.propertyType" == "Integer")
+        importExcel.set${sfN}(1);
+#elseif("$!field.propertyType" == "Long")
+        importExcel.set${sfN}(1L);
+#elseif("$!field.propertyType" == "Date")
+        importExcel.set${sfN}(new Date());
+#elseif("$!field.propertyType" == "LocalDateTime")
+        importExcel.set${sfN}(LocalDateTime.now());
+#end
+#end
+        List<${cfg.Import_n}> importExcels = Collections.singletonList(importExcel);
+        exportExcel(response, "$!{table.comment}", "$!{table.comment}", importExcels, ${cfg.Import_n}.class);
+    }
+
+
+    /**
+     * 导入
+     */
+    @ApiImplicitParam(name = "file", dataType = "__File", value = "文件")
+    @ApiOperation("导入")
+    @PostMapping(value = "/importExcel")
+    public SingleResponse<BatchResult> importExcel(@ApiParam(value = "上传文件", required = true)
+                                                   @RequestParam("file")
+                                                   @NotNull(message = "上传文件必传") MultipartFile file,
+                                                   HttpServletRequest request) {
+        ${cfg.ImportCmd_n} importCmd = new ${cfg.ImportCmd_n}();
+        importCmd.initCreate(getOperator(request));
+        importCmd.setFile(file);
+        return ${serviceI}.excelImport(importCmd);
+    }
+
+}
+
+#end

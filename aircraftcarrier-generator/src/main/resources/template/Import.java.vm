@@ -1,0 +1,60 @@
+package ${cfg.Import_p};
+
+import com.aircraftcarrier.framework.excel.util.ExcelRow;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+/**
+ * $!{table.comment} Import
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+@ColumnWidth(20)
+public class ${cfg.Import_n} extends ExcelRow {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.fields})
+
+#if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+#end
+    @ApiModelProperty(value = "${field.comment}", required = true)
+#if("$!field.propertyType" == "String")
+    @NotBlank(message = "${field.comment}必传")
+    @Size(max = 80, message = "${field.comment}长度不能大于80")
+#elseif("$!field.propertyType" != "String")
+    @NotNull(message = "${field.comment}必传")
+#end
+    @ExcelProperty("*${field.comment}")
+    private ${field.propertyType} ${field.propertyName};
+#end
+## ----------  END 字段循环遍历  ----------
+
+    /**
+     * genUniqueKey
+     *
+     * @return uniqueKey: 需要根据实际业务定义
+     */
+    public String genUniqueKey() {
+        return rowNo + "-" + rowNo;
+    }
+}

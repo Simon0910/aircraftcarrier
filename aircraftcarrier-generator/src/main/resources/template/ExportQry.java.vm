@@ -1,0 +1,41 @@
+package ${cfg.ExportQry_p};
+
+import com.aircraftcarrier.framework.model.request.Query;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+
+/**
+ * $!{table.comment} ExportQry
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+public class ${cfg.ExportQry_n} extends Query {
+    /**
+     * 主键集合
+     */
+    @ApiModelProperty(value = "主键集合", required = true)
+    private List<Long> idList;
+
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.fields})
+    #if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+    #end
+    @ApiModelProperty(value = "${field.comment}")
+    private ${field.propertyType} ${field.propertyName};
+#end
+## ----------  END 字段循环遍历  ----------
+
+}

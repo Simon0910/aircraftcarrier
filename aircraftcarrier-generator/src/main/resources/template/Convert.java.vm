@@ -1,0 +1,12 @@
+package ${cfg.Convert_p};
+
+/**
+ * $!{table.comment} Convert
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+public class ${cfg.Convert_n} {
+
+}

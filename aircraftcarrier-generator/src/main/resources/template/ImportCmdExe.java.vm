@@ -1,0 +1,227 @@
+package ${cfg.ImportCmdExe_p};
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aircraftcarrier.framework.excel.util.BatchRowListener;
+import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
+import com.aircraftcarrier.framework.exception.SysException;
+import com.aircraftcarrier.framework.model.BatchResult;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.MapUtil;
+import com.aircraftcarrier.framework.tookit.StringPool;
+import ${cfg.ImportCmd_f};
+import ${cfg.Import_f};
+import ${cfg.Repository_f};
+import ${cfg.Do_f};
+import com.alibaba.excel.context.AnalysisContext;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+
+/**
+ * 批量导入 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Slf4j
+@Component
+public class ${cfg.ImportCmdExe_n} {
+
+    /**
+     * ${cfg.Repository_n}
+     */
+    @Resource
+    #set ($gatewayI = ${cfg.Repository_n_i})
+    private ${cfg.Repository_n} ${gatewayI};
+
+    /**
+     * execute
+     *
+     * @param importCmd importCmd
+     * @return SingleResponse<BatchResult>
+     */
+    public SingleResponse<BatchResult> execute(${cfg.ImportCmd_n} importCmd) {
+        MultipartFile file = importCmd.getFile();
+        InputStream inputStream;
+        try {
+            inputStream = file.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new SysException("file error");
+        }
+
+        ${cfg.Import_n}Upload upload = new ${cfg.Import_n}Upload();
+        EasyExcelReadUtil.checkExcelFile(file);
+        EasyExcelReadUtil.readBatchRow(inputStream, ${cfg.Import_n}.class, 0, 0, 1, upload);
+        return SingleResponse.ok(upload.getBatchResult());
+    }
+
+
+    /**
+     * 上传类
+     */
+    class ${cfg.Import_n}Upload implements BatchRowListener<${cfg.Import_n}> {
+        // 全局数据和数据库保持一致
+        Map<Integer, String> globalMap = MapUtil.newHashMap(1000);
+        // 所有批次的重复数据, 第一条数据
+        Map<Integer, String> globalRepeatMap = MapUtil.newConcurrentHashMap(1000);
+        // 和Excel读取数据保持一致的数据(去除残缺的数据)
+        Map<String, Integer> uniqueMap = MapUtil.newHashMap(1000);
+        // 上传结果
+        BatchResult batchResult = new BatchResult();
+
+        @Override
+        public void batchInvoke(List<${cfg.Import_n}> rowList, AnalysisContext analysisContext) {
+            // 临时容器
+            List<ProductDetailsImport> tempResult = new ArrayList<>(1000);
+            // 临时的重复数据, 第一条数据
+            Map<Integer, String> batchRepeatMap = MapUtil.newHashMap(1000);
+            // 遍历当前批次
+            for (${cfg.Import_n} row : rowList) {
+                boolean ok = checkNullField(row);
+                if (!ok) {
+                    continue;
+                }
+                ok = checkRepeatRow(row, batchRepeatMap);
+                if (!ok) {
+                    continue;
+                }
+                ok = checkByDb(row);
+                if (!ok) {
+                    continue;
+                }
+                tempResult.add(row);
+            }
+
+            if (!batchRepeatMap.isEmpty()) {
+                logger.info("batchRepeatMap.size: {}", batchRepeatMap.size());
+                globalRepeatMap.putAll(batchRepeatMap);
+                // 过滤掉之前添加过的所有重复的数据
+                tempResult = tempResult.stream().filter(e -> batchRepeatMap.get(e.getRowNo()) == null).collect(Collectors.toList());
+            }
+            log.info("tempResult.size: {}", tempResult.size());
+            doSaveBatch(tempResult);
+            for (ProductDetailsImport productDetailsImport : tempResult) {
+                globalMap.put(productDetailsImport.getRowNo(), StringPool.EMPTY);
+            }
+            tempResult.clear();
+            batchRepeatMap.clear();
+        }
+
+        /**
+         * 保存数据库
+         *
+         * @param imports imports
+         */
+        public void doSaveBatch(List<${cfg.Import_n}> imports) {
+            if (CollUtil.isEmpty(imports)) {
+                return;
+            }
+            // do saveBatch ...
+            List<${entity}> list = BeanUtils.convertList(imports, ${entity}.class);
+            ${gatewayI}.saveBatch(list);
+            batchResult.increaseSuccess(imports.size());
+        }
+
+        /**
+         * 根据业务场景需要对别校验数据库
+         *
+         * @param row row
+         * @return boolean
+         */
+        private boolean checkByDb(${cfg.Import_n} row) {
+            // todo query DB...
+            return true;
+        }
+
+        /**
+         * 重复行校验
+         * 重复数据需根据具体业务定义
+         * oldRowNo: 全局重复数据的第一条的行号
+         * <p>
+         * 注: 不能避免 单批次数据都正常（会保存到DB），读之后批次时又发现了和之前存在重复的数据
+         * 1.要么不要分批读取，但失去了大批量分批读的意义。（要求严格数据要一次读全部,比如多颗数结构校验存在前后业务关联，又要和数据库对比，非常复杂）
+         * 2.要么处理之后批时候，把之前批的那条记录查DB校验一下确实是本次上传保存的，执行删除，这样就比较复杂了.
+         * 3.要么不处理，默认之前批的那条成功就成功了，本此上传的保存不会产生重复数据的保存
+         *
+         * @param row            row
+         * @param batchRepeatMap 本批次有重复数据被添加到临时容器中了
+         * @return boolean
+         */
+        private boolean checkRepeatRow(${cfg.Import_n} row, Map<Integer, String> batchRepeatMap) {
+            String uniqueKey = row.genUniqueKey();
+            Integer oldRowNo = uniqueMap.get(uniqueKey);
+            if (oldRowNo == null) {
+                uniqueMap.put(uniqueKey, row.getRowNo());
+                return true;
+            }
+
+            // 到这里说明之前读过了这样的数据
+            // 和本批次重复了 此时有可能已经添加到临时容器了, 也有可能数据库校验不通过没有添加都临时容器
+            if (globalRepeatMap.get(oldRowNo) == null) {
+                // 不管有没有添加到临时容器 记录下
+                if (batchRepeatMap.get(oldRowNo) == null) {
+                    // 已经保存到数据库了，就不提示错误行了，防止保存DB的还提示错误行，导致最后总行数超出文件中条数
+                    if (globalMap.get(oldRowNo) == null) {
+                        batchResult.addErrorMsg(oldRowNo, "与第[" + row.getRowNo() + "]行数据重复");
+                    } else {
+                        // 提示：与第几行重复了，但是保存了第一条重复的数据（前提是要有数据库校验，才能保证只会保存第一条数据）
+                    }
+                    batchRepeatMap.put(oldRowNo, StringPool.EMPTY);
+                }
+            }
+
+            // 当前数据, return false 肯定不会加到临时容器
+            batchResult.addErrorMsg(row.getRowNo(), "与第[" + oldRowNo + "]行数据重复");
+            return false;
+        }
+
+        /**
+         * checkNullField
+         * 如果必要，可能要手写枚举校验
+         *
+         * @param row row
+         * @return boolean
+         */
+        private boolean checkNullField(${cfg.Import_n} row) {
+    #foreach($field in ${table.fields})
+        #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
+        #if("$!field.propertyType" == "String")
+            if (StrUtil.isBlank(row.get${sfN}())) {
+                batchResult.addErrorMsg(row.getRowNo(), "${field.comment}为空");
+                return false;
+            }
+        #else
+            if (Objects.isNull(row.get${sfN}())) {
+                batchResult.addErrorMsg(row.getRowNo(), "${field.comment}为null");
+                return false;
+            }
+        #end
+    #end
+            return true;
+        }
+
+        /**
+         * 获取最终上传结果
+         *
+         * @return BatchResult
+         */
+        public BatchResult getBatchResult() {
+            return batchResult;
+        }
+    }
+
+}

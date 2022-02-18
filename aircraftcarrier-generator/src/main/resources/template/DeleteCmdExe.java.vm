@@ -1,0 +1,33 @@
+package ${cfg.DeleteCmdExe_p};
+
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import ${cfg.DeleteCmd_f};
+import ${cfg.Gateway_f};
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+
+
+/**
+ * 批量删除 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.DeleteCmdExe_n} {
+
+    /**
+     * ${cfg.Gateway_n}
+     */
+    @Resource
+    #set ($gatewayI = ${cfg.Gateway_n_i})
+    private ${cfg.Gateway_n} ${gatewayI};
+
+
+    public SingleResponse<Void> execute(${cfg.DeleteCmd_n} deleteCmd) {
+        ${gatewayI}.deleteBatch(deleteCmd.getIdList(), deleteCmd.getOperator());
+        return SingleResponse.ok();
+    }
+}

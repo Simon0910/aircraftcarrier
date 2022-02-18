@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.aircraftcarrier</groupId>
+    <artifactId>aircraftcarrier</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>Aircraft Carrier</name>
+    <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
+        <main.basedir>${basedir}</main.basedir>
+    </properties>
+    <modules>
+        <module>aircraftcarrier-dependencies</module>
+        <module>aircraftcarrier-parent</module>
+        <module>aircraftcarrier-framework</module>
+        <module>aircraftcarrier-marketing-store</module>
+        <module>aircraftcarrier-generator</module>
+    </modules>
+    <repositories>
+        <!--阿里云仓库-->
+        <repository>
+            <id>aliyun</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+</project>

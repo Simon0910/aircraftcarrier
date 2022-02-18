@@ -1,0 +1,52 @@
+package ${cfg.EditCmd_p};
+
+import com.aircraftcarrier.framework.model.AbstractCommand;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+/**
+ * $!{table.comment} 编辑参数
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@ApiModel(value = "${cfg.EditCmd_n}", description = "$!{table.comment}-编辑参数")
+@Getter
+@Setter
+public class ${cfg.EditCmd_n} extends AbstractCommand {
+    /**
+     * 主键ID
+     */
+    @ApiModelProperty(value = "主键ID")
+    @NotNull(message = "ID参数必传")
+    private Long id;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.fields})
+
+#if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+#end
+    @ApiModelProperty(value = "${field.comment}", required = true)
+#if("$!field.propertyType" == "String")
+    @NotBlank(message = "${field.comment}参数不能传空")
+    @Size(max = 80, message = "${field.comment}长度不能大于80")
+#elseif("$!field.propertyType" != "String")
+    @NotNull(message = "${field.comment}参数必传")
+#end
+    private ${field.propertyType} ${field.propertyName};
+#end
+## ----------  END 字段循环遍历  ----------
+
+}

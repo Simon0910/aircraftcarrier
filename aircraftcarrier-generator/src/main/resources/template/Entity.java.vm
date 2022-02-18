@@ -1,0 +1,37 @@
+package ${cfg.Entity_p};
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+/**
+ * $!{table.comment} Entity
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Setter
+@Getter
+public class ${cfg.Entity_n} implements Serializable {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.allFields})
+
+#if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+#end
+    private ${field.propertyType} ${field.propertyName};
+#end
+## ----------  END 字段循环遍历  ----------
+
+}

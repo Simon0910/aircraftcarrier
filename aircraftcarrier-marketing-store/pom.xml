@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.aircraftcarrier</groupId>
+        <artifactId>aircraftcarrier-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../aircraftcarrier-parent</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>aircraftcarrier-marketing-store</artifactId>
+    <packaging>pom</packaging>
+    <name>Aircraft Carrier Marketing Store</name>
+    <modules>
+        <module>marketing-store-common</module>
+        <module>marketing-store-domain</module>
+        <module>marketing-store-infrastructure</module>
+        <module>marketing-store-client</module>
+        <module>marketing-store-api</module>
+        <module>marketing-store-app</module>
+        <module>marketing-store-adapter</module>
+        <module>start</module>
+    </modules>
+</project>

@@ -1,0 +1,41 @@
+package ${cfg.Export_p};
+
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+/**
+ * $!{table.comment} Export
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+@ColumnWidth(20)
+public class ${cfg.Export_n} implements Serializable {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.fields})
+
+#if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+#end
+    @ExcelProperty("*${field.comment}")
+    private ${field.propertyType} ${field.propertyName};
+#end
+## ----------  END 字段循环遍历  ----------
+
+}

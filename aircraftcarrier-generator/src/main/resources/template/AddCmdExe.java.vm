@@ -1,0 +1,36 @@
+package ${cfg.AddCmdExe_p};
+
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.tookit.BeanUtils;
+import ${cfg.AddCmd_f};
+import ${cfg.Gateway_f};
+import ${cfg.Entity_f};
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+
+
+/**
+ * 手工添加 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.AddCmdExe_n} {
+
+    /**
+     * ${cfg.Gateway_n}
+     */
+    @Resource
+    #set ($gatewayI = ${cfg.Gateway_n_i})
+    private ${cfg.Gateway_n} ${gatewayI};
+
+
+    public SingleResponse<Void> execute(${cfg.AddCmd_n} addCmd) {
+        ${cfg.Entity_n} entity = BeanUtils.convert(addCmd, ${cfg.Entity_n}.class);
+        ${gatewayI}.add${table.originEntityName}(entity, addCmd.getOperator());
+        return SingleResponse.ok();
+    }
+}

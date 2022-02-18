@@ -1,0 +1,33 @@
+package ${cfg.PageQryExe_p};
+
+import com.aircraftcarrier.framework.data.PageUtil;
+import com.aircraftcarrier.framework.model.response.PageResponse;
+import ${cfg.PageQry_f};
+import ${cfg.PageCo_f};
+import ${cfg.mapper_f};
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+
+
+/**
+ * 分页查询 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.PageQryExe_n} {
+    /**
+     * ${cfg.mapper_n}
+     */
+    @Resource
+    #set ($mapperI = ${cfg.mapper_n_i})
+    private ${cfg.mapper_n} ${mapperI};
+
+
+    public PageResponse<${cfg.PageCo_n}> execute(${cfg.PageQry_n} pageQry) {
+        return PageUtil.getPage(pageQry, () -> ${mapperI}.listPage(pageQry), ${cfg.PageCo_n}.class);
+    }
+}

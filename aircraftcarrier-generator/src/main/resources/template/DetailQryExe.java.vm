@@ -1,0 +1,36 @@
+package ${cfg.DetailQryExe_p};
+
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.tookit.BeanUtils;
+import ${cfg.DetailQry_f};
+import ${cfg.Co_f};
+import ${cfg.Gateway_f};
+import ${cfg.Entity_f};
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+
+
+/**
+ * 获取详情 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.DetailQryExe_n} {
+
+    /**
+     * ${cfg.Gateway_n}
+     */
+    @Resource
+    private ${cfg.Gateway_n} ${cfg.Gateway_n_i};
+
+
+    public SingleResponse<${cfg.Co_n}> execute(${cfg.DetailQry_n} detailQry) {
+        ${cfg.Entity_n} detailEntity = ${cfg.Gateway_n_i}.getDetail(detailQry.getId());
+        ${cfg.Co_n} detailCo = BeanUtils.convert(detailEntity, ${cfg.Co_n}.class);
+        return SingleResponse.ok(detailCo);
+    }
+}

@@ -1,0 +1,87 @@
+package ${cfg.service_p};
+
+import com.aircraftcarrier.framework.model.BatchResult;
+import com.aircraftcarrier.framework.model.response.MultiResponse;
+import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import ${cfg.AddCmd_f};
+import ${cfg.DeleteCmd_f};
+import ${cfg.EditCmd_f};
+import ${cfg.ExportCmd_f};
+import ${cfg.ImportCmd_f};
+import ${cfg.Export_f};
+import ${cfg.DetailQry_f};
+import ${cfg.PageQry_f};
+import ${cfg.PageCo_f};
+import ${cfg.Co_f};
+
+
+/**
+ * $!{table.comment} 服务类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+#if(${kotlin})
+interface ${table.serviceName} : ${superServiceClass}<${entity}>
+#else
+public interface ${table.serviceName} {
+
+    /**
+     * 分页列表
+     *
+     * @param pageQry 分页查询参数
+     * @return {@link PageResponse<${cfg.PageCo_n}>}
+     */
+    PageResponse<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry);
+
+    /**
+     * 手工添加
+     *
+     * @param addCmd 添加参数
+     * @return {@link SingleResponse}
+     */
+    SingleResponse<Void> add${table.originEntityName}(${cfg.AddCmd_n} addCmd);
+
+    /**
+     * 获取详情
+     *
+     * @param detailQry 获取详情参数
+     * @return {@link SingleResponse<${cfg.Co_n}>}
+     */
+    SingleResponse<${cfg.Co_n}> getDetail(${cfg.DetailQry_n} detailQry);
+
+    /**
+     * 编辑保存
+     *
+     * @param editCmd 编辑保存参数
+     * @return {@link SingleResponse}
+     */
+    SingleResponse<Void> editSave(${cfg.EditCmd_n} editCmd);
+
+    /**
+     * 批量删除
+     *
+     * @param deleteCmd 批量删除参数
+     * @return {@link SingleResponse}
+     */
+    SingleResponse<Void> delete(${cfg.DeleteCmd_n} deleteCmd);
+
+    /**
+     * 批量导出
+     *
+     * @param exportCmd 导出参数
+     * @return {@link MultiResponse<${cfg.Export_n}>}
+     */
+    MultiResponse<${cfg.Export_n}> excelExport(${cfg.ExportCmd_n} exportCmd);
+
+    /**
+     * 批量导入
+     *
+     * @param importCmd 导入参数
+     * @return {@link SingleResponse<BatchResult>}
+     */
+    SingleResponse<BatchResult> excelImport(${cfg.ImportCmd_n} importCmd);
+}
+#end

@@ -1,0 +1,99 @@
+package ${cfg.Repository_p};
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aircraftcarrier.framework.exception.SysException;
+import com.aircraftcarrier.framework.tookit.BeanUtils;
+import ${cfg.Gateway_f};
+import ${cfg.Entity_f};
+import ${cfg.mapper_f};
+import ${cfg.Do_f};
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.List;
+
+
+#set ($entityI = ${entity.substring(0, 1).toLowerCase()} + ${entity.substring(1)})
+/**
+ * $!{table.comment} Repository
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${entity}>
+        implements ${cfg.Gateway_n} {
+
+    /**
+     * ${cfg.mapper_n}
+     */
+    @Resource
+    #set ($mapperI = ${cfg.mapper_n_i})
+    private ${cfg.mapper_n} ${mapperI};
+
+
+    @Override
+    public ${cfg.Entity_n} add${table.originEntityName}(${cfg.Entity_n} entity, String operator) {
+        if (StrUtil.isBlank(operator)) {
+            throw new SysException("add operator must not be empty!");
+        }
+        ${entity} insertDo = BeanUtils.convert(entity, ${entity}.class);
+        ${mapperI}.insert(insertDo);
+        return entity;
+    }
+
+    @Override
+    public ${cfg.Entity_n} getDetail(Long id) {
+        if (id == null) {
+            throw new SysException("getDetail id must not be null");
+        }
+        ${entity} ${entityI} = ${mapperI}.selectById(id);
+        return BeanUtils.convert(${entityI}, ${cfg.Entity_n}.class);
+    }
+
+    @Override
+    public ${cfg.Entity_n} editSave(Long id, ${cfg.Entity_n} entity, String operator) {
+        if (StrUtil.isBlank(operator)) {
+            throw new SysException("editSave operator must not be empty!");
+        }
+        if (id == null) {
+            throw new SysException("editSave id must not be null!");
+        }
+
+        ${entity} updateSelectiveDo = BeanUtils.convert(entity, ${entity}.class);
+        updateSelectiveDo.setId(id);
+        ${mapperI}.updateById(updateSelectiveDo);
+        entity.setId(id);
+        return entity;
+    }
+
+    @Override
+    public int deleteBatch(Collection<Long> idList, String operator) {
+        if (StrUtil.isBlank(operator)) {
+            throw new SysException("deleteBatch operator must not be empty!");
+        }
+        if (CollUtil.isEmpty(idList)) {
+            throw new SysException("deleteBatch idList must not be empty!");
+        }
+        return ${mapperI}.deleteBatchIds(idList);
+    }
+
+    @Override
+    public List<${cfg.Entity_n}> selectByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new SysException("selectByIds ids must not be empty!");
+        }
+
+        LambdaQueryWrapper<${entity}> queryWrapper = new LambdaQueryWrapper<${entity}>()
+                .in(${entity}::getId, ids);
+
+        List<${entity}> doList = ${mapperI}.selectList(queryWrapper);
+        return BeanUtils.convertList(doList, ${cfg.Entity_n}.class);
+    }
+
+}

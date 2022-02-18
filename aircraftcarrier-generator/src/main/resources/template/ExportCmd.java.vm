@@ -1,0 +1,26 @@
+package ${cfg.ExportCmd_p};
+
+import com.aircraftcarrier.framework.model.AbstractCommand;
+import ${cfg.ExportQry_f};
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+
+/**
+ * $!{table.comment} ExportCmd
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+@AllArgsConstructor
+public class ${cfg.ExportCmd_n} extends AbstractCommand {
+
+    /**
+     * ${cfg.ExportQry_n}
+     */
+    private ${cfg.ExportQry_n} ${cfg.ExportQry_n_i};
+}

@@ -1,0 +1,39 @@
+package ${cfg.Co_p};
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+/**
+ * $!{table.comment} Vo
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+public class ${cfg.Co_n} implements Serializable {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${table.allFields})
+
+#if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+#end
+    @ApiModelProperty(value = "${field.comment}")
+    private ${field.propertyType} ${field.propertyName};
+#end
+## ----------  END 字段循环遍历  ----------
+
+}

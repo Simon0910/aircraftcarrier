@@ -1,0 +1,95 @@
+package ${cfg.serviceImpl_p};
+
+import com.aircraftcarrier.framework.model.BatchResult;
+import com.aircraftcarrier.framework.model.response.MultiResponse;
+import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import ${cfg.AddCmdExe_f};
+import ${cfg.DeleteCmdExe_f};
+import ${cfg.EditCmdExe_f};
+import ${cfg.ExportCmdExe_f};
+import ${cfg.ImportCmdExe_f};
+import ${cfg.DetailQryExe_f};
+import ${cfg.PageQryExe_f};
+import ${cfg.service_f};
+import ${cfg.AddCmd_f};
+import ${cfg.DeleteCmd_f};
+import ${cfg.EditCmd_f};
+import ${cfg.ExportCmd_f};
+import ${cfg.ImportCmd_f};
+import ${cfg.Export_f};
+import ${cfg.DetailQry_f};
+import ${cfg.PageQry_f};
+import ${cfg.PageCo_f};
+import ${cfg.Co_f};
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+
+
+/**
+ * $!{table.comment} 服务实现类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Service
+#if(${kotlin})
+open class ${table.serviceImplName} : ${superServiceImplClass}<${table.mapperName}, ${entity}>(), ${table.serviceName} {
+
+}
+#else
+public class ${table.serviceImplName} implements ${table.serviceName} {
+    @Resource
+    private ${cfg.PageQryExe_n} ${cfg.PageQryExe_n_i};
+    @Resource
+    private ${cfg.AddCmdExe_n} ${cfg.AddCmdExe_n_i};
+    @Resource
+    private ${cfg.DetailQryExe_n} ${cfg.DetailQryExe_n_i};
+    @Resource
+    private ${cfg.EditCmdExe_n} ${cfg.EditCmdExe_n_i};
+    @Resource
+    private ${cfg.DeleteCmdExe_n} ${cfg.DeleteCmdExe_n_i};
+    @Resource
+    private ${cfg.ExportCmdExe_n} ${cfg.ExportCmdExe_n_i};
+    @Resource
+    private ${cfg.ImportCmdExe_n} ${cfg.ImportCmdExe_n_i};
+
+
+    @Override
+    public PageResponse<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry) {
+        return ${cfg.PageQryExe_n_i}.execute(pageQry);
+    }
+
+    @Override
+    public SingleResponse<Void> add${table.originEntityName}(${cfg.AddCmd_n} addCmd) {
+        return ${cfg.AddCmdExe_n_i}.execute(addCmd);
+    }
+
+    @Override
+    public SingleResponse<${cfg.Co_n}> getDetail(${cfg.DetailQry_n} detailQry) {
+        return ${cfg.DetailQryExe_n_i}.execute(detailQry);
+    }
+
+    @Override
+    public SingleResponse<Void> editSave(${cfg.EditCmd_n} editCmd) {
+        return ${cfg.EditCmdExe_n_i}.execute(editCmd);
+    }
+
+    @Override
+    public SingleResponse<Void> delete(${cfg.DeleteCmd_n} deleteCmd) {
+        return ${cfg.DeleteCmdExe_n_i}.execute(deleteCmd);
+    }
+
+    @Override
+    public MultiResponse<${cfg.Export_n}> excelExport(${cfg.ExportCmd_n} exportCmd) {
+        return ${cfg.ExportCmdExe_n_i}.execute(exportCmd);
+    }
+
+    @Override
+    public SingleResponse<BatchResult> excelImport(${cfg.ImportCmd_n} importCmd) {
+        return ${cfg.ImportCmdExe_n_i}.execute(importCmd);
+    }
+}
+#end

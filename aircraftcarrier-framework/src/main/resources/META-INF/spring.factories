@@ -1,0 +1,18 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.aircraftcarrier.framework.cache.config.CacheAutoConfiguration,\
+  com.aircraftcarrier.framework.cache.config.CacheManagerCheckAutoConfiguration,\
+  com.aircraftcarrier.framework.cache.config.LockTemplateAutoConfiguration,\
+  com.aircraftcarrier.framework.dict.config.DictAutoConfiguration,\
+  com.aircraftcarrier.framework.data.config.MybatisAutoConfiguration,\
+  com.aircraftcarrier.framework.data.config.MybatisPlusAutoConfiguration,\
+  com.aircraftcarrier.framework.security.config.WebSecurityAutoConfiguration,\
+  com.aircraftcarrier.framework.security.config.FrameworkSecurityAutoConfiguration,\
+  com.aircraftcarrier.framework.security.config.FrameworkWebSecurityAutoConfiguration,\
+  com.aircraftcarrier.framework.security.disabled.FrameworkSecurityDisableAutoConfiguration,\
+  com.aircraftcarrier.framework.tookit.config.ToolsAutoConfiguration,\
+  com.aircraftcarrier.framework.support.config.FilterAutoConfiguration,\
+  com.aircraftcarrier.framework.support.config.TraceAsyncAutoConfiguration,\
+  com.aircraftcarrier.framework.support.config.SupportAutoConfiguration,\
+  com.aircraftcarrier.framework.web.FrameworkWebAutoConfiguration
+

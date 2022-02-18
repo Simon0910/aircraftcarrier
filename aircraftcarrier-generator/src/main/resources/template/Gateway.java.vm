@@ -1,0 +1,62 @@
+package ${cfg.Gateway_p};
+
+import ${cfg.Entity_f};
+
+import java.util.Collection;
+import java.util.List;
+
+
+/**
+ * $!{table.comment} Gateway
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+public interface ${cfg.Gateway_n} {
+
+    /**
+     * 手工添加
+     *
+     * @param entity   手工添加参数
+     * @param operator 操作人
+     * @return {@link ${cfg.Entity_n}}
+     */
+    ${cfg.Entity_n} add${table.originEntityName}(${cfg.Entity_n} entity, String operator);
+
+    /**
+     * 获取详情
+     *
+     * @param id 主键
+     * @return {@link ${cfg.Entity_n}}
+     */
+    ${cfg.Entity_n} getDetail(Long id);
+
+    /**
+     * 编辑保存
+     *
+     * @param id       修改实体主键
+     * @param entity   编辑实体
+     * @param operator 操作人
+     * @return {@link ${cfg.Entity_n}}
+     */
+    ${cfg.Entity_n} editSave(Long id, ${cfg.Entity_n} entity, String operator);
+
+    /**
+     * 批量删除
+     *
+     * @param idList   id集合
+     * @param operator 操作人
+     * @return int
+     */
+    int deleteBatch(Collection<Long> idList, String operator);
+
+    /**
+     * 根据ids查询 原始数据
+     *
+     * @param ids 主键集合
+     * @return {@link List<${cfg.Entity_n}>}
+     */
+    List<${cfg.Entity_n}> selectByIds(Collection<Long> ids);
+
+}

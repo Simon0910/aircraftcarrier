@@ -1,0 +1,52 @@
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS insert_batch$$
+CREATE PROCEDURE insert_batch(max_num INT)
+BEGIN
+-- 定义一个变量chars_str，有默认值
+DECLARE i INT DEFAULT 0;
+DECLARE chars_str VARCHAR(100) DEFAULT 'abcdefghijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ';
+DECLARE return_str VARCHAR(255) DEFAULT '';
+DECLARE return_num INT DEFAULT 0;
+DECLARE init_date VARCHAR(32) DEFAULT '2022-02-01';
+DECLARE return_start VARCHAR(32) DEFAULT '2022-02-01';
+DECLARE return_end VARCHAR(32) DEFAULT '2022-02-01';
+-- 把自动提交关闭
+set autocommit = 0;
+REPEAT
+SET i = i +1;
+SET return_str = CONCAT('user_', SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 8));
+SET return_num = FLOOR(1 + RAND() * 3);
+SET return_start = ADDDATE(init_date, INTERVAL concat(FLOOR(1 + RAND() * 30), "-", FLOOR(1 + RAND() * 12), "-", FLOOR(1 + RAND() * 60), "-", FLOOR(1 + RAND() * 60)) DAY_SECOND);
+SET return_end = ADDDATE(return_start, INTERVAL concat(FLOOR(1 + RAND() * 30), "-", FLOOR(1 + RAND() * 12), "-", FLOOR(1 + RAND() * 60), "-", FLOOR(1 + RAND() * 60)) DAY_SECOND);
+INSERT INTO `test`.`product_details` (`weight`, `exist`, `biz_no`, `seller_no`, `seller_name`, `description`, `data_type`, `birthday`, `create_user`, `update_user`, `create_time`, `update_time`) VALUES ('0', '0', return_str, 'sellerNo', return_str, return_str, return_num, '2022-02-10 12:30:00', 'admin', 'admin', '2022-02-01 00:00:00', '2022-02-15 00:00:00');
+INSERT INTO `test`.`product_details` (`weight`, `exist`, `biz_no`, `seller_no`, `seller_name`, `description`, `data_type`, `birthday`, `create_user`, `update_user`, `create_time`, `update_time`) VALUES ('0', '0', return_str, 'sellerNo', return_str, return_str, return_num, '2022-02-10 12:30:00', 'admin', 'admin', '2022-02-05 00:00:00', '2022-02-25 00:00:00');
+INSERT INTO `test`.`product_details` (`weight`, `exist`, `biz_no`, `seller_no`, `seller_name`, `description`, `data_type`, `birthday`, `create_user`, `update_user`, `create_time`, `update_time`) VALUES ('0', '0', return_str, 'sellerNo', return_str, return_str, return_num, '2022-02-10 12:30:00', 'admin', 'admin', '2022-02-20 00:00:00', '2022-02-28 00:00:00');
+INSERT INTO `test`.`product_details` (`weight`, `exist`, `biz_no`, `seller_no`, `seller_name`, `description`, `data_type`, `birthday`, `create_user`, `update_user`, `create_time`, `update_time`) VALUES ('0', '0', return_str, 'sellerNo', return_str, return_str, return_num, '2022-02-10 12:30:00', 'admin', 'admin', return_start, return_end);
+UNTIL i = max_num
+END REPEAT;
+COMMIT;
+END $$
+
+
+====================================
+
+
+EXPLAIN
+SELECT COUNT(*) FROM product_details
+WHERE yn = 0 and
+((create_time >= "2022-02-08" AND create_time <= '2022-02-23')
+OR (create_time <= "2022-02-08" AND update_time >= '2022-02-23')
+OR (update_time >= "2022-02-08" AND update_time <= '2022-02-23'))
+
+
+EXPLAIN
+SELECT COUNT(*) FROM product_details
+WHERE yn = 0 AND
+NOT (create_time > '2022-02-23' OR (update_time < "2022-02-08" ))
+
+
+EXPLAIN
+SELECT COUNT(*) FROM product_details
+WHERE yn = 0 AND
+(create_time <= "2022-02-23" and update_time >= '2022-02-08')

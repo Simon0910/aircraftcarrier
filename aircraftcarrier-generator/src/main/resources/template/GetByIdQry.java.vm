@@ -1,0 +1,27 @@
+package ${cfg.GetByIdQry_p};
+
+import com.aircraftcarrier.framework.model.request.Query;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
+
+
+/**
+ * $!{table.comment} GetByIdQry
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+public class ${cfg.GetByIdQry_n} extends Query {
+    /**
+     * 主键
+     */
+    @ApiModelProperty(value = "主键", required = true)
+    @NotNull(message = "id参数必传")
+    private Long id;
+}

@@ -1,0 +1,32 @@
+package ${cfg.DeleteCmd_p};
+
+import com.aircraftcarrier.framework.model.AbstractCommand;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.List;
+
+
+/**
+ * $!{table.comment} 删除参数
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@ApiModel(value = "${cfg.DeleteCmd_n}", description = "$!{table.comment}-删除参数")
+@Getter
+@Setter
+public class ${cfg.DeleteCmd_n} extends AbstractCommand {
+    /**
+     * 主键集合
+     */
+    @ApiModelProperty(value = "主键集合", required = true)
+    @NotNull(message = "idList参数不能为null")
+    @Size(min = 1, message = "idList参数不能为空")
+    private List<Long> idList;
+}
