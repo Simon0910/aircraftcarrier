@@ -1,12 +1,35 @@
 1. 表中带有删除标识的左连接查询方式：
 错误：
 SELECT * FROM a LEFT JOIN b ON a.name = b.name WHERE a.del = 0 AND b.del = 0 ORDER BY a.id;
-正确：
-SELECT * FROM a LEFT JOIN b ON a.name = b.name AND b.del = 0 WHERE a.del = 0 ORDER BY a.id;
+正确：(一对一的主附表可以分页, 一对多时无法带分页,会漏掉部分数据)
+SELECT * FROM a LEFT JOIN b ON a.name = b.name AND b.del = 0
+WHERE a.del = 0
+ORDER BY a.id
+;
+或 (带分页见下文)
+SELECT aa.*, b.* FROM
+(SELECT * FROM a WHERE a.del = 0) aa
+LEFT JOIN b ON aa.name = b.name AND b.del = 0
+ORDER BY aa.id
+;
 
 =======================================================
+2. 一对一, 一对多, 分页的正确方式
+SELECT aa.*, b.* FROM
+(SELECT * FROM a WHERE a.del = 0 LIMIT 2, 2) aa
+LEFT JOIN b ON aa.name = b.name AND b.del = 0
+WHERE b.content LIKE '%冲%'
+ORDER BY aa.id
+;
 
-2. 表中有字段 start_time end_time 范围字段的怎么查
+=======================================================
+3. 多对多, 分页的正确方式
+https://www.cxybb.com/article/Mrqiang9001/101383868
+http://www.noobyard.com/article/p-yvrjmvfd-nc.html
+http://mysql.rjweb.org/doc.php/lists
+=======================================================
+
+4. 表中有字段 start_time end_time 范围字段的怎么查
 序号 start_time end_time
 1   01          15
 2   05          25
