@@ -35,6 +35,7 @@
         FROM ${table.name}
         WHERE yn = 0
         <include refid="Page_Where_Clause"/>
+        ORDER BY id desc
     </select>
 
     <!-- 批量导出 -->

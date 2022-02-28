@@ -71,6 +71,7 @@ WHERE yn = 0 and
 =======================================================
 
 5. 关于价格字段设计
+https://blog.csdn.net/qq330983778/article/details/107130481
 https://dev.mysql.com/doc/refman/8.0/en/fixed-point-types.html
 (支付宝微信精准到后两位)
 (一般为加减, 打折会乘除)
@@ -84,5 +85,10 @@ https://dev.mysql.com/doc/refman/8.0/en/fixed-point-types.html
 范围:
 696 ~ 766.999...
 
+
+=======================================================
+
+6. 关于模糊查询
+https://cloud.tencent.com/developer/article/1159624
 
 =======================================================
