@@ -43,7 +43,7 @@ public class LockUtil {
     public static void lock(Serializable key, long expire, long acquireTimeout) {
         LockInfo lock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
         if (null == lock) {
-            throw new FrameworkException("业务处理中,请稍后再试");
+            throw new FrameworkException("系统繁忙,请稍后重试");
         }
         THREAD_LOCAL.set(lock);
     }
