@@ -50,3 +50,107 @@ EXPLAIN
 SELECT COUNT(*) FROM product_details
 WHERE yn = 0 AND
 (create_time <= "2022-02-23" and update_time >= '2022-02-08')
+
+
+===============================================
+
+CREATE TABLE `s1` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`key1` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`key2` INT(11) NULL DEFAULT NULL,
+	`key3` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`key_part1` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`key_part2` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`key_part3` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`common_field` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	PRIMARY KEY (`id`) USING BTREE,
+	UNIQUE INDEX `idx_key2` (`key2`) USING BTREE,
+	INDEX `idx_key1` (`key1`) USING BTREE,
+	INDEX `idx_key3` (`key3`) USING BTREE,
+	INDEX `idx_key_part` (`key_part1`, `key_part2`, `key_part3`) USING BTREE
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=10001
+;
+
+
+BEGIN
+-- 定义一个变量chars_str，有默认值
+DECLARE i INT DEFAULT 0;
+DECLARE chars_str VARCHAR(100) DEFAULT 'abcdefghijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ';
+DECLARE return_str1 VARCHAR(255) DEFAULT '';
+DECLARE return_str2 VARCHAR(255) DEFAULT '';
+DECLARE return_str3 VARCHAR(255) DEFAULT '';
+DECLARE return_str4 VARCHAR(255) DEFAULT '';
+DECLARE return_str5 VARCHAR(255) DEFAULT '';
+DECLARE return_str6 VARCHAR(255) DEFAULT '';
+DECLARE return_num INT DEFAULT 0;
+DECLARE _orderId INT DEFAULT 1;
+-- 把自动提交关闭
+set autocommit = 0;
+REPEAT
+SET i = i +1;
+SET return_str1 = SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 8);
+SET return_str2 = SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 5);
+SET return_str3 = SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 6);
+SET return_str4 = SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 8);
+SET return_str5 = SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 10);
+SET return_str6 = SUBSTRING(chars_str, FLOOR(1 + RAND() * 52), 6);
+SELECT max(key2) FROM `s1` INTO _orderId;
+SET return_num = _orderId + FLOOR(1 + RAND() * 3);
+INSERT INTO `farm`.`s1` (`key1`, `key2`, `key3`, `key_part1`, `key_part2`, `key_part3`, `common_field`) VALUES (return_str1, return_num, return_str2, return_str3, return_str4, return_str4, return_str6);
+UNTIL i = max_num
+END REPEAT;
+COMMIT;
+END
+
+===================================================
+
+SIMPLE	                Simple SELECT (not using UNION or subqueries)
+                        简单选择（不使用联合或子查询）
+
+PRIMARY	                Outermost SELECT
+                        最外层选择
+
+UNION	                Second or later SELECT statement in a UNION
+                        联合中的第二个或以后的SELECT语句
+
+UNION RESULT	        Result of a UNION
+                        结合的结果
+
+SUBQUERY	            First SELECT in subquery
+                        在子查询中首先选择
+
+DEPENDENT SUBQUERY	    First SELECT in subquery, dependent on outer query
+                        首先在子查询中选择，取决于外部查询
+
+DEPENDENT UNION	        Second or later SELECT statement in a UNION, dependent on outer query
+                        联合中的第二个或更高的SELECT语句，取决于外部查询
+
+DERIVED	                Derived table
+                        派生表
+
+MATERIALIZED	        Materialized subquery
+                        物化子查询
+
+UNCACHEABLE SUBQUERY	A subquery for which the result cannot be cached and must be re-evaluated for each row of the outer query
+                        一个子查询，其结果无法缓存，必须为外部查询的每一行重新计算
+
+UNCACHEABLE UNION	    The second or later select in a UNION that belongs to an uncacheable subquery (see UNCACHEABLE SUBQUERY)
+                        联合中属于不可缓存子查询的第二个或更高版本的select（请参见不可缓存子查询）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -3,50 +3,50 @@
 a)
 SELECT * FROM a LEFT JOIN b ON a.name = b.name WHERE a.del = 0 AND b.del = 0 ORDER BY a.id;
 注: 会遗漏a表中存在, b表不存在的记录(外连接消除(reject-NULL) 优化成 内链接了)
+
+正确:
 b)
 SELECT * FROM a LEFT JOIN b ON a.name = b.name AND b.del = 0
 WHERE a.del = 0
 ORDER BY a.id
 ;
-注: 一对一的主附表可以分页, 一对多时无法带分页, (会产生多条相同a表中记录,无法对结果分页)
+注: 一对一的主附表可以分页, 一对多时无法带分页, (左连接会产生多条相同a表中记录,无法对主表分页)
+
+正确:
 c)
 SELECT aa.*, b.* FROM
 (SELECT * FROM a WHERE a.del = 0) aa
 LEFT JOIN b ON aa.name = b.name AND b.del = 0
 ORDER BY aa.id
 ;
-注: 一对一的主附表可以分页, 一对多时带分页(见下文)
+注: 一对一的主附表可以分页, 一对多时无法带分页, (左连接会产生多条相同a表中记录,无法对主表分页), 会被优化成b)的形式
 
 =======================================================
 
 2. 一对一, 一对多, 分页
-
 a)
-SELECT aa.*, b.* FROM
-(SELECT * FROM a WHERE a.del = 0
--- AND a.xx = 'xxx'
-LIMIT 2, 2) aa
-LEFT JOIN b ON aa.name = b.name AND b.del = 0 AND b.content LIKE '%呀%'
-ORDER BY aa.id
+SELECT * FROM a
+WHERE a.del = 0
+AND (SELECT 1 FROM b WHERE a.name = b.name AND b.content LIKE '%呀%' AND b.del = 0 LIMIT 1)
+ORDER BY a.id
+limit 1,2
 ;
-注: 一对一的主附表可以分页, 一对多时带分页sql需要把重复的记录去重后再向页面展示
-LIMIT为什么放在主表? 放在里面是以主表为维度分页, 放在最后的话是以子表为维度分页(具体看业务需要哪种吧), 此例讲解以主表为维度分页
-方式一用sql链接查询: 可能显示了一条主表数据, 多条子表不同的数据(需要程序分组), (由于页面选择了子表字段的过滤条件, 可能导致多条子表数据去掉了一部分)
-方式二用程序分别查询: 一般开发中先查询主表分页数据, 再查询子表, 通过程序拼装返回页面展示(需要程序分组), (由于页面选择了子表字段的过滤条件, 可能导致多条子表数据去掉了一部分)
-似乎您可能发现a)的问题是, 当由于页面选择了子表字段的过滤条件, 主表数据也会依然显示
 
 b)
--- 先分页主表
-SELECT * FROM a WHERE a.del = 0
-AND EXISTS (SELECT id FROM b WHERE a.name = b.name AND b.content LIKE '%吃%' AND b.del = 0)
+SELECT * FROM a
+WHERE a.del = 0
+AND EXISTS (SELECT 1 FROM b WHERE a.name = b.name AND b.content LIKE '%呀%' AND b.del = 0 LIMIT 1)
 ORDER BY a.id
--- LIMIT 0, 2
--- 再根据主表查子表
-SELECT id FROM b WHERE a.name = xxx AND b.del = 0
--- AND b.content LIKE '%吃%'
+limit 1,2
 ;
-注: 此种查询似乎可以解决, 当由于页面选择了子表字段的过滤条件, 主表数据不会显示子表不符合条件的主表数据, 再根据主表查子表(此时查字表可按页面条件查,也可链接条件查,具体看业务需要哪种吧), 通过程序拼装返回页面展示(需要程序分组)
 
+c)
+SELECT * FROM a
+WHERE a.del = 0
+AND a.name in (SELECT b.name FROM b WHERE a.name = b.name AND b.content LIKE '%呀%' AND b.del = 0)
+ORDER BY a.id
+limit 1,2
+;
 =======================================================
 
 3. 多对多, 分页的正确方式
