@@ -20,7 +20,7 @@ public class MapUtil {
         return new ConcurrentHashMap<>(capacity(expectedSize));
     }
 
-    private static int capacity(int expectedSize) {
+    public static int capacity(int expectedSize) {
         if (expectedSize < 3) {
             if (expectedSize < 0) {
                 throw new IllegalArgumentException("expectedSize cannot be negative but was: " + expectedSize);

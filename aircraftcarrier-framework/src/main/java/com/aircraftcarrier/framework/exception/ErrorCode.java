@@ -10,11 +10,11 @@ package com.aircraftcarrier.framework.exception;
  * @since 1.0.0
  */
 public final class ErrorCode {
-    public static final int SYS = 500;
-    public static final int BIZ = 500;
-    public static final int INTERNAL_SERVER_ERROR = 500;
     public static final int UNAUTHORIZED = 401;
     public static final int FORBIDDEN = 403;
+    public static final int INTERNAL_SERVER_ERROR = 500;
+    public static final int SYS = 500;
+    public static final int BIZ = 10000;
     public static final int NOT_NULL = 10001;
     public static final int DB_RECORD_EXISTS = 10002;
     public static final int PARAMS_GET_ERROR = 10003;

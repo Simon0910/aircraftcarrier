@@ -6,6 +6,7 @@ import com.aircraftcarrier.framework.tookit.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,7 +41,7 @@ public class BatchResult implements Serializable {
      * 批量操作
      * 错误明细
      */
-    private final Map<String, Map<String, Object>> errorTipMap = MapUtil.newHashMap(1000);
+    private Map<String, Map<String, Object>> errorTipMap;
     /**
      * 批量上传
      * 错误明细
@@ -67,7 +68,7 @@ public class BatchResult implements Serializable {
      * BatchResult 构造
      */
     public BatchResult() {
-        errorUpLimit = 100;
+        this(100);
     }
 
     /**
@@ -77,6 +78,7 @@ public class BatchResult implements Serializable {
      */
     public BatchResult(int errorUpLimit) {
         this.errorUpLimit = errorUpLimit;
+        this.errorTipMap = MapUtil.newHashMap(errorUpLimit);
     }
 
     /**
@@ -134,7 +136,7 @@ public class BatchResult implements Serializable {
         if (errorRow != null) {
             errorRow.put(MSG, errorRow.get(MSG) + ", " + errorMsg);
         } else {
-            errorRow = MapUtil.newHashMap(2);
+            errorRow = new HashMap<>(3);
             errorRow.put(ROW_NO, rowNo);
             errorRow.put(MSG, errorMsg);
             errorRowTreeMap.put(rowNo, errorRow);
@@ -153,7 +155,7 @@ public class BatchResult implements Serializable {
             return;
         }
 
-        Map<String, Object> errorTip = MapUtil.newHashMap(4);
+        Map<String, Object> errorTip = new HashMap<>(6);
         errorTip.put("tip", tip);
         errorTip.put("id", id);
         errorTip.put("errorCode", errorCode);
@@ -171,7 +173,7 @@ public class BatchResult implements Serializable {
         if (errorCount > errorUpLimit) {
             return;
         }
-        Map<String, Object> errorTip = MapUtil.newHashMap(2);
+        Map<String, Object> errorTip = new HashMap<>(3);
         errorTip.put("tip", tip);
         errorTip.put(MSG, errorMsg);
         putErrorMsgMap(tip, errorTip);
@@ -186,7 +188,7 @@ public class BatchResult implements Serializable {
         if (errorCount > errorUpLimit) {
             return;
         }
-        Map<String, Object> uploadFileErrorMsgTip = MapUtil.newHashMap(1);
+        Map<String, Object> uploadFileErrorMsgTip = new HashMap<>(2);
         uploadFileErrorMsgTip.put(MSG, errorMsg);
         putErrorMsgMap(null, uploadFileErrorMsgTip);
     }

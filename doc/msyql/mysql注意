@@ -1,32 +1,50 @@
 1. 表中带有删除标识的左连接查询方式：
 错误：
+a)
 SELECT * FROM a LEFT JOIN b ON a.name = b.name WHERE a.del = 0 AND b.del = 0 ORDER BY a.id;
-正确：(一对一的主附表可以分页, 一对多时无法带分页,会漏掉部分数据)
+注: 会遗漏a表中存在, b表不存在的记录(外连接消除(reject-NULL) 优化成 内链接了)
+b)
 SELECT * FROM a LEFT JOIN b ON a.name = b.name AND b.del = 0
 WHERE a.del = 0
 ORDER BY a.id
 ;
-或 (带分页见下文)
+注: 一对一的主附表可以分页, 一对多时无法带分页, (会产生多条相同a表中记录,无法对结果分页)
+c)
 SELECT aa.*, b.* FROM
 (SELECT * FROM a WHERE a.del = 0) aa
 LEFT JOIN b ON aa.name = b.name AND b.del = 0
 ORDER BY aa.id
 ;
+注: 一对一的主附表可以分页, 一对多时带分页(见下文)
 
 =======================================================
-2. 一对一, 一对多, 分页的正确方式
+
+2. 一对一, 一对多, 分页
+a)
 SELECT aa.*, b.* FROM
 (SELECT * FROM a WHERE a.del = 0 LIMIT 2, 2) aa
 LEFT JOIN b ON aa.name = b.name AND b.del = 0
 WHERE b.content LIKE '%冲%'
 ORDER BY aa.id
 ;
+注: 一对一的主附表可以分页, 一对多时带分页需要把重复的记录去重后再向页面展示
+一般开发中先查询主表分页数据, 再查询子表, 通过程序拼装返回页面展示
+以上会有个小问题: 对于子表不满足查询条件的,主表依然会展示到页面,此时子表内容可能为空
+b)
+SELECT * FROM a WHERE a.del = 0
+AND EXISTS (SELECT id FROM b WHERE a.name = b.name AND b.content LIKE '%吃%' AND b.del = 0)
+ORDER BY a.id
+-- LIMIT 0, 2
+;
+注: 似乎可以解决a)的问题
 
 =======================================================
+
 3. 多对多, 分页的正确方式
 https://www.cxybb.com/article/Mrqiang9001/101383868
 http://www.noobyard.com/article/p-yvrjmvfd-nc.html
 http://mysql.rjweb.org/doc.php/lists
+
 =======================================================
 
 4. 表中有字段 start_time end_time 范围字段的怎么查
