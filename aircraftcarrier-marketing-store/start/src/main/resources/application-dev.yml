@@ -35,4 +35,7 @@ spring:
 #    password: 1qaz!QAZ
 
 knife4j:
+  production: false # 是否开启屏蔽文档资源
   enable: true
+  setting:
+    enableDebug: true

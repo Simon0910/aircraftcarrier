@@ -1,6 +1,5 @@
 package com.aircraftcarrier.framework.data;
 
-
 import com.aircraftcarrier.framework.enums.YnValueEnum;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -25,50 +24,55 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class BaseDO<T> implements Serializable {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
 
     /**
      * id
      */
     public static final String ID = "id";
+    @JSONField(name = ID)
+    @TableId(value = "id", type = IdType.AUTO)
+    protected Long id;
+
     /**
      * 创建人
      */
     public static final String CREATE_USER = "createUser";
+    @JSONField(name = CREATE_USER)
+    @TableField(fill = FieldFill.INSERT)
+    protected String createUser;
+
     /**
      * 修改人
      */
     public static final String UPDATE_USER = "updateUser";
+    @JSONField(name = UPDATE_USER)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected String updateUser;
+
     /**
      * 创建时间
      */
     public static final String CREATE_TIME = "createTime";
+    @JSONField(name = CREATE_TIME)
+    @TableField(fill = FieldFill.INSERT)
+    protected LocalDateTime createTime;
+
     /**
      * 修改时间
      */
     public static final String UPDATE_TIME = "updateTime";
+    @JSONField(name = UPDATE_TIME)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected LocalDateTime updateTime;
+
     /**
      * 0正常 1删除
      */
     public static final String YN = "yn";
-    /**
-     * serialVersionUID
-     */
-    private static final long serialVersionUID = 1L;
-    @JSONField(name = ID)
-    @TableId(value = "id", type = IdType.AUTO)
-    protected Long id;
-    @JSONField(name = CREATE_USER)
-    @TableField(fill = FieldFill.INSERT)
-    protected String createUser;
-    @JSONField(name = UPDATE_USER)
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected String updateUser;
-    @JSONField(name = CREATE_TIME)
-    @TableField(fill = FieldFill.INSERT)
-    protected LocalDateTime createTime;
-    @JSONField(name = UPDATE_TIME)
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected LocalDateTime updateTime;
     @JSONField(name = YN)
     @TableLogic
     protected Integer yn;

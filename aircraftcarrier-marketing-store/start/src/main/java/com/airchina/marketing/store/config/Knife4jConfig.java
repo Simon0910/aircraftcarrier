@@ -1,6 +1,8 @@
 package com.aircraftcarrier.marketing.store.config;
 
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import com.github.xiaoymin.knife4j.spring.extension.OpenApiExtensionResolver;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -25,6 +27,13 @@ public class Knife4jConfig {
 
     private static final String REQUEST_BASE_PATH = "com.aircraftcarrier.marketing.store.adapter";
 
+    private final OpenApiExtensionResolver openApiExtensionResolver;
+
+    @Autowired
+    public Knife4jConfig(OpenApiExtensionResolver openApiExtensionResolver) {
+        this.openApiExtensionResolver = openApiExtensionResolver;
+    }
+
     @Bean(value = "defaultApi2")
     public Docket defaultApi2() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -35,7 +44,9 @@ public class Knife4jConfig {
                 //这里指定Controller扫描包路径
                 .apis(RequestHandlerSelectors.basePackage(REQUEST_BASE_PATH))
                 .paths(PathSelectors.any())
-                .build();
+                .build()
+                .extensions(openApiExtensionResolver.buildSettingExtensions())
+                ;
     }
 
     private ApiInfo apiInfo() {
