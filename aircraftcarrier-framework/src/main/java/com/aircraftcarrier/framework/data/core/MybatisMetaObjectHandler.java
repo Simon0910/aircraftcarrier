@@ -24,10 +24,12 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.setFieldValByName(CREATE_TIME, LocalDateTime.now(), metaObject);
-        this.setFieldValByName(CREATE_USER, LoginUserUtil.getLoginUserName(), metaObject);
-        this.setFieldValByName(UPDATE_TIME, LocalDateTime.now(), metaObject);
-        this.setFieldValByName(UPDATE_USER, LoginUserUtil.getLoginUserName(), metaObject);
+        LocalDateTime now = LocalDateTime.now();
+        String loginUserName = LoginUserUtil.getLoginUserName();
+        this.setFieldValByName(CREATE_TIME, now, metaObject);
+        this.setFieldValByName(CREATE_USER, loginUserName, metaObject);
+        this.setFieldValByName(UPDATE_TIME, now, metaObject);
+        this.setFieldValByName(UPDATE_USER, loginUserName, metaObject);
         this.setFieldValByName(YN, YnValueEnum.Y.getCode(), metaObject);
     }
 

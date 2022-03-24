@@ -122,18 +122,6 @@
             <artifactId>lock4j-zookeeper-spring-boot-starter</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--mybatis 启用ehcache 二级缓存-->
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis-ehcache</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>2.10.9.2</version>
-        </dependency>
-
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
