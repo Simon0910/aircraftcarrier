@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @ApiModel(value = "分页结果响应")
-public class PageResponse<R extends Serializable> extends Response {
+public class Page<R extends Serializable> implements Serializable {
     /**
      * serialVersionUID
      */
@@ -33,18 +33,18 @@ public class PageResponse<R extends Serializable> extends Response {
     @ApiModelProperty(value = "响应数据", required = true, example = "[]")
     private List<R> data;
 
-    public PageResponse(List<R> data, long total) {
+    public Page(List<R> data, long total) {
         this.data = data;
         this.total = total;
     }
 
 
-    public static <R extends Serializable> PageResponse<R> build(List<R> data, long total) {
-        return new PageResponse<>(data, total);
+    public static <R extends Serializable> Page<R> build(List<R> data, long total) {
+        return new Page<>(data, total);
     }
 
-    public static <R extends Serializable, T> PageResponse<R> build(List<T> data, long total, Class<R> targetClass) {
-        return new PageResponse<>(BeanUtils.convertList(data, targetClass), total);
+    public static <R extends Serializable, T> Page<R> build(List<T> data, long total, Class<R> targetClass) {
+        return new Page<>(BeanUtils.convertList(data, targetClass), total);
     }
 
 }

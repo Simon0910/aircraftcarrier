@@ -2,7 +2,7 @@ package ${cfg.service_p};
 
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import ${cfg.AddCmd_f};
 import ${cfg.DeleteCmd_f};
@@ -32,9 +32,9 @@ public interface ${table.serviceName} {
      * 分页列表
      *
      * @param pageQry 分页查询参数
-     * @return {@link PageResponse<${cfg.PageCo_n}>}
+     * @return {@link Page<${cfg.PageCo_n}>}
      */
-    PageResponse<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry);
+    Page<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry);
 
     /**
      * 手工添加

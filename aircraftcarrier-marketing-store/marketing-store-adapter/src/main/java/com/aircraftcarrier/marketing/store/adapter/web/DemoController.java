@@ -2,7 +2,7 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 
 import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.adapter.common.BaseController;
 import com.aircraftcarrier.marketing.store.client.DemoService;
@@ -55,8 +55,8 @@ public class DemoController extends BaseController {
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "分页查询", notes = "REST风格")
     @PostMapping("/pageList")
-    public PageResponse<DemoPageVo> pageList(@RequestBody DemoPageQry pageQry) {
-        return demoService.pageList(new DemoPageQryCmd(pageQry));
+    public SingleResponse<Page<DemoPageVo>> pageList(@RequestBody DemoPageQry pageQry) {
+        return SingleResponse.ok(demoService.pageList(new DemoPageQryCmd(pageQry)));
     }
 
 

@@ -2,7 +2,7 @@ package ${cfg.serviceImpl_p};
 
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import ${cfg.AddCmdExe_f};
 import ${cfg.DeleteCmdExe_f};
@@ -58,7 +58,7 @@ public class ${table.serviceImplName} implements ${table.serviceName} {
 
 
     @Override
-    public PageResponse<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry) {
+    public Page<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry) {
         return ${cfg.PageQryExe_n_i}.execute(pageQry);
     }
 

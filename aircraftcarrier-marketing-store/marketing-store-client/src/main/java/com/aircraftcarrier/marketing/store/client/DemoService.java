@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.client;
 
-import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.ApprovalDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
@@ -23,7 +23,7 @@ public interface DemoService {
      * @param pageQryCmd pageQryCmd
      * @return
      */
-    PageResponse<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd);
+    Page<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd);
 
     /**
      * add

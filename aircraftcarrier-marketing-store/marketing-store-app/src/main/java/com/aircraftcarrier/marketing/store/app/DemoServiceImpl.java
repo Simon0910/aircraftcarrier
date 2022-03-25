@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.app;
 
-import com.aircraftcarrier.framework.model.response.PageResponse;
+import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.tookit.BeanUtils;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoAddExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoDeleteExe;
@@ -49,9 +49,9 @@ public class DemoServiceImpl implements DemoService {
     private DemoUpdateExe demoUpdateExe;
 
     @Override
-    public PageResponse<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd) {
-        PageResponse<DemoDo> pageResponse = demoPageQryCmdExe.execute(pageQryCmd);
-        return PageResponse.build(pageResponse.getData(), pageResponse.getTotal(), DemoPageVo.class);
+    public Page<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd) {
+        Page<DemoDo> page = demoPageQryCmdExe.execute(pageQryCmd);
+        return Page.build(page.getData(), page.getTotal(), DemoPageVo.class);
     }
 
     @Override
