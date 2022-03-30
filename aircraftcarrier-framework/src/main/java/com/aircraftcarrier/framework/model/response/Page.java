@@ -31,20 +31,20 @@ public class Page<R extends Serializable> implements Serializable {
      * 响应数据
      */
     @ApiModelProperty(value = "响应数据", required = true, example = "[]")
-    private List<R> data;
+    private List<R> list;
 
-    public Page(List<R> data, long total) {
-        this.data = data;
+    public Page(List<R> list, long total) {
+        this.list = list;
         this.total = total;
     }
 
 
-    public static <R extends Serializable> Page<R> build(List<R> data, long total) {
-        return new Page<>(data, total);
+    public static <R extends Serializable> Page<R> build(List<R> list, long total) {
+        return new Page<>(list, total);
     }
 
-    public static <R extends Serializable, T> Page<R> build(List<T> data, long total, Class<R> targetClass) {
-        return new Page<>(BeanUtils.convertList(data, targetClass), total);
+    public static <R extends Serializable, T> Page<R> build(List<T> list, long total, Class<R> targetClass) {
+        return new Page<>(BeanUtils.convertList(list, targetClass), total);
     }
 
 }
