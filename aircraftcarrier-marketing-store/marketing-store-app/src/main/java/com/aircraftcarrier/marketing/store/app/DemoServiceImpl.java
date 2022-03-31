@@ -51,7 +51,7 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public Page<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd) {
         Page<DemoDo> page = demoPageQryCmdExe.execute(pageQryCmd);
-        return Page.build(page.getData(), page.getTotal(), DemoPageVo.class);
+        return Page.build(page.getList(), page.getTotal(), DemoPageVo.class);
     }
 
     @Override
