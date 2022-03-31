@@ -14,11 +14,6 @@
     <dependencies>
         <dependency>
             <groupId>com.aircraftcarrier</groupId>
-            <artifactId>marketing-store-api</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.aircraftcarrier</groupId>
             <artifactId>marketing-store-client</artifactId>
             <version>${revision}</version>
         </dependency>

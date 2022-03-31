@@ -20,6 +20,7 @@
         <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-spring</artifactId>
+            <version>${drools.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -38,7 +39,6 @@
                     <artifactId>spring-context</artifactId>
                 </exclusion>
             </exclusions>
-            <version>${drools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
