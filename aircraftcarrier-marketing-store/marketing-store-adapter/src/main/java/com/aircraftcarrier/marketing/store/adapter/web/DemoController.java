@@ -106,7 +106,7 @@ public class DemoController extends BaseController {
     @ApiOperationSupport(order = 40)
     @ApiOperation(value = "导出", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @PostMapping("export")
-    public void export(@RequestBody DemoPageQry pageQry, HttpServletResponse response) throws IOException {
+    public void export(@RequestBody DemoPageQry pageQry, HttpServletResponse response) throws Exception {
         List<DemoImportExcel> list = demoService.export(new DemoPageQryCmd(pageQry));
         exportExcel(response, "模板", "Excel导入演示",
                 list, DemoImportExcel.class);

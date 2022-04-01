@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.excel.util;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aircraftcarrier.framework.excel.convert.LocalDateTimeConverter;
 import com.aircraftcarrier.framework.tookit.StringUtils;
 import com.alibaba.excel.EasyExcelFactory;
@@ -71,12 +72,18 @@ public class EasyExcelWriteUtil {
      */
     public static <S, T> void exportExcelToTarget(HttpServletResponse response, String fileName, String sheetName, List<S> sourceList,
                                                   Class<T> targetClass, WriteHandler... writeHandlers) throws NoSuchMethodException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        if (CollUtil.isEmpty(sourceList)) {
+            sourceList = new ArrayList<>();
+        }
+
         List<T> targetList = new ArrayList<>(sourceList.size());
-        Constructor<T> constructor = targetClass.getDeclaredConstructor();
-        for (S source : sourceList) {
-            T target = constructor.newInstance();
-            BeanUtils.copyProperties(source, target);
-            targetList.add(target);
+        if (sourceList.size() > 0 && sourceList.get(0).getClass() != targetClass) {
+            Constructor<T> constructor = targetClass.getDeclaredConstructor();
+            for (S source : sourceList) {
+                T target = constructor.newInstance();
+                BeanUtils.copyProperties(source, target);
+                targetList.add(target);
+            }
         }
 
         exportExcel(response, fileName, sheetName, targetList, targetClass, writeHandlers);
