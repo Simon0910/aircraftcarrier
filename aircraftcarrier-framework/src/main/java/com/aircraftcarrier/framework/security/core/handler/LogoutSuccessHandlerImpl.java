@@ -5,7 +5,7 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.config.SecurityProperties;
 import com.aircraftcarrier.framework.security.core.service.SecurityAuthFrameworkService;
 import com.aircraftcarrier.framework.security.core.util.SecurityFrameworkUtil;
-import com.aircraftcarrier.framework.tookit.ServletUtils;
+import com.aircraftcarrier.framework.tookit.ServletUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -34,7 +34,7 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
             securityFrameworkService.logout(token);
         }
         // 返回成功
-        ServletUtils.writeJSON(response, SingleResponse.ok());
+        ServletUtil.writeJSON(response, SingleResponse.ok());
     }
 
 }

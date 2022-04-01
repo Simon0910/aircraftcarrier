@@ -10,11 +10,11 @@ import java.util.Map;
 /**
  * @author lzp
  */
-public class JsonUtils {
+public class JsonUtil {
     /**
      * JsonUtil
      */
-    private JsonUtils() {
+    private JsonUtil() {
     }
 
     public static String obj2Json(Object object) {

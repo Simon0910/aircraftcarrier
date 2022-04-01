@@ -11,7 +11,7 @@ import java.util.Map;
  * @version 1.0
  * @date 2020-06-03
  */
-public final class RequestLimit {
+public final class RequestLimitUtil {
     /**
      * 最大资源上限
      */
@@ -25,7 +25,7 @@ public final class RequestLimit {
     /**
      * 私有
      */
-    private RequestLimit() {
+    private RequestLimitUtil() {
     }
 
     /**
@@ -35,7 +35,7 @@ public final class RequestLimit {
      *
      * @return
      */
-    public static RequestLimit getInstance() {
+    public static RequestLimitUtil getInstance() {
         return Singleton.getInstance();
     }
 
@@ -97,10 +97,10 @@ public final class RequestLimit {
         /**
          * 实例
          */
-        private static final RequestLimit INSTANCE;
+        private static final RequestLimitUtil INSTANCE;
 
         static {
-            INSTANCE = new RequestLimit();
+            INSTANCE = new RequestLimitUtil();
         }
 
         /**
@@ -108,7 +108,7 @@ public final class RequestLimit {
          *
          * @return RequestLimit
          */
-        public static RequestLimit getInstance() {
+        public static RequestLimitUtil getInstance() {
             return INSTANCE;
         }
     }

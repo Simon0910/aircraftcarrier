@@ -9,11 +9,11 @@ import org.springframework.context.ApplicationContext;
  * @author Mark sunlightcs@gmail.com
  */
 @Slf4j
-public class SpringContextUtils {
+public class SpringContextUtil {
     private static ApplicationContext applicationContext;
 
-    public SpringContextUtils(ApplicationContext applicationContext) {
-        SpringContextUtils.applicationContext = applicationContext;
+    public SpringContextUtil(ApplicationContext applicationContext) {
+        SpringContextUtil.applicationContext = applicationContext;
     }
 
     public static Object getBean(String name) {

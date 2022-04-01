@@ -9,7 +9,7 @@ import java.util.Set;
  *
  * @author yudao
  */
-public class SetUtils {
+public class SetUtil {
 
     public static <T> Set<T> asSet(T... objs) {
         return new HashSet<>(Arrays.asList(objs));

@@ -15,9 +15,9 @@ import java.util.List;
  * @version 1.0
  * @date 2019-06-18
  */
-public class BeanUtilsBySpring {
+public class BeanUtilBySpring {
 
-    private BeanUtilsBySpring() {
+    private BeanUtilBySpring() {
 
     }
 

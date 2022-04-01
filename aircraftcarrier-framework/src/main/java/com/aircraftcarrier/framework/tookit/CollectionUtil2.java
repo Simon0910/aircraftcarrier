@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  *
  * @author yudao
  */
-public class CollectionUtils {
+public class CollectionUtil2 {
 
     public static boolean containsAny(Object source, Object... targets) {
         return Arrays.asList(targets).contains(source);

@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
-import com.aircraftcarrier.framework.tookit.ObjUtils;
+import com.aircraftcarrier.framework.tookit.ObjUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
@@ -70,11 +70,11 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void applyDiscount(Map<String, Object> params) {
-        Sale sale = ObjUtils.map2Obj(params, Sale.class);
+        Sale sale = ObjUtil.map2Obj(params, Sale.class);
         kieTemplate.execute(sale);
         log.info("执行规则后返回 sale: {}", JSON.toJSONString(sale));
 
-        Address address = ObjUtils.map2Obj(params, Address.class);
+        Address address = ObjUtil.map2Obj(params, Address.class);
         kieTemplate.execute(address);
         log.info("执行规则后返回 address: {}", JSON.toJSONString(address));
 

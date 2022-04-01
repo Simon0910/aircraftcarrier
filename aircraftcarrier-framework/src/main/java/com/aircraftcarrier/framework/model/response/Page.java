@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.model.response;
 
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -44,7 +44,7 @@ public class Page<R extends Serializable> implements Serializable {
     }
 
     public static <R extends Serializable, T> Page<R> build(List<T> list, long total, Class<R> targetClass) {
-        return new Page<>(BeanUtils.convertList(list, targetClass), total);
+        return new Page<>(BeanUtil.convertList(list, targetClass), total);
     }
 
 }

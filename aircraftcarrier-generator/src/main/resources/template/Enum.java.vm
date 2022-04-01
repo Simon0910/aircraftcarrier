@@ -66,11 +66,11 @@ public enum XxxEnum implements IEnum<Integer> {
      * @return XxxEnum
      */
     public static String transformCode(Integer code) {
-        XxxEnum xxxEnum = resolve(code);
-        if (xxxEnum == null) {
+        XxxEnum enumItem = resolve(code);
+        if (enumItem == null) {
             return StringPool.EMPTY;
         }
-        return xxxEnum.getDesc();
+        return enumItem.getDesc();
     }
 
     @Override

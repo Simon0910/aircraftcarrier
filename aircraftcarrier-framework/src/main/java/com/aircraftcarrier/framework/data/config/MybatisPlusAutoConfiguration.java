@@ -6,7 +6,7 @@ import com.aircraftcarrier.framework.data.core.MybatisSqlInjector;
 import com.aircraftcarrier.framework.data.handlers.AutoDataPermissionHandler;
 import com.aircraftcarrier.framework.data.plugins.MybatisInterceptor;
 import com.aircraftcarrier.framework.data.plugins.inner.DataPermissionInterceptor;
-import com.aircraftcarrier.framework.tookit.SpringContextUtils;
+import com.aircraftcarrier.framework.tookit.SpringContextUtil;
 import com.aircraftcarrier.framework.tookit.config.ToolsAutoConfiguration;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
@@ -97,7 +97,7 @@ public class MybatisPlusAutoConfiguration {
     @ConditionalOnClass(SqlSessionFactory.class)
     @Bean
     public MybatisMapperRefresh mybatisMapperRefresh() {
-        SqlSessionFactory sqlSessionFactory = (SqlSessionFactory) SpringContextUtils.getBean("sqlSessionFactory");
+        SqlSessionFactory sqlSessionFactory = (SqlSessionFactory) SpringContextUtil.getBean("sqlSessionFactory");
         Resource[] resources = new Resource[0];
         try {
             resources = RESOURCE_RESOLVER.getResources(mapperLocations);

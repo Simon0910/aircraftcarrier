@@ -7,7 +7,7 @@ import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
-import com.aircraftcarrier.framework.tookit.JsonUtils;
+import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -69,12 +69,12 @@ public class TestController {
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() throws IOException {
         LoginUser loginUser = LoginUserUtil.getLoginUser();
-        log.info("LoginUser：{}", JsonUtils.obj2Json(loginUser));
+        log.info("LoginUser：{}", JsonUtil.obj2Json(loginUser));
 
         new Thread(new MdcRunnableDecorator(() -> {
             log.info("1-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
-            log.info("1-LoginUser：{}", JsonUtils.obj2Json(loginUser1));
+            log.info("1-LoginUser：{}", JsonUtil.obj2Json(loginUser1));
         })).start();
 
         testService.publishEvent();
@@ -82,7 +82,7 @@ public class TestController {
         threadPoolExecutor.execute(() -> {
             log.info("2-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
-            log.info("2-LoginUser：{}", JsonUtils.obj2Json(loginUser2));
+            log.info("2-LoginUser：{}", JsonUtil.obj2Json(loginUser2));
         });
 
         return SingleResponse.ok(null);

@@ -7,7 +7,7 @@ import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.StringPool;
 import ${cfg.ImportCmd_f};

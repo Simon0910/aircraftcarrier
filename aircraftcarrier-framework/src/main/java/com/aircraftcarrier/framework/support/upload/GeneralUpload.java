@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.support.upload;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aircraftcarrier.framework.exception.SysException;
-import com.aircraftcarrier.framework.tookit.RequestLimit;
+import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,7 +49,7 @@ public class GeneralUpload extends AbstractDataUpload {
             throw new SysException("上传文件错误!");
         }
 
-        RequestLimit requestLimit = RequestLimit.getInstance();
+        RequestLimitUtil requestLimit = RequestLimitUtil.getInstance();
         boolean success = requestLimit.require(UPLOAD_KEY, 10);
         if (!success) {
             throw new SysException("上传任务过多!");

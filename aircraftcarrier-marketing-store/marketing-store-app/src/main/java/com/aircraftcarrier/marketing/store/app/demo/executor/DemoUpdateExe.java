@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.app.demo.executor;
 
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoUpdate;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
@@ -22,7 +22,7 @@ public class DemoUpdateExe {
 
     public int execute(DemoCmd cmd) {
         DemoUpdate demoUpdate = cmd.getDemoUpdate();
-        DemoDo configDO = BeanUtils.convert(demoUpdate, DemoDo.class);
+        DemoDo configDO = BeanUtil.convert(demoUpdate, DemoDo.class);
         return demoMapper.updateById(configDO);
     }
 }

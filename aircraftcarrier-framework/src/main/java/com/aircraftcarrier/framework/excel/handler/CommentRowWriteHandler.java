@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.excel.handler;
 
 import com.aircraftcarrier.framework.excel.annotation.ExcelComment;
 import com.aircraftcarrier.framework.tookit.MapUtil;
-import com.aircraftcarrier.framework.tookit.StringUtils;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
@@ -31,7 +31,7 @@ public class CommentRowWriteHandler extends AbstractRowWriteHandler {
         for (int i = 0, len = fields.length; i < len; i++) {
             Field field = fields[i];
             ExcelComment annotation = field.getAnnotation(ExcelComment.class);
-            if (null != annotation && StringUtils.isNotBlank(annotation.comment())) {
+            if (null != annotation && StringUtil.isNotBlank(annotation.comment())) {
                 map.put(annotation.index() != -1 ? annotation.index() : i, annotation);
             }
         }

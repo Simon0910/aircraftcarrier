@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.excel.util;
 import com.aircraftcarrier.framework.excel.convert.LocalDateTimeConverter;
 import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.tookit.MapUtil;
-import com.aircraftcarrier.framework.tookit.StringUtils;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -327,7 +327,7 @@ public class EasyExcelReadUtil {
         //解析到的excel表头和实体配置的进行比对
         Set<Integer> keySet = head.keySet();
         for (Integer key : keySet) {
-            if (StringUtils.isEmpty(headMap.get(key))) {
+            if (StringUtil.isEmpty(headMap.get(key))) {
                 log.error("表头第" + key + 1 + "列为空，请参照模板填写");
                 throw new BizException("解析excel出错，请传入正确格式的excel");
             }

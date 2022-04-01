@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.security.core.handler;
 
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.ServletUtils;
+import com.aircraftcarrier.framework.tookit.ServletUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -27,7 +27,7 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e) {
         log.debug("[commence][访问 URL({}) 时，没有登录], {}", request.getRequestURI(), e.getMessage());
         // 返回 401
-        ServletUtils.writeJSON(response, SingleResponse.error(ErrorCode.UNAUTHORIZED));
+        ServletUtil.writeJSON(response, SingleResponse.error(ErrorCode.UNAUTHORIZED));
     }
 
 }

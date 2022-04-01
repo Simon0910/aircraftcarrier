@@ -2,7 +2,7 @@ package ${cfg.ExportCmdExe_p};
 
 import cn.hutool.core.collection.CollUtil;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import ${cfg.ExportCmd_f};
 import ${cfg.Export_f};
 import ${cfg.ExportQry_f};

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author lzp
  */
-public class BeanUtils {
+public class BeanUtil {
 
     /**
      * BeanCopier 缓存
@@ -32,7 +32,7 @@ public class BeanUtils {
     /**
      * 私有BeanUtils
      */
-    private BeanUtils() {
+    private BeanUtil() {
     }
 
 

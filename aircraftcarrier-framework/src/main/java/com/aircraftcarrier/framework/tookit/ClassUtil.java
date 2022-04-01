@@ -33,7 +33,7 @@ import java.util.List;
  * @author HCL
  * @since 2017/07/08
  */
-public final class ClassUtils {
+public final class ClassUtil {
 
     private static final char PACKAGE_SEPARATOR = '.';
     /**
@@ -46,7 +46,7 @@ public final class ClassUtils {
             // javassist
             , "org.apache.ibatis.javassist.util.proxy.ProxyObject");
 
-    private ClassUtils() {
+    private ClassUtil() {
     }
 
     /**

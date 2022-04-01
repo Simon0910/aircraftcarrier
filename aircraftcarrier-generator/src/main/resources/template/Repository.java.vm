@@ -3,7 +3,7 @@ package ${cfg.Repository_p};
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aircraftcarrier.framework.exception.SysException;
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import ${cfg.Gateway_f};
 import ${cfg.Entity_f};
 import ${cfg.mapper_f};

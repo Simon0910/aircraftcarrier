@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.infrastructure.gatewayimpl;
 
-import com.aircraftcarrier.framework.tookit.BeanUtils;
-import com.aircraftcarrier.framework.tookit.StringUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.aircraftcarrier.marketing.store.domain.gateway.DemoGateway;
 import com.aircraftcarrier.marketing.store.domain.model.demo.DemoEntity;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
@@ -30,14 +30,14 @@ public class DemoGatewayImpl extends ServiceImpl<DemoMapper, DemoDo>
     @Override
     public DemoEntity getEntityById(Serializable id) {
         DemoDo byId = getById(id);
-        return BeanUtils.convert(byId, DemoEntity.class);
+        return BeanUtil.convert(byId, DemoEntity.class);
     }
 
     @Override
     public List<DemoEntity> selectList(DemoEntity entity) {
         LambdaQueryWrapper<DemoDo> queryWrapper = new LambdaQueryWrapper<DemoDo>()
-                .eq(StringUtils.isNotBlank(entity.getSellerNo()), DemoDo::getSellerNo, entity.getSellerNo());
+                .eq(StringUtil.isNotBlank(entity.getSellerNo()), DemoDo::getSellerNo, entity.getSellerNo());
         List<DemoDo> list = demoMapper.selectList(queryWrapper);
-        return BeanUtils.convertList(list, DemoEntity.class);
+        return BeanUtil.convertList(list, DemoEntity.class);
     }
 }

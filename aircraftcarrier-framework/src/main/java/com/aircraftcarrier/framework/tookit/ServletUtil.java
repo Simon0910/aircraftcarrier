@@ -2,7 +2,6 @@ package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.servlet.ServletUtil;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -19,7 +18,7 @@ import java.net.URLEncoder;
  *
  * @author yudao
  */
-public class ServletUtils {
+public class ServletUtil {
 
     /**
      * 返回 JSON 字符串
@@ -30,8 +29,8 @@ public class ServletUtils {
      */
     @SuppressWarnings("deprecation")
     public static void writeJSON(HttpServletResponse response, Object object) {
-        String content = JsonUtils.obj2Json(object);
-        ServletUtil.write(response, content, MediaType.APPLICATION_JSON_VALUE);
+        String content = JsonUtil.obj2Json(object);
+        cn.hutool.extra.servlet.ServletUtil.write(response, content, MediaType.APPLICATION_JSON_VALUE);
     }
 
     /**
@@ -85,7 +84,7 @@ public class ServletUtils {
         if (request == null) {
             return null;
         }
-        return ServletUtil.getClientIP(request);
+        return cn.hutool.extra.servlet.ServletUtil.getClientIP(request);
     }
 
     public static boolean isJsonRequest(ServletRequest request) {

@@ -12,10 +12,10 @@ import java.util.stream.Stream;
 /**
  * @author lzp
  */
-public class StringUtils {
+public class StringUtil {
     private static final String EMPTY = "";
 
-    private StringUtils() {
+    private StringUtil() {
 
     }
 
@@ -52,14 +52,14 @@ public class StringUtils {
         if (CollUtil.isEmpty(collection) || isBlank(separator)) {
             return EMPTY;
         }
-        return collection.stream().distinct().filter(StringUtils::isNotBlank).collect(Collectors.joining(separator));
+        return collection.stream().distinct().filter(StringUtil::isNotBlank).collect(Collectors.joining(separator));
     }
 
     public static List<String> split(String str, String separator) {
         if (isBlank(str) || isBlank(separator)) {
             return new ArrayList<>();
         }
-        return Stream.of(str.split(separator)).distinct().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        return Stream.of(str.split(separator)).distinct().filter(StringUtil::isNotBlank).collect(Collectors.toList());
     }
 
     public static boolean endsWith(String str, String suffix) {

@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.model;
 
 
 import com.aircraftcarrier.framework.tookit.MapUtil;
-import com.aircraftcarrier.framework.tookit.StringUtils;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -200,7 +200,7 @@ public class BatchResult implements Serializable {
      * @param errorTip errorTip
      */
     private void putErrorMsgMap(String tip, Map<String, Object> errorTip) {
-        if (StringUtils.isBlank(tip)) {
+        if (StringUtil.isBlank(tip)) {
             errorTipMap.put(String.valueOf(System.nanoTime()), errorTip);
         } else {
             Map<String, Object> originErrorTip = errorTipMap.get(tip);

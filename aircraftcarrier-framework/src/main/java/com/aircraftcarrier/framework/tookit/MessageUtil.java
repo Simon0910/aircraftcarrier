@@ -9,14 +9,14 @@ import org.springframework.context.i18n.LocaleContextHolder;
  * @author Mark sunlightcs@gmail.com
  * @since 1.0.0
  */
-public class MessageUtils {
+public class MessageUtil {
     private static final MessageSource MESSAGE_SOURCE;
 
     static {
-        MESSAGE_SOURCE = (MessageSource) SpringContextUtils.getBean("messageSource");
+        MESSAGE_SOURCE = (MessageSource) SpringContextUtil.getBean("messageSource");
     }
 
-    private MessageUtils() {
+    private MessageUtil() {
     }
 
     public static String getMessage(int code) {

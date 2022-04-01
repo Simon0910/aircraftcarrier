@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.model.response;
 
 import com.aircraftcarrier.framework.exception.ErrorCode;
-import com.aircraftcarrier.framework.tookit.MessageUtils;
+import com.aircraftcarrier.framework.tookit.MessageUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -40,11 +40,11 @@ public class SingleResponse<T> extends Response {
     }
 
     public static <T> SingleResponse<T> error() {
-        return new SingleResponse<>(ErrorCode.INTERNAL_SERVER_ERROR, MessageUtils.getMessage(ErrorCode.INTERNAL_SERVER_ERROR));
+        return new SingleResponse<>(ErrorCode.INTERNAL_SERVER_ERROR, MessageUtil.getMessage(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 
     public static <T> SingleResponse<T> error(int code) {
-        return new SingleResponse<>(code, MessageUtils.getMessage(code));
+        return new SingleResponse<>(code, MessageUtil.getMessage(code));
     }
 
     public static <T> SingleResponse<T> error(String msg) {

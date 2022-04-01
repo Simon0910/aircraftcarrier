@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.excel.convert;
 
-import com.aircraftcarrier.framework.tookit.JsonUtils;
+import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.CellData;
@@ -33,7 +33,7 @@ public class JsonConvert implements Converter<Object> {
     public CellData<String> convertToExcelData(Object value, ExcelContentProperty contentProperty,
                                                GlobalConfiguration globalConfiguration) {
         // 生成 Excel 小表格
-        return new CellData<>(JsonUtils.obj2Json(value));
+        return new CellData<>(JsonUtil.obj2Json(value));
     }
 
 }

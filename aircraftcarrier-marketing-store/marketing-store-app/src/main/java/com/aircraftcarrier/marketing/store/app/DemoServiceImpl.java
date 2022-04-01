@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.model.response.Page;
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoAddExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoDeleteExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoUpdateExe;
@@ -67,13 +67,13 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public DemoVo getById(Serializable id) {
         DemoEntity entity = demoGateway.getEntityById(id);
-        return BeanUtils.convert(entity, DemoVo.class);
+        return BeanUtil.convert(entity, DemoVo.class);
     }
 
     @Override
     public List<DemoVo> selectList(DemoDetailQryCmd detailQryCmd) {
         List<DemoEntity> entityList = demoDetailQryCmdExe.execute(detailQryCmd);
-        return BeanUtils.convertList(entityList, DemoVo.class);
+        return BeanUtil.convertList(entityList, DemoVo.class);
     }
 
     @Override

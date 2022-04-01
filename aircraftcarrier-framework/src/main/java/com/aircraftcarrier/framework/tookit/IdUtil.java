@@ -1,16 +1,15 @@
 package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.util.IdUtil;
 
 /**
  * @author lzp
  */
-public class IdGeneratorUtil {
+public class IdUtil {
     /**
      * IdGeneratorUtil
      */
-    private IdGeneratorUtil() {
+    private IdUtil() {
     }
 
     /**
@@ -19,7 +18,7 @@ public class IdGeneratorUtil {
      * @return
      */
     public static Long generatorId() {
-        Snowflake snowflake = IdUtil.getSnowflake(1, 1);
+        Snowflake snowflake = cn.hutool.core.util.IdUtil.getSnowflake(1, 1);
         return snowflake.nextId();
     }
 
@@ -30,7 +29,7 @@ public class IdGeneratorUtil {
      * @return
      */
     public static String fastSimpleUuid() {
-        return IdUtil.fastSimpleUUID();
+        return cn.hutool.core.util.IdUtil.fastSimpleUUID();
     }
 
     /**

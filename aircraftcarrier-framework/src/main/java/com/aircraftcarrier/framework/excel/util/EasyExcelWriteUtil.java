@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.excel.util;
 
 import cn.hutool.core.collection.CollUtil;
 import com.aircraftcarrier.framework.excel.convert.LocalDateTimeConverter;
-import com.aircraftcarrier.framework.tookit.StringUtils;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.util.DateUtils;
 import com.alibaba.excel.write.builder.ExcelWriterBuilder;
@@ -42,7 +42,7 @@ public class EasyExcelWriteUtil {
      */
     public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName, List<T> list,
                                        Class<T> pojoClass, WriteHandler... writeHandlers) throws IOException {
-        if (StringUtils.isBlank(fileName)) {
+        if (StringUtil.isBlank(fileName)) {
             //当前日期
             fileName = DateUtils.format(new Date(), DateUtils.DATE_FORMAT_10);
         }

@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * @author lzp
  */
-public class DateTimeUtils {
+public class DateTimeUtil {
 
     /**
      * STANDARD FORMAT
@@ -26,7 +26,7 @@ public class DateTimeUtils {
      */
     public static final String EMPTY = "";
 
-    private DateTimeUtils() {
+    private DateTimeUtil() {
     }
 
     /**

@@ -23,7 +23,7 @@ public class ResourceUtil {
     }
 
     public static String getClassPathResource(String classPath) {
-        if (StringUtils.isBlank(classPath)) {
+        if (StringUtil.isBlank(classPath)) {
             return StringPool.EMPTY;
         }
 

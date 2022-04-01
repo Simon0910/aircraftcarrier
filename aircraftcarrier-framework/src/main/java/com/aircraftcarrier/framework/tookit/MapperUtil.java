@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * @author lzp
  */
-public class MapperUtils {
+public class MapperUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -35,7 +35,7 @@ public class MapperUtils {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private MapperUtils() {
+    private MapperUtil() {
     }
 
     public static ObjectMapper getInstance() {
@@ -92,7 +92,7 @@ public class MapperUtils {
      * @return T
      */
     public static <T> T json2Obj(String str, Class<T> targetClass) {
-        if (StringUtils.isEmpty(str) || targetClass == null) {
+        if (StringUtil.isEmpty(str) || targetClass == null) {
             return null;
         }
 
@@ -112,7 +112,7 @@ public class MapperUtils {
      * @return T
      */
     public static <T> T json2Obj(String str, TypeReference<T> typeReference) {
-        if (StringUtils.isEmpty(str) || typeReference == null) {
+        if (StringUtil.isEmpty(str) || typeReference == null) {
             return null;
         }
         try {

@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.security.core.handler;
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.util.SecurityFrameworkUtil;
-import com.aircraftcarrier.framework.tookit.ServletUtils;
+import com.aircraftcarrier.framework.tookit.ServletUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -31,7 +31,7 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
         // 打印 warn 的原因是，不定期合并 warn，看看有没恶意破坏
         log.warn("[commence][访问 URL({}) 时，用户({}) 权限不够]", request.getRequestURI(), SecurityFrameworkUtil.getLoginUserId(), e);
         // 返回 403
-        ServletUtils.writeJSON(response, SingleResponse.error(ErrorCode.FORBIDDEN));
+        ServletUtil.writeJSON(response, SingleResponse.error(ErrorCode.FORBIDDEN));
     }
 
 }

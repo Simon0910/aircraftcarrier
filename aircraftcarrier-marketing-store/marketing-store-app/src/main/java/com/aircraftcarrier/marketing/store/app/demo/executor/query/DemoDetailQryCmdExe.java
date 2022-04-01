@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.app.demo.executor.query;
 
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
 import com.aircraftcarrier.marketing.store.domain.gateway.DemoGateway;
 import com.aircraftcarrier.marketing.store.domain.model.demo.DemoEntity;
@@ -22,7 +22,7 @@ public class DemoDetailQryCmdExe {
 
 
     public List<DemoEntity> execute(DemoDetailQryCmd detailQryCmd) {
-        DemoEntity entity = BeanUtils.convert(detailQryCmd.getDetailQry(), DemoEntity.class);
+        DemoEntity entity = BeanUtil.convert(detailQryCmd.getDetailQry(), DemoEntity.class);
         return demoGateway.selectList(entity);
     }
 }

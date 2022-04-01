@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author lzp
  */
-public class ValidationUtils {
+public class ValidationUtil {
     /**
      * 开启快速结束模式 failFast (true)
      */
@@ -24,7 +24,7 @@ public class ValidationUtils {
     /**
      * 私有
      */
-    private ValidationUtils() {
+    private ValidationUtil() {
     }
 
     /**

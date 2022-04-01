@@ -1,7 +1,7 @@
 package ${cfg.DetailQryExe_p};
 
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import ${cfg.DetailQry_f};
 import ${cfg.Co_f};
 import ${cfg.Gateway_f};

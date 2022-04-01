@@ -15,8 +15,8 @@ import static java.util.stream.Collectors.toList;
 /**
  * @author lzp
  */
-public class ObjUtils {
-    private ObjUtils() {
+public class ObjUtil {
+    private ObjUtil() {
     }
 
     public static Map<String, Object> obj2Map(Object obj) {
@@ -65,7 +65,7 @@ public class ObjUtils {
     }
 
     public static <T> T map2ObjBySpring(Map<String, Object> map, Class<T> targetClass) {
-        T bean = ClassUtils.newInstance(targetClass);
+        T bean = ClassUtil.newInstance(targetClass);
         BeanMap.create(bean).putAll(map);
         return bean;
     }
@@ -78,7 +78,7 @@ public class ObjUtils {
         if (CollUtil.isEmpty(beans)) {
             return Collections.emptyList();
         }
-        return beans.stream().map(ObjUtils::obj2MapBySpring).collect(toList());
+        return beans.stream().map(ObjUtil::obj2MapBySpring).collect(toList());
     }
 
     /**

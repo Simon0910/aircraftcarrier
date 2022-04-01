@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.app.demo.executor;
 
-import com.aircraftcarrier.framework.tookit.BeanUtils;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoAdd;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
@@ -22,7 +22,7 @@ public class DemoAddExe {
 
     public int execute(DemoCmd cmd) {
         DemoAdd demoAdd = cmd.getDemoAdd();
-        DemoDo configDO = BeanUtils.convert(demoAdd, DemoDo.class);
+        DemoDo configDO = BeanUtil.convert(demoAdd, DemoDo.class);
         return demoMapper.insert(configDO);
     }
 }
