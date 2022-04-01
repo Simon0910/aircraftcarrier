@@ -38,9 +38,9 @@ public class ${cfg.ExportCmdExe_n} {
             LambdaQueryWrapper<${entity}> queryWrapper = new LambdaQueryWrapper<${entity}>()
                     .in(${entity}::getId, idList);
             List<${entity}> list = ${cfg.mapper_n_i}.selectList(queryWrapper);
-            return MultiResponse.ok(BeanUtils.convertList(list, ${cfg.Export_n}.class));
+            return MultiResponse.ok(BeanUtil.convertList(list, ${cfg.Export_n}.class));
         }
         List<${entity}> list = ${cfg.mapper_n_i}.excelExport(exportQry);
-        return MultiResponse.ok(BeanUtils.convertList(list, ${cfg.Export_n}.class));
+        return MultiResponse.ok(BeanUtil.convertList(list, ${cfg.Export_n}.class));
     }
 }

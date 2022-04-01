@@ -29,7 +29,7 @@ public class ${cfg.EditCmdExe_n} {
 
 
     public SingleResponse<Void> execute(${cfg.EditCmd_n} editCmd) {
-        ${cfg.Entity_n} entity = BeanUtils.convert(editCmd, ${cfg.Entity_n}.class);
+        ${cfg.Entity_n} entity = BeanUtil.convert(editCmd, ${cfg.Entity_n}.class);
         ${gatewayI}.editSave(entity.getId(), entity, editCmd.getOperator());
         return SingleResponse.ok();
     }

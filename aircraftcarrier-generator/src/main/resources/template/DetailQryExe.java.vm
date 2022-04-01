@@ -30,7 +30,7 @@ public class ${cfg.DetailQryExe_n} {
 
     public SingleResponse<${cfg.Co_n}> execute(${cfg.DetailQry_n} detailQry) {
         ${cfg.Entity_n} detailEntity = ${cfg.Gateway_n_i}.getDetail(detailQry.getId());
-        ${cfg.Co_n} detailCo = BeanUtils.convert(detailEntity, ${cfg.Co_n}.class);
+        ${cfg.Co_n} detailCo = BeanUtil.convert(detailEntity, ${cfg.Co_n}.class);
         return SingleResponse.ok(detailCo);
     }
 }

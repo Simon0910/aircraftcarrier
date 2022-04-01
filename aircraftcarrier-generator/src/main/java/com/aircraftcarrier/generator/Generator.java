@@ -10,20 +10,21 @@ package com.aircraftcarrier.generator;
  * @author lzp
  */
 public class Generator {
-    private static final String URL = "jdbc:mysql://localhost:3306/aircraftcarrier?allowMultiQueries=true&useSSL=false&rewriteBatchedStatements=true&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "123456";
-    private static final String AUTHOR = "lzp";
-    private static final String[] TABLE_PREFIX = new String[]{"portal_", "farm_"};
-    private static final String OUTPUT_DIR = "D:\\aircraftcarrier\\aircraftcarrier-marketing-store";
-    private static final String PARENT = "com.aircraftcarrier.marketing.store";
 
+    private static final String AUTHOR = "lzp";
+    private static final String[] TABLE_PREFIX = new String[]{"mkt_"};
+
+    private static final String URL = "jdbc:mysql://10.222.142.149:3306/ugp_mkt_rsrc?allowMultiQueries=true&useSSL=false&rewriteBatchedStatements=true&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC";
+    private static final String USERNAME = "c_ugp_mkt_rsrgbo";
+    private static final String PASSWORD = "T]Ln+fMD!9kEP(8qVAqzhh$S";
+    private static final String OUTPUT_DIR = "D:\\Workspace\\guohangcoding\\ugp_mkt_rsrc_manager";
+    private static final String PARENT = "com.airchina.marketing.store";
 
     public static void main(String[] args) {
         GeneratorStart generatorStart = new GeneratorStart(URL, USERNAME, PASSWORD, AUTHOR, OUTPUT_DIR, TABLE_PREFIX);
         generatorStart.parent(PARENT);
-        generatorStart.moduleName("product")
-                .tables("product_details")
+        generatorStart.moduleName("coupon")
+                .tables("mkt_ei")
                 .doStart();
     }
 }

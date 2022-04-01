@@ -42,7 +42,7 @@ public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${enti
         if (StrUtil.isBlank(operator)) {
             throw new SysException("add operator must not be empty!");
         }
-        ${entity} insertDo = BeanUtils.convert(entity, ${entity}.class);
+        ${entity} insertDo = BeanUtil.convert(entity, ${entity}.class);
         ${mapperI}.insert(insertDo);
         return entity;
     }
@@ -53,7 +53,7 @@ public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${enti
             throw new SysException("getDetail id must not be null");
         }
         ${entity} ${entityI} = ${mapperI}.selectById(id);
-        return BeanUtils.convert(${entityI}, ${cfg.Entity_n}.class);
+        return BeanUtil.convert(${entityI}, ${cfg.Entity_n}.class);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${enti
             throw new SysException("editSave id must not be null!");
         }
 
-        ${entity} updateSelectiveDo = BeanUtils.convert(entity, ${entity}.class);
+        ${entity} updateSelectiveDo = BeanUtil.convert(entity, ${entity}.class);
         updateSelectiveDo.setId(id);
         ${mapperI}.updateById(updateSelectiveDo);
         entity.setId(id);
@@ -93,7 +93,7 @@ public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${enti
                 .in(${entity}::getId, ids);
 
         List<${entity}> doList = ${mapperI}.selectList(queryWrapper);
-        return BeanUtils.convertList(doList, ${cfg.Entity_n}.class);
+        return BeanUtil.convertList(doList, ${cfg.Entity_n}.class);
     }
 
 }

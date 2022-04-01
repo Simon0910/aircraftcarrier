@@ -131,7 +131,7 @@ public class ${cfg.ImportCmdExe_n} {
                 return;
             }
             // do saveBatch ...
-            List<${entity}> list = BeanUtils.convertList(imports, ${entity}.class);
+            List<${entity}> list = BeanUtil.convertList(imports, ${entity}.class);
             ${gatewayI}.saveBatch(list);
             batchResult.increaseSuccess(imports.size());
         }
