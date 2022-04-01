@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author lzp
  */
 public class GeneratorStart {
-    private static final String parent = "com.aircraftcarrier.marketing.store";
+    private static String parent = "com.aircraftcarrier.marketing.store";
     private static final String entityPackage = "infrastructure.repository.dataobject";
     private static final String commonProjectName = "marketing-store-common";
     private static final String appProjectName = "marketing-store-app";
@@ -66,6 +66,11 @@ public class GeneratorStart {
         GeneratorStart.author = author;
         GeneratorStart.tablePrefix = tablePrefix;
         GeneratorStart.outputDir = outputDir;
+    }
+
+    public GeneratorStart parent(String parent) {
+        GeneratorStart.parent = parent;
+        return this;
     }
 
     @NotNull
