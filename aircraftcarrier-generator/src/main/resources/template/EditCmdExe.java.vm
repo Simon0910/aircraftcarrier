@@ -29,8 +29,36 @@ public class ${cfg.EditCmdExe_n} {
 
 
     public SingleResponse<Void> execute(${cfg.EditCmd_n} editCmd) {
-        ${cfg.Entity_n} entity = BeanUtil.convert(editCmd, ${cfg.Entity_n}.class);
+        beforeCheck(editCmd);
+        ${cfg.Entity_n} entity = copyEdit(editCmd);
         ${gatewayI}.editSave(entity.getId(), entity, editCmd.getOperator());
         return SingleResponse.ok();
+    }
+
+    /**
+    * 前置校验, 参数校验等
+    *
+    * @param editCmd 编辑Cmd
+    */
+    private void beforeCheck(${cfg.EditCmd_n} editCmd) {
+        // 1. Entity entity = getById(editCmd.getId());
+        // if (editCmd.getBizNo() != entity.getBizNo()) throw 用户错误
+        // 针对多个人看到同一条记录的情况, 并做编辑时的乐观锁+版本号解决冲突
+        // 2. if editCmd.getVersion() != entity.getVersion() throw 其他管理员已编辑,请重试
+    }
+
+    /**
+     * 复制用户确认后的信息
+     *
+     * @param editCmd 编辑Cmd
+     * @return EiEntity 用户确认后的信息
+     */
+    private ${cfg.Entity_n} copyEdit(${cfg.Entity_n} editCmd) {
+        ${cfg.Entity_n} entity = new ${cfg.Entity_n}();
+#foreach($field in ${table.fields})
+    #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
+        entity.set${sfN}(editCmd.get${sfN}());
+#end
+        return entity;
     }
 }
