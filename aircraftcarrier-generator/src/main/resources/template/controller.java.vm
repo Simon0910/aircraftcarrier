@@ -87,7 +87,7 @@ public class ${table.controllerName} {
      */
     @ApiOperation(value = "分页列表")
     @PostMapping(value = "/listPage")
-    public Page<${cfg.PageCo_n}> listPage(@RequestBody @Valid ${cfg.PageQry_n} pageQry) {
+    public SingleResponse<Page<${cfg.PageCo_n}>> listPage(@RequestBody @Valid ${cfg.PageQry_n} pageQry) {
         return ${serviceI}.listPage(pageQry);
     }
 

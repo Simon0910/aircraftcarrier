@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -30,6 +31,7 @@ public class ${cfg.EditCmd_n} extends AbstractCommand {
      */
     @ApiModelProperty(value = "主键ID")
     @NotNull(message = "ID参数必传")
+    @Min(value = 1, message = "主键ID必须大于0")
     private Long id;
 ## ----------  BEGIN 字段循环遍历  ----------
 #foreach($field in ${table.fields})

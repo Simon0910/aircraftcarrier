@@ -34,7 +34,7 @@ public interface ${table.serviceName} {
      * @param pageQry 分页查询参数
      * @return {@link Page<${cfg.PageCo_n}>}
      */
-    Page<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry);
+    SingleResponse<Page<${cfg.PageCo_n}>> listPage(${cfg.PageQry_n} pageQry);
 
     /**
      * 手工添加

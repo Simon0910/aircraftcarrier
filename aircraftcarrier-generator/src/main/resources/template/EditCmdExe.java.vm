@@ -31,7 +31,7 @@ public class ${cfg.EditCmdExe_n} {
     public SingleResponse<Void> execute(${cfg.EditCmd_n} editCmd) {
         beforeCheck(editCmd);
         ${cfg.Entity_n} entity = copyEdit(editCmd);
-        ${gatewayI}.editSave(entity.getId(), entity, editCmd.getOperator());
+        ${gatewayI}.editSave(editCmd.getId(), entity, editCmd.getOperator());
         return SingleResponse.ok();
     }
 
@@ -53,7 +53,7 @@ public class ${cfg.EditCmdExe_n} {
      * @param editCmd 编辑Cmd
      * @return EiEntity 用户确认后的信息
      */
-    private ${cfg.Entity_n} copyEdit(${cfg.Entity_n} editCmd) {
+    private ${cfg.Entity_n} copyEdit(${cfg.EditCmd_n} editCmd) {
         ${cfg.Entity_n} entity = new ${cfg.Entity_n}();
 #foreach($field in ${table.fields})
     #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})

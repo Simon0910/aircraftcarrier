@@ -58,7 +58,7 @@ public class ${table.serviceImplName} implements ${table.serviceName} {
 
 
     @Override
-    public Page<${cfg.PageCo_n}> listPage(${cfg.PageQry_n} pageQry) {
+    public SingleResponse<Page<${cfg.PageCo_n}>> listPage(${cfg.PageQry_n} pageQry) {
         return ${cfg.PageQryExe_n_i}.execute(pageQry);
     }
 

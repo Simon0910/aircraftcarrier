@@ -2,6 +2,7 @@ package ${cfg.PageQryExe_p};
 
 import com.aircraftcarrier.framework.data.PageUtil;
 import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
 import ${cfg.PageQry_f};
 import ${cfg.PageCo_f};
 import ${cfg.mapper_f};
@@ -27,7 +28,8 @@ public class ${cfg.PageQryExe_n} {
     private ${cfg.mapper_n} ${mapperI};
 
 
-    public Page<${cfg.PageCo_n}> execute(${cfg.PageQry_n} pageQry) {
-        return PageUtil.getPage(pageQry, () -> ${mapperI}.listPage(pageQry), ${cfg.PageCo_n}.class);
+    public SingleResponse<Page<${cfg.PageCo_n}>> execute(${cfg.PageQry_n} pageQry) {
+        Page<${cfg.PageCo_n}> page = PageUtil.getPage(pageQry, () -> ${mapperI}.listPage(pageQry), ${cfg.PageCo_n}.class);
+        return SingleResponse.ok(page);
     }
 }
