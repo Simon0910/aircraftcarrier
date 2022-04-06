@@ -17,7 +17,6 @@
         <module>marketing-store-domain</module>
         <module>marketing-store-infrastructure</module>
         <module>marketing-store-client</module>
-        <module>marketing-store-api</module>
         <module>marketing-store-app</module>
         <module>marketing-store-adapter</module>
         <module>start</module>

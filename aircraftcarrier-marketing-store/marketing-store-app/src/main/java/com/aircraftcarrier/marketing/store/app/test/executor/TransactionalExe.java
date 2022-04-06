@@ -3,6 +3,7 @@ package com.aircraftcarrier.marketing.store.app.test.executor;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,9 +58,15 @@ import javax.annotation.Resource;
  * }</pre>
  * 说明: 在上面的1，将开起新事务A，2的时候会插入数据，此时事务A挂起，没有commit，3的时候，使用PROPAGATION_NESTED传播，将在3点的时候新建一个savepoint保存2插入的数据，不提交。
  * <p>
- * 1. 如果methodB出现异常，将回滚4的操作，不影响2的操作，同时可以处理后面的5,6逻辑，最后一起commit: 2,5,6
- * 2. 如果methodB没有出现异常，那么将一起commit: 2,4,6。
- * 3. 假如methodB使用的PROPAGATION_REQUIRES_NEW，那么B异常，会commit: 2,5,6，和NESTED一致，如果methodB没有出现异常，那么会先commit4，再commit:6，那么事务将分离开，不能保持一致，假如执行6报错，2和6将回滚，而4却没有被回滚，不能达到预期效果。
+ * PROPAGATION_NESTED:
+ *    如果methodB出现异常，将回滚4的操作，不影响2的操作，同时可以处理后面的5,6逻辑，最后一起commit: 2,5,6
+ *    如果methodB没有出现异常，那么将一起commit: 2,4,6。 假如执行6报错，全部回滚。
+ * PROPAGATION_REQUIRES_NEW:
+ *    如果methodB出现异常， 会commit: 2,5,6，和NESTED一致，
+ *    如果methodB没有出现异常，那么会先commit4，再commit:6，那么事务将分离开，不能保持一致，假如执行6报错，2和6将回滚，而4却没有被回滚，不能达到预期效果。
+ * 区别:
+ *  1. 前者父可影响子事务, 后者不能影响子事务, 一个嵌套, 一个是相互独立, (两者子异常都可影响父, 捕获后都不影响父了)
+ *  2. 前者会一起提交, 后者会先提交子事务
  * <p>
  * 参考链接:
  * https://juejin.cn/post/6844903996939829256#heading-0
@@ -78,34 +85,42 @@ public class TransactionalExe {
     public void execute() {
         // 1
         DemoDo configDO = new DemoDo();
-        configDO.setBizNo("111");
-        configDO.setDescription("111");
+        configDO.setBizNo("222");
+        configDO.setDescription("222");
         configDO.setSellerNo("sellerNo");
         configDO.setSellerName("sellerName");
         configDO.setDataType(DataTypeEnum.GENERAL);
         demoMapper.insert(configDO);
+        System.out.println("first");
 
         // 2
         try {
-            transactionalExe2.execute2();
+            transactionalExe2.execute2("444");
+            System.out.println("second");
         } catch (Exception e) {
             System.out.println(".....");
+            ((TransactionalExe) AopContext.currentProxy()).execute3("555");
+            System.out.println("three");
         }
 //        transactionalExe2.execute2();
 
         // 3
 //        execute3();
-//        ((TransactionalExe) AopContext.currentProxy()).execute3();
+        ((TransactionalExe) AopContext.currentProxy()).execute3("666");
+        System.out.println("end");
     }
 
     //    @Transactional(rollbackFor = Exception.class)
-    public void execute3() {
+    public void execute3(String name) {
         DemoDo configDO = new DemoDo();
-        configDO.setBizNo("333");
-        configDO.setDescription("333");
+        configDO.setBizNo(name);
+        configDO.setDescription(name);
         configDO.setSellerNo("sellerNo");
         configDO.setSellerName("sellerName");
         configDO.setDataType(DataTypeEnum.GENERAL);
         demoMapper.insert(configDO);
+        if (true) {
+            throw new RuntimeException("execute3 error : #############################################");
+        }
     }
 }
