@@ -11,6 +11,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 参数为code时: 校验code合法性
+ *
+ * <pre> {@code
+ * @InEnum(DemoEnum.class)
+ * private Integer demoEnum;
+ * }</pre>
+ *
  * @author yudao
  */
 @Target({

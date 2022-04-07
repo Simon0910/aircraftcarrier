@@ -12,6 +12,14 @@ import com.alibaba.excel.metadata.property.ExcelContentProperty;
 import java.util.Map;
 
 /**
+ * excel上传枚举desc汉字描述, 使用的枚举参数接受
+ * 枚举需要继承IEnum
+ *
+ * <pre> {@code
+ * @ExcelProperty(value = "枚举演示1", converter = IEnumConverter.class)
+ * private DataTypeEnum dataType;
+ * }</pre>
+ *
  * @author lzp
  */
 public class IEnumConverter implements Converter<IEnum> {

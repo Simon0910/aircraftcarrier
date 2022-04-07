@@ -36,10 +36,10 @@ public class EasyExcelWriteUtil {
      * @param fileName      文件名
      * @param sheetName     sheetName
      * @param list          数据List
-     * @param pojoClass     对象Class
+     * @param modelClass    对象Class
      * @param writeHandlers writeHandlers
      */
-    public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName, List<?> list, Class<T> pojoClass, WriteHandler... writeHandlers) throws IOException {
+    public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName, List<?> list, Class<T> modelClass, WriteHandler... writeHandlers) throws IOException {
         if (StringUtil.isBlank(fileName)) {
             //当前日期
             fileName = DateUtils.format(new Date(), DateUtils.DATE_FORMAT_10);
@@ -49,7 +49,7 @@ public class EasyExcelWriteUtil {
         response.setCharacterEncoding("UTF-8");
         fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.displayName());
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
-        ExcelWriterBuilder excelWriterBuilder = EasyExcelFactory.write(response.getOutputStream(), pojoClass);
+        ExcelWriterBuilder excelWriterBuilder = EasyExcelFactory.write(response.getOutputStream(), modelClass);
         if (writeHandlers != null && writeHandlers.length > 0) {
             for (WriteHandler writeHandler : writeHandlers) {
                 excelWriterBuilder.registerWriteHandler(writeHandler);
@@ -61,29 +61,29 @@ public class EasyExcelWriteUtil {
     /**
      * Excel导出，先sourceList转换成List<targetClass>，再导出
      *
-     * @param response    response
-     * @param fileName    文件名
-     * @param sheetName   sheetName
-     * @param sourceList  原数据List
-     * @param targetClass 目标对象Class
+     * @param response   response
+     * @param fileName   文件名
+     * @param sheetName  sheetName
+     * @param sourceList 原数据List
+     * @param modelClass 目标对象Class
      */
     public static <T> void exportExcelToTarget(HttpServletResponse response, String fileName, String sheetName, List<?> sourceList,
-                                                  Class<T> targetClass, WriteHandler... writeHandlers) throws NoSuchMethodException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+                                               Class<T> modelClass, WriteHandler... writeHandlers) throws NoSuchMethodException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (CollUtil.isEmpty(sourceList)) {
             sourceList = new ArrayList<>();
         }
 
-        if (sourceList.size() > 0 && sourceList.get(0).getClass() != targetClass) {
-            Constructor<T> constructor = targetClass.getDeclaredConstructor();
+        if (sourceList.size() > 0 && sourceList.get(0).getClass() != modelClass) {
+            Constructor<T> constructor = modelClass.getDeclaredConstructor();
             List<T> targetList = new ArrayList<>(sourceList.size());
             for (Object source : sourceList) {
                 T target = constructor.newInstance();
                 BeanUtils.copyProperties(source, target);
                 targetList.add(target);
             }
-            exportExcel(response, fileName, sheetName, targetList, targetClass, writeHandlers);
+            exportExcel(response, fileName, sheetName, targetList, modelClass, writeHandlers);
         } else {
-            exportExcel(response, fileName, sheetName, sourceList, targetClass, writeHandlers);
+            exportExcel(response, fileName, sheetName, sourceList, modelClass, writeHandlers);
         }
 
     }

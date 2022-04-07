@@ -3,6 +3,7 @@ package com.aircraftcarrier.marketing.store.client.demo.request;
 import com.aircraftcarrier.framework.model.request.AbstractRequest;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -34,5 +35,6 @@ public class DemoAdd extends AbstractRequest {
     /**
      * 枚举演示
      */
+    @ApiModelProperty(value = "枚举演示", required = true, example = "NORMAL")
     private DataTypeEnum dataType;
 }

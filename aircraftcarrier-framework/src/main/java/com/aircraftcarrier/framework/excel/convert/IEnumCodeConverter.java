@@ -16,6 +16,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * excel上传枚举code, 使用的枚举参数接受
+ * 枚举需要继承IEnum
+ * 并且需要配合 {@link ExcelConvert} 指定接受的枚举类型
+ *
+ * <pre> {@code
+ * @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class)
+ * @ExcelConvert(sourceEnumClass = YnValueEnum.class)
+ * private Integer yn;
+ * }</pre>
+ *
  * @author lzp
  */
 public class IEnumCodeConverter implements Converter<Object> {
