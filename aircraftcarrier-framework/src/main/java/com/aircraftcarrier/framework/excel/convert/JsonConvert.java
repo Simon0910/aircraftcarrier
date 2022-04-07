@@ -3,8 +3,9 @@ package com.aircraftcarrier.framework.excel.convert;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.enums.CellDataTypeEnum;
-import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.GlobalConfiguration;
+import com.alibaba.excel.metadata.data.ReadCellData;
+import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.metadata.property.ExcelContentProperty;
 
 /**
@@ -25,15 +26,15 @@ public class JsonConvert implements Converter<Object> {
     }
 
     @Override
-    public Object convertToJavaData(CellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) {
+    public Object convertToJavaData(ReadCellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) {
         throw new UnsupportedOperationException("暂不支持，也不需要");
     }
 
     @Override
-    public CellData<String> convertToExcelData(Object value, ExcelContentProperty contentProperty,
-                                               GlobalConfiguration globalConfiguration) {
+    public WriteCellData<String> convertToExcelData(Object value, ExcelContentProperty contentProperty,
+                                                    GlobalConfiguration globalConfiguration) {
         // 生成 Excel 小表格
-        return new CellData<>(JsonUtil.obj2Json(value));
+        return new WriteCellData<>(JsonUtil.obj2Json(value));
     }
 
 }

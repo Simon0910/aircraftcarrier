@@ -44,7 +44,6 @@ public interface DemoDo2DemoImportExcelConvert {
         if (importExcel == null) {
             return null;
         }
-        importExcel.setDataType(DataTypeEnum.GENERAL);
         return importExcel;
     }
 

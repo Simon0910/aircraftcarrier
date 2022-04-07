@@ -53,7 +53,7 @@ public class DemoImportExcel extends ExcelRow {
     /**
      * 枚举演示
      */
-    @ExcelProperty(value = "枚举演示", converter = IEnumConverter.class)
+    @ExcelProperty(value = "枚举演示1", converter = IEnumConverter.class)
     @ExcelDropDown(sourceEnumClass = DataTypeEnum.class)
     @ExcelComment(row = 1, comment = "枚举演示1")
     private DataTypeEnum dataType;
@@ -85,7 +85,7 @@ public class DemoImportExcel extends ExcelRow {
     /**
      * 枚举演示
      */
-    @ExcelProperty(value = "枚举演示", converter = IEnumCodeConverter.class)
+    @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class)
     @ExcelConvert(sourceEnumClass = YnValueEnum.class)
     @ExcelDropDown(sourceEnumClass = YnValueEnum.class)
     @ExcelComment(row = 1, comment = "枚举演示2")

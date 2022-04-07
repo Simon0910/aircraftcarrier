@@ -119,7 +119,9 @@ public class DemoController extends BaseController {
     @PostMapping("import")
     public SingleResponse<String> importExcel(@RequestParam("file") MultipartFile file) throws IOException {
         EasyExcelReadUtil.checkExcelFile(file);
-        EasyExcelReadUtil.lambdaReadBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (rowList, analysisContext) -> System.out.println(JSON.toJSONString(rowList)));
+        EasyExcelReadUtil.lambdaReadBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (rowList, analysisContext) -> {
+            System.out.println(JSON.toJSONString(rowList));
+        });
         //解析并保存到数据库
         return SingleResponse.ok();
     }

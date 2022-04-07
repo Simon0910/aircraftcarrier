@@ -6,8 +6,9 @@ import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.enums.CellDataTypeEnum;
-import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.GlobalConfiguration;
+import com.alibaba.excel.metadata.data.ReadCellData;
+import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.metadata.property.ExcelContentProperty;
 
 import java.lang.reflect.Field;
@@ -33,7 +34,7 @@ public class IEnumCodeConverter implements Converter<Object> {
     }
 
     @Override
-    public Object convertToJavaData(CellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
+    public Object convertToJavaData(ReadCellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
         Field field = contentProperty.getField();
         ExcelConvert annotation = field.getAnnotation(ExcelConvert.class);
         if (annotation == null || annotation.sourceEnumClass() == IEnum.class) {
@@ -56,7 +57,7 @@ public class IEnumCodeConverter implements Converter<Object> {
     }
 
     @Override
-    public CellData<String> convertToExcelData(Object value, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
+    public WriteCellData<String> convertToExcelData(Object value, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
         Field field = contentProperty.getField();
         ExcelConvert annotation = field.getAnnotation(ExcelConvert.class);
         if (annotation == null || annotation.sourceEnumClass() == IEnum.class) {
@@ -75,6 +76,6 @@ public class IEnumCodeConverter implements Converter<Object> {
             codeMap.putIfAbsent(name, innerMap);
             integerStringMap = codeMap.get(name);
         }
-        return new CellData<>(integerStringMap.get(value));
+        return new WriteCellData<>(integerStringMap.get(value));
     }
 }

@@ -19,7 +19,7 @@
         <validation.api.version>2.0.0.Final</validation.api.version>
         <hibernate.validator.version>6.1.6.Final</hibernate.validator.version>
         <commons.beanutils.version>1.9.3</commons.beanutils.version>
-        <easyexcel.version>2.2.10</easyexcel.version>
+        <easyexcel.version>3.0.5</easyexcel.version>
         <mybatisplus.version>3.5.1</mybatisplus.version>
         <lock4j.version>2.2.1</lock4j.version>
         <guava.version>29.0-jre</guava.version>

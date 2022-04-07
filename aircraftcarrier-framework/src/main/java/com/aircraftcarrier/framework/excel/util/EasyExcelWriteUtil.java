@@ -40,8 +40,7 @@ public class EasyExcelWriteUtil {
      * @param pojoClass     对象Class
      * @param writeHandlers writeHandlers
      */
-    public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName, List<T> list,
-                                       Class<T> pojoClass, WriteHandler... writeHandlers) throws IOException {
+    public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName, List<?> list, Class<T> pojoClass, WriteHandler... writeHandlers) throws IOException {
         if (StringUtil.isBlank(fileName)) {
             //当前日期
             fileName = DateUtils.format(new Date(), DateUtils.DATE_FORMAT_10);
@@ -57,7 +56,7 @@ public class EasyExcelWriteUtil {
                 excelWriterBuilder.registerWriteHandler(writeHandler);
             }
         }
-        excelWriterBuilder.registerConverter(new LocalDateTimeConverter());
+//        excelWriterBuilder.registerConverter(new LocalDateTimeConverter());
         excelWriterBuilder.sheet(sheetName).doWrite(list);
     }
 
@@ -70,23 +69,25 @@ public class EasyExcelWriteUtil {
      * @param sourceList  原数据List
      * @param targetClass 目标对象Class
      */
-    public static <S, T> void exportExcelToTarget(HttpServletResponse response, String fileName, String sheetName, List<S> sourceList,
+    public static <T> void exportExcelToTarget(HttpServletResponse response, String fileName, String sheetName, List<?> sourceList,
                                                   Class<T> targetClass, WriteHandler... writeHandlers) throws NoSuchMethodException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (CollUtil.isEmpty(sourceList)) {
             sourceList = new ArrayList<>();
         }
 
-        List<T> targetList = new ArrayList<>(sourceList.size());
         if (sourceList.size() > 0 && sourceList.get(0).getClass() != targetClass) {
             Constructor<T> constructor = targetClass.getDeclaredConstructor();
-            for (S source : sourceList) {
+            List<T> targetList = new ArrayList<>(sourceList.size());
+            for (Object source : sourceList) {
                 T target = constructor.newInstance();
                 BeanUtils.copyProperties(source, target);
                 targetList.add(target);
             }
+            exportExcel(response, fileName, sheetName, targetList, targetClass, writeHandlers);
+        } else {
+            exportExcel(response, fileName, sheetName, sourceList, targetClass, writeHandlers);
         }
 
-        exportExcel(response, fileName, sheetName, targetList, targetClass, writeHandlers);
     }
 
 }

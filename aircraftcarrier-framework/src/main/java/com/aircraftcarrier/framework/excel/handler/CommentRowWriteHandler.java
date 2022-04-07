@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.excel.handler;
 import com.aircraftcarrier.framework.excel.annotation.ExcelComment;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
-import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
+import com.alibaba.excel.write.handler.RowWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import org.apache.poi.ss.usermodel.Comment;
@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author Jiaju Zhuang
  */
-public class CommentRowWriteHandler extends AbstractRowWriteHandler {
+public class CommentRowWriteHandler implements RowWriteHandler {
 
     private final Map<Integer, ExcelComment> map;
 
