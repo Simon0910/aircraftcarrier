@@ -153,7 +153,7 @@ public class ${table.controllerName} {
      */
     @ApiOperation(value = "导出模板", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @GetMapping("exportTemplate")
-    public void exportTemplate(HttpServletResponse response) throws IOException {
+    public void exportTemplate(HttpServletResponse response) throws Exception {
         ${cfg.Import_n} importExcel = new ${cfg.Import_n}();
 #foreach($field in ${table.fields})
     #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})

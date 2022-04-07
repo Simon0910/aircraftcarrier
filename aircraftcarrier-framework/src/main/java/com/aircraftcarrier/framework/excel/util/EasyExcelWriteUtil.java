@@ -1,7 +1,6 @@
 package com.aircraftcarrier.framework.excel.util;
 
 import cn.hutool.core.collection.CollUtil;
-import com.aircraftcarrier.framework.excel.convert.LocalDateTimeConverter;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.util.DateUtils;
@@ -56,7 +55,6 @@ public class EasyExcelWriteUtil {
                 excelWriterBuilder.registerWriteHandler(writeHandler);
             }
         }
-//        excelWriterBuilder.registerConverter(new LocalDateTimeConverter());
         excelWriterBuilder.sheet(sheetName).doWrite(list);
     }
 

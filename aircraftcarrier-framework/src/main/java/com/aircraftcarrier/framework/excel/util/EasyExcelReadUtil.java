@@ -1,6 +1,5 @@
 package com.aircraftcarrier.framework.excel.util;
 
-import com.aircraftcarrier.framework.excel.convert.LocalDateTimeConverter;
 import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
@@ -60,7 +59,6 @@ public class EasyExcelReadUtil {
      */
     private static void doRead(ExcelReaderBuilder builder, Integer startSheetNo, Integer endSheetNo, Integer headRowNumber) {
         ExcelReader excelReader = builder
-                .registerConverter(new LocalDateTimeConverter())
                 .headRowNumber(headRowNumber)
                 .autoTrim(true)
                 .build();
