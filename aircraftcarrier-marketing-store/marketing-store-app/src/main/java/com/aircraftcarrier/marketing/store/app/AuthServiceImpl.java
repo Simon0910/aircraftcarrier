@@ -18,6 +18,7 @@ public class AuthServiceImpl extends AbstractUsernamePasswordAuthentication impl
 
     @Override
     public LoginUser verifyTokenAndRefresh(String token) {
+        // 建议拦截器把LoginUserInfo放进缓存 (token: LoginUserInfo)
         return null;
     }
 

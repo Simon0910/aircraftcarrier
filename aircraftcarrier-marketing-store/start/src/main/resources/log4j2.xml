@@ -9,7 +9,7 @@
     <properties>
         <Property name="fileName">/export/Logs/aircraftcarrier</Property>
         <property name="LOG_PATTERN">
-            %d{yyyy-MM-dd HH:mm:ss.SSS} -traceId[%X{traceId}] [%thread] %-5level %class{1.}:%L(%M) - %msg%xEx%n
+            %d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}] [%thread] %-5level %class{1.}:%L(%M) - %msg%xEx%n
         </property>
     </properties>
 
