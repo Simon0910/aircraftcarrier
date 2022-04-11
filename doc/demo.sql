@@ -43,7 +43,7 @@ CREATE TABLE `demo` (
   `update_user` varchar(32) NOT NULL COMMENT '修改人',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  `yn` int(1) NOT NULL DEFAULT '0' COMMENT '删除标识,0:正常,1:删除',
+  `deleted` int(1) NOT NULL DEFAULT '0' COMMENT '删除标识,0:正常,1:删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='配置表';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -101,7 +101,7 @@ CREATE TABLE `product_details` (
   `update_user` varchar(32) NOT NULL COMMENT '修改人',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  `yn` int(1) NOT NULL DEFAULT '0' COMMENT '删除标识,0:正常,1:删除',
+  `deleted` int(1) NOT NULL DEFAULT '0' COMMENT '删除标识,0:正常,1:删除',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='产品详情表';
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -6,13 +6,13 @@
             resultType="com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo">
         SELECT *
         FROM demo
-        WHERE yn = 0
+        WHERE deleted = 0
     </select>
     <select id="farmExport"
             resultType="com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo">
         SELECT *
         FROM demo t1
-                 LEFT JOIN product_details t2 ON t1.id = t2.id AND t2.yn = 0
-        WHERE t1.yn = 0
+                 LEFT JOIN product_details t2 ON t1.id = t2.id AND t2.deleted = 0
+        WHERE t1.deleted = 0
     </select>
 </mapper>

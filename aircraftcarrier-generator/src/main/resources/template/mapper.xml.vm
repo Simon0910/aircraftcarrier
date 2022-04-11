@@ -33,7 +33,7 @@
         SELECT
         ${table.allFieldNames}
         FROM ${table.name}
-        WHERE yn = 0
+        WHERE deleted = 0
         <include refid="Page_Where_Clause"/>
         ORDER BY id desc
     </select>
@@ -43,7 +43,7 @@
         SELECT
         ${table.allFieldNames}
         FROM ${table.name}
-        WHERE yn = 0
+        WHERE deleted = 0
         <include refid="Page_Where_Clause"/>
     </select>
 </mapper>

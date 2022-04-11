@@ -24,11 +24,6 @@ public class DemoExportExe {
     private DemoMapper demoMapper;
 
     public List<DemoImportExcel> execute(DemoPageQryCmd pageQryCmd) {
-        DemoPageQry pageQry = pageQryCmd.getPageQry();
-
-        DemoDo demoDO = new DemoDo();
-        demoDO.setSellerNo(pageQry.getSellerNo());
-        demoDO.setYn(1);
 
         List<DemoDo> list = MybatisBatchUtil.selectAllListBatchWithId(() -> demoMapper.farmExport());
 
