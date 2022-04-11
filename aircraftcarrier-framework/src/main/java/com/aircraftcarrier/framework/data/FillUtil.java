@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.data;
 
-import com.aircraftcarrier.framework.enums.YnValueEnum;
+import com.aircraftcarrier.framework.enums.DeletedEnum;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +18,7 @@ public class FillUtil {
         baseDO.setCreateTime(createTime);
         baseDO.setUpdateUser(createUser);
         baseDO.setCreateUser(createUser);
-        baseDO.setYn(YnValueEnum.Y.getCode());
+        baseDO.setDeleted(DeletedEnum.NORMAL.getCode());
         return baseDO;
     }
 
@@ -31,7 +31,7 @@ public class FillUtil {
     public static <T> BaseDO<T> fillByDelete(LocalDateTime updateTime, String updateUser, BaseDO<T> baseDO) {
         baseDO.setUpdateTime(updateTime);
         baseDO.setUpdateUser(updateUser);
-        baseDO.setYn(YnValueEnum.N.getCode());
+        baseDO.setDeleted(DeletedEnum.DELETED.getCode());
         return baseDO;
     }
 }

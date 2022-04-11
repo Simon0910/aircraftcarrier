@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.client.demo.excel.template;
 
-import com.aircraftcarrier.framework.enums.YnValueEnum;
+import com.aircraftcarrier.framework.enums.DeletedEnum;
 import com.aircraftcarrier.framework.excel.annotation.ExcelComment;
 import com.aircraftcarrier.framework.excel.annotation.ExcelConvert;
 import com.aircraftcarrier.framework.excel.annotation.ExcelDropDown;
@@ -86,8 +86,8 @@ public class DemoImportExcel extends ExcelRow {
      * 枚举演示
      */
     @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class)
-    @ExcelConvert(sourceEnumClass = YnValueEnum.class)
-    @ExcelDropDown(sourceEnumClass = YnValueEnum.class)
+    @ExcelConvert(sourceEnumClass = DeletedEnum.class)
+    @ExcelDropDown(sourceEnumClass = DeletedEnum.class)
     @ExcelComment(row = 1, comment = "枚举演示2")
-    private Integer yn;
+    private Integer deleted;
 }

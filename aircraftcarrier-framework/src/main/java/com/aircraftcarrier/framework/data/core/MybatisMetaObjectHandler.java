@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.data.core;
 
-import com.aircraftcarrier.framework.enums.YnValueEnum;
+import com.aircraftcarrier.framework.enums.DeletedEnum;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
     private static final String CREATE_USER = "createUser";
     private static final String UPDATE_TIME = "updateTime";
     private static final String UPDATE_USER = "updateUser";
-    private static final String YN = "yn";
+    private static final String DELETED = "deleted";
 
     @Override
     public void insertFill(MetaObject metaObject) {
@@ -30,7 +30,7 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
         this.setFieldValByName(CREATE_USER, loginUserName, metaObject);
         this.setFieldValByName(UPDATE_TIME, now, metaObject);
         this.setFieldValByName(UPDATE_USER, loginUserName, metaObject);
-        this.setFieldValByName(YN, YnValueEnum.Y.getCode(), metaObject);
+        this.setFieldValByName(DELETED, DeletedEnum.NORMAL.getCode(), metaObject);
     }
 
     @Override

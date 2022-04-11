@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.data;
 
-import com.aircraftcarrier.framework.enums.YnValueEnum;
+import com.aircraftcarrier.framework.enums.DeletedEnum;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -72,13 +72,13 @@ public class BaseDO<T> implements Serializable {
     /**
      * 0正常 1删除
      */
-    public static final String YN = "yn";
-    @JSONField(name = YN)
+    public static final String DELETED = "deleted";
+    @JSONField(name = DELETED)
     @TableLogic
-    protected Integer yn;
+    protected Integer deleted;
 
-    public YnValueEnum getYnEnum() {
-        return YnValueEnum.convertCode(yn);
+    public DeletedEnum getDeletedEnum() {
+        return DeletedEnum.convertCode(deleted);
     }
 
     public Serializable pkVal() {
