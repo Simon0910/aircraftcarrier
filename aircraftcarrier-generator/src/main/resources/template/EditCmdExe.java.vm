@@ -51,7 +51,7 @@ public class ${cfg.EditCmdExe_n} {
      * 复制用户确认后的信息
      *
      * @param editCmd 编辑Cmd
-     * @return EiEntity 用户确认后的信息
+     * @return Entity 用户确认后的信息
      */
     private ${cfg.Entity_n} copyEdit(${cfg.EditCmd_n} editCmd) {
         ${cfg.Entity_n} entity = new ${cfg.Entity_n}();
