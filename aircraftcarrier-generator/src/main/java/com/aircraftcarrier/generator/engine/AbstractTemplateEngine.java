@@ -85,6 +85,7 @@ public abstract class AbstractTemplateEngine {
                 paramsMap.put(fileOutConfig.getKey() + "_f", fileOutConfig.outClassFullName());
                 paramsMap.put(fileOutConfig.getKey() + "_n", fileOutConfig.outClassName());
                 paramsMap.put(fileOutConfig.getKey() + "_n_i", StringUtils.firstToLowerCase(fileOutConfig.outClassName()));
+                paramsMap.put(fileOutConfig.getKey() + "_cs", fileOutConfig.getClassSuffix());
                 outputFilePathMap.put(fileOutConfig.getKey(), outputFilePath);
             }
             ConcurrentHashMap<String, Object> oldParamsMap = (ConcurrentHashMap<String, Object>) objectMap.get(CFG);

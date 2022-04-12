@@ -35,6 +35,7 @@ public abstract class FileOutConfig {
     private String classPackage;
     private String classFullName;
     private String className;
+    private String classSuffix;
 
     /**
      * 默认构造方法
@@ -46,13 +47,14 @@ public abstract class FileOutConfig {
         // to do nothing
     }
 
-    public FileOutConfig(String templatePath, String classPath, String key) {
+    public FileOutConfig(String templatePath, String classPath, String key, String classSuffix) {
         Assert.notEmpty(templatePath, "模板路径不能为空!");
         Assert.notEmpty(classPath, "包路径不能为空!");
         Assert.notEmpty(key, "模板key不能为空!");
         this.templatePath = templatePath;
         this.key = key;
         this.classPackage = classPath.replace("/", ".");
+        this.classSuffix = classSuffix;
     }
 
     /**
@@ -65,7 +67,7 @@ public abstract class FileOutConfig {
     /**
      * 获取assembleClassName 例如: com/jd/wl/vsc/portal/domain/model/product/ProductDetailsEntity.java
      */
-    public String assembleClassName(String className, String classSuffix, String suffix) {
+    public String assembleClassName(String className,String suffix) {
         this.className = className + classSuffix;
         this.classFullName = this.classPackage + "." + this.className;
         return classFullName.replace(".", "/") + suffix;
@@ -114,5 +116,9 @@ public abstract class FileOutConfig {
 
     public String getKey() {
         return key;
+    }
+
+    public String getClassSuffix() {
+        return classSuffix;
     }
 }
