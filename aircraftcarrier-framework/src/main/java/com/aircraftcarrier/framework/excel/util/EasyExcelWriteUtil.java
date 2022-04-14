@@ -1,11 +1,15 @@
 package com.aircraftcarrier.framework.excel.util;
 
 import cn.hutool.core.collection.CollUtil;
+import com.aircraftcarrier.framework.excel.handler.CommentRowWriteHandler;
+import com.aircraftcarrier.framework.excel.handler.DropDownSheetWriteHandler;
+import com.aircraftcarrier.framework.excel.strategy.StyleStrategy;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.util.DateUtils;
 import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.alibaba.excel.write.handler.WriteHandler;
+import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import org.springframework.beans.BeanUtils;
 
 import javax.servlet.http.HttpServletResponse;
@@ -86,6 +90,27 @@ public class EasyExcelWriteUtil {
             exportExcel(response, fileName, sheetName, sourceList, modelClass, writeHandlers);
         }
 
+    }
+
+
+    /**
+     * 统一格式导出
+     *
+     * @param response
+     * @param fileName
+     * @param sheetName
+     * @param sourceList
+     * @param modelClass
+     * @param <T>
+     * @throws Exception
+     */
+    public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName,
+                                  List<?> sourceList, Class<T> modelClass) throws Exception {
+        exportExcelToTarget(response, fileName, sheetName, sourceList, modelClass,
+                new LongestMatchColumnWidthStyleStrategy(),
+                StyleStrategy.customHorizontalCellStyleStrategy(),
+                new DropDownSheetWriteHandler(modelClass),
+                new CommentRowWriteHandler(modelClass));
     }
 
 }

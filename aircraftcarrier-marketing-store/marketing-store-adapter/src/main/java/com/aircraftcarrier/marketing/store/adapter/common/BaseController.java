@@ -23,10 +23,6 @@ public class BaseController {
 
     protected <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName,
                                    List<?> sourceList, Class<T> modelClass) throws Exception {
-        EasyExcelWriteUtil.exportExcelToTarget(response, fileName, sheetName, sourceList, modelClass,
-                new LongestMatchColumnWidthStyleStrategy(),
-                StyleStrategy.customHorizontalCellStyleStrategy(),
-                new DropDownSheetWriteHandler(modelClass),
-                new CommentRowWriteHandler(modelClass));
+        EasyExcelWriteUtil.exportExcel(response, fileName, sheetName, sourceList, modelClass);
     }
 }
