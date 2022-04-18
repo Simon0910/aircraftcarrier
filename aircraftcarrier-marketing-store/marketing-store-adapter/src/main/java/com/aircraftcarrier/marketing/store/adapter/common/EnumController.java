@@ -3,7 +3,9 @@ package com.aircraftcarrier.marketing.store.adapter.common;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.context.EnumMappingContext;
+import com.aircraftcarrier.marketing.store.adapter.ApiSortConstant;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 枚举列表
+ *
  * @author lzp
  */
+@ApiSort(ApiSortConstant.ENUM_CONTROLLER)
 @Api(tags = "EnumController", produces = "application/json")
 @Slf4j
 @RequestMapping(value = "/enums/")

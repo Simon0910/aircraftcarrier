@@ -1,11 +1,7 @@
 package com.aircraftcarrier.marketing.store.adapter.common;
 
-import com.aircraftcarrier.framework.excel.handler.CommentRowWriteHandler;
-import com.aircraftcarrier.framework.excel.handler.DropDownSheetWriteHandler;
-import com.aircraftcarrier.framework.excel.strategy.StyleStrategy;
 import com.aircraftcarrier.framework.excel.util.EasyExcelWriteUtil;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
-import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +9,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * 基础 Controller
+ *
  * @author lzp
  */
 public class BaseController {
