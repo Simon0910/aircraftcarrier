@@ -1,0 +1,7 @@
+APP_NAME=air-china-manager
+MAX_JAVA_HEAP=1g
+#JAVA_OPTS="$JAVA_OPTS -Dspring.config.name=$APP_NAME"
+LOCAL_PROFILE_ACTIVE=ex
+#REMOTE_PROFILE_ACTIVE=cloud-dev
+JDD_START_INIT=false
+#RPC_ADAPTER=jsf

@@ -5,15 +5,15 @@ package com.aircraftcarrier.marketing.store.adapter;
  *
  * @author lzp
  */
-public interface ApiSortConstant {
+public final class ApiSortConstant {
 
     /**
      * {@link com.aircraftcarrier.marketing.store.adapter.common.EnumController}
      */
-    int ENUM_CONTROLLER = 10;
+    public static final int ENUM_CONTROLLER = 10;
 
     /**
      * {@link com.aircraftcarrier.marketing.store.adapter.common.CommonController}
      */
-    int COMMON_CONTROLLER = 1;
+    public static final int COMMON_CONTROLLER = 1;
 }

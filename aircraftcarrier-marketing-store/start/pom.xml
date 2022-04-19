@@ -11,6 +11,10 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>start</artifactId>
     <packaging>jar</packaging>
+    <properties>
+        <!-- maven 自定义打包配置路径 -->
+        <assembly.dir>src/assembly</assembly.dir>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.aircraftcarrier</groupId>
@@ -23,4 +27,44 @@
             <version>${revision}</version>
         </dependency>
     </dependencies>
+    <build>
+        <!-- 打jar包名称 使用配置文件名称 -->
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <!-- spring-boot打包可执行jar包 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- maven 自定义打zip包插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>${assembly.dir}/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
