@@ -30,19 +30,55 @@
     <build>
         <!-- 打jar包名称 使用配置文件名称 -->
         <finalName>${project.artifactId}</finalName>
+        <!-- 打jar包 -->
         <plugins>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
-                <!-- spring-boot打包可执行jar包 -->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>repackage</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
+                &lt;!&ndash; java -Dloader.path=./lib/ -jar xxx.jar &ndash;&gt;
+                <configuration>
+                    &lt;!&ndash;这里对应项目的主入口&ndash;&gt;
+                    <mainClass>com.aircraftcarrier.marketing.store.Application</mainClass>
+                    <layout>ZIP</layout>
+                    <includes>
+                        <include>
+                            <groupId>nothing</groupId>
+                            <artifactId>nothing</artifactId>
+                        </include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.aircraftcarrier.marketing.store.Application</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>config/</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                    <excludes>
+                        <exclude>*.properties</exclude>
+                        <exclude>*.yml</exclude>
+                        <exclude>*.xml</exclude>
+                        <exclude>spring/*.xml</exclude>
+                        <exclude>config/*</exclude>
+                        <exclude>static/*/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <!-- maven 自定义打zip包插件 -->
             <plugin>

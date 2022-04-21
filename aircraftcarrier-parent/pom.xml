@@ -99,6 +99,7 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- 跳过编译 -->
                     <skip>true</skip>
                     <annotationProcessorPaths>
                         <path>
@@ -118,6 +119,14 @@
                             <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- 跳过执行 -->
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
         </plugins>
