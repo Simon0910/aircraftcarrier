@@ -1,6 +1,8 @@
 <assembly>
+    <!-- id 标识符，添加到生成文件名称的后缀符。如果指定 id 的话, 目标文件则是 ${artifactId}-${id}.jar。-->
     <id>assembly</id>
     <formats>
+        <!-- 指定打包格式。maven-assembly-plugin插件支持的打包格式有zip、tar、tar.gz (or tgz)、tar.bz2 (or tbz2)、jar、dir、war，可以同时指定多个打包格式 -->
         <format>dir</format>
     </formats>
     <!-- 压缩包下是否生成和项目名相同的根目录-->
@@ -8,15 +10,23 @@
     <!-- 指定将工程依赖的包打到包里的指定目录下 -->
     <dependencySets>
         <dependencySet>
+            <!-- 指定打包时是否包含工程自身生成的jar包 -->
             <useProjectArtifact>false</useProjectArtifact>
+            <!-- 指定将这些依赖包打到包里lib目录下 -->
             <outputDirectory>lib</outputDirectory>
+            <!-- 用于管理依赖的部署，runtime表示只在运行时使用 -->
+            <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
+    <!-- 指定要包含的文件集，可以定义多个fileSet -->
     <fileSets>
         <!-- scripts -->
         <fileSet>
+            <!-- 指定归档文件（要打的jar包）要包含的目录（下的文件及文件夹） -->
             <directory>${assembly.dir}/bin/</directory>
+            <!-- 指定要将当前目录（<directory>标签中的目录放在归档文件（要打的jar包）bin目录下） -->
             <outputDirectory>bin</outputDirectory>
+            <!-- 设置文件 UNIX 属性，是一种读写权限 -->
             <fileMode>0755</fileMode>
             <filtered>true</filtered>
             <lineEnding>unix</lineEnding>

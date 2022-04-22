@@ -8,14 +8,23 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ResourceUtil
+ * 类似@Value功能
  *
  * @author lzp
  */
 @Slf4j
 public class ResourceUtil {
+
+    /**
+     * cache
+     */
+    private static final Map<String, String> CACHE = new ConcurrentHashMap<>();
+
     /**
      * ResourceUtil
      */
@@ -27,24 +36,52 @@ public class ResourceUtil {
             return StringPool.EMPTY;
         }
 
-        try {
-            Resource resource = new ClassPathResource(classPath);
-            InputStream inputStream = resource.getInputStream();
-
-            StringBuilder sb = new StringBuilder();
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            String content;
-            while ((content = br.readLine()) != null) {
-                sb.append(content);
-            }
-            br.close();
-            return sb.toString();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("read class path resource error", e);
+        String resourceCache = CACHE.get(classPath);
+        if (resourceCache != null) {
+            return resourceCache;
         }
 
-        return StringPool.EMPTY;
+        synchronized (ResourceUtil.class) {
+            resourceCache = CACHE.get(classPath);
+            if (resourceCache != null) {
+                return resourceCache;
+            }
+
+            String resourceString = StringPool.EMPTY;
+            try {
+                Resource resource = new ClassPathResource(classPath);
+                InputStream inputStream = resource.getInputStream();
+
+                StringBuilder sb = new StringBuilder();
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                String content;
+                while ((content = br.readLine()) != null) {
+                    sb.append(content);
+                }
+                br.close();
+                resourceString = sb.toString();
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error("read class path resource error", e);
+            }
+            CACHE.put(classPath, resourceString);
+            return resourceString;
+        }
+    }
+
+    /**
+     * 清楚缓存
+     *
+     * @param classPath classPath
+     */
+    public static void removeCache(String classPath) {
+        CACHE.remove(classPath);
+    }
+
+    /**
+     * 清楚缓存
+     */
+    public static void clearAllCache() {
+        CACHE.clear();
     }
 }
