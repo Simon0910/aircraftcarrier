@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * @author lzp
@@ -57,6 +58,20 @@ public class BeanUtil {
         }
     }
 
+    public static <T> T convert(Object orig, Class<T> target, Consumer<T> consumer) {
+        if (orig == null) {
+            return null;
+        }
+        try {
+            final BeanCopier beanCopier = createBeanCopier(orig.getClass(), target);
+            T destEntry = target.getDeclaredConstructor().newInstance();
+            beanCopier.copy(orig, destEntry, null);
+            consumer.accept(destEntry);
+            return destEntry;
+        } catch (Exception e) {
+            throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
 
     /**
      * 转化复制实体LIST
@@ -77,6 +92,34 @@ public class BeanUtil {
             for (Object each : orig) {
                 destEntry = constructor.newInstance();
                 beanCopier.copy(each, destEntry, null);
+                dest.add(destEntry);
+            }
+        } catch (Exception e) {
+            throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+        return dest;
+    }
+
+    /**
+     * 转化复制实体LIST
+     *
+     * @param orig   orig
+     * @param target target
+     * @return java.util.List<T>
+     */
+    public static <T> List<T> convertList(List<?> orig, Class<T> target, Consumer<T> consumer) {
+        if (orig == null || orig.isEmpty()) {
+            return new ArrayList<>(0);
+        }
+        List<T> dest = new ArrayList<>(orig.size());
+        try {
+            final BeanCopier beanCopier = createBeanCopier(orig.get(0).getClass(), target);
+            Constructor<T> constructor = target.getDeclaredConstructor();
+            T destEntry;
+            for (Object each : orig) {
+                destEntry = constructor.newInstance();
+                beanCopier.copy(each, destEntry, null);
+                consumer.accept(destEntry);
                 dest.add(destEntry);
             }
         } catch (Exception e) {

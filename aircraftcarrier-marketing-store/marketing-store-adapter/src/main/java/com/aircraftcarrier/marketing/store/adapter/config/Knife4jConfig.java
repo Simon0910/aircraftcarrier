@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.config;
+package com.aircraftcarrier.marketing.store.adapter.config;
 
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import com.github.xiaoymin.knife4j.spring.extension.OpenApiExtensionResolver;

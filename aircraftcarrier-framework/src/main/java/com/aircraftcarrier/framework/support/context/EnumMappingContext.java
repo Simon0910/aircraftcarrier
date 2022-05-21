@@ -11,11 +11,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author lzp
@@ -23,8 +19,8 @@ import java.util.Set;
 @Slf4j
 public class EnumMappingContext {
 
-    private static final String NAME = "name";
-    private static final String DESC = "desc";
+    private static final String NAME = "code";
+    private static final String DESC = "name";
     /**
      * MAPPING
      */

@@ -13,11 +13,11 @@ public enum StatusEnum implements IEnum<Integer> {
     /**
      * 开启
      */
-    ENABLE(0, "开启"),
+    ENABLE(1, "开启"),
     /**
      * 关闭
      */
-    DISABLE(1, "关闭");
+    DISABLE(0, "关闭");
 
     /**
      * MAPPINGS

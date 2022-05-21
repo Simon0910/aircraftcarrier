@@ -18,11 +18,11 @@ public enum YnValueEnum implements IEnum<Integer> {
     /**
      * 有效
      */
-    Y(0, "有效"),
+    Y(1, "有效"),
     /**
      * 无效
      */
-    N(1, "无效"),
+    N(0, "无效"),
     ;
 
     /**

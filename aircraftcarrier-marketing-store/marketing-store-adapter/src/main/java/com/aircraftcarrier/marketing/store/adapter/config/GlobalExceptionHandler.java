@@ -3,7 +3,7 @@
 // (powered by FernFlower decompiler)
 //
 
-package com.aircraftcarrier.marketing.store.config;
+package com.aircraftcarrier.marketing.store.adapter.config;
 
 import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.ErrorCode;
