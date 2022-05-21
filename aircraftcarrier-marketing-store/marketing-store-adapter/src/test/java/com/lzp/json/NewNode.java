@@ -1,7 +1,6 @@
 package com.lzp.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.*;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,9 +16,4 @@ public class NewNode {
         this.newPath = newPath;
         this.valueNode = valueNode;
     }
-
-    public void setNodeValue(String newPath, Object obj) {
-        this.newPath = newPath;
-    }
-
 }
