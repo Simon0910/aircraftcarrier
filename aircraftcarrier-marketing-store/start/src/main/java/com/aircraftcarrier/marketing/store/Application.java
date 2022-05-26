@@ -17,7 +17,11 @@ import org.springframework.context.annotation.PropertySource;
 @Slf4j
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @Import(LocalDateTimeSerializerConfig.class)
-@PropertySource(value = {"classpath:project.properties", "classpath:jdbc.properties"}, encoding = "utf-8")
+@PropertySource(value = {
+        "classpath:project.properties",
+        "classpath:jdbc.properties",
+        "classpath:redis.properties"},
+        encoding = "utf-8")
 @SpringBootApplication(scanBasePackages = "com.aircraftcarrier.marketing.store"
 //        , exclude = {SecurityAutoConfiguration.class}
 )

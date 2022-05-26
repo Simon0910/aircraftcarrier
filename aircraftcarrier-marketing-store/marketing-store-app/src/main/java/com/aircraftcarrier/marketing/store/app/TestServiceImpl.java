@@ -10,6 +10,7 @@ import com.aircraftcarrier.marketing.store.domain.drools.KieUtils;
 import com.aircraftcarrier.marketing.store.domain.event.AccountEvent;
 import com.aircraftcarrier.marketing.store.domain.model.test.Address;
 import com.aircraftcarrier.marketing.store.domain.model.test.Sale;
+import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
 import com.aircraftcarrier.marketing.store.infrastructure.config.reload.ReloadDroolsRules;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,10 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public String testLock(Serializable id) {
+        JedisUtil.set((String) id, (String) id);
+        String value = JedisUtil.get((String) id);
+        log.info("JedisUtil: " + value);
+
         LockUtil.lock(id);
         try {
 
@@ -57,14 +62,16 @@ public class TestServiceImpl implements TestService {
             do {
                 s++;
                 TimeUnit.SECONDS.sleep(1);
-                System.out.println("计时：" + s);
+                log.warn("计时：" + s);
             } while (s < 25);
 
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         } finally {
             LockUtil.unLock();
         }
+        log.info("success");
         return "success";
     }
 

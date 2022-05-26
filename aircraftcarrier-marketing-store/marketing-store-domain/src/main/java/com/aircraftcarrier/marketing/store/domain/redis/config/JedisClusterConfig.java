@@ -1,8 +1,9 @@
-package com.aircraftcarrier.marketing.store.domain.config;
+package com.aircraftcarrier.marketing.store.domain.redis.config;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.Connection;
@@ -17,9 +18,11 @@ import java.util.Set;
 /**
  * @author lzp
  */
-@Configuration
 @ConditionalOnClass({JedisCluster.class})
+@ConditionalOnMissingBean({JedisCluster.class})
+@Configuration
 public class JedisClusterConfig {
+
     @Value("${redis.cluster.nodes}")
     private String nodes;
     @Value("${redis.cluster.max-attempts:1000}")
@@ -27,9 +30,9 @@ public class JedisClusterConfig {
     @Value("${redis.cluster.max-total-retries-duration:5}")
     private int maxTotalRetriesDuration;
 
-    @Value("${redis.client.user}")
+    @Value("${redis.client.user:}")
     private String user;
-    @Value("${redis.client.password}")
+    @Value("${redis.client.password:}")
     private String password;
     @Value("${redis.client.timeout-millis:5000}")
     private int timeoutMillis;
@@ -70,7 +73,8 @@ public class JedisClusterConfig {
 
         // clientConfig
         DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-                .user(user).password(password)
+//                .user(user)
+                .password(password)
                 .timeoutMillis(timeoutMillis)
                 .connectionTimeoutMillis(connectionTimeoutMillis)
                 .build();
