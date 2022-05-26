@@ -5,6 +5,9 @@ import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
 
+/**
+ * @author lzp
+ */
 @Component
 public class RedisUtil {
 
