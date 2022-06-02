@@ -171,6 +171,11 @@
                 <artifactId>jedis</artifactId>
                 <version>4.2.2</version>
             </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-s3</artifactId>
+                <version>1.12.220</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
