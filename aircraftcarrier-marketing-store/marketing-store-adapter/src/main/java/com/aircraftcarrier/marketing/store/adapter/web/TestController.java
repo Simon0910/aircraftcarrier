@@ -114,6 +114,16 @@ public class TestController {
         return SingleResponse.ok(testService.testLock(id));
     }
 
+    @ApiOperationSupport(order = 31)
+    @ApiOperation(value = "锁测试JVM")
+    @GetMapping("/testLockKey")
+    public SingleResponse<String> testLockKey(@RequestParam Serializable id) {
+        for (int i = 0; i < 100; i++) {
+            testService.testLockKey(id);
+        }
+        return SingleResponse.ok();
+    }
+
     @ApiOperationSupport(order = 35)
     @ApiOperation(value = "Drools规则引擎测试")
     @PostMapping("/testDrools")

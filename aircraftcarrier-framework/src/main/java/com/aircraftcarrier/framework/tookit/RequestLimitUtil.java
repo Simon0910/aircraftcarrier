@@ -20,7 +20,7 @@ public final class RequestLimitUtil {
     /**
      * 资源池
      */
-    private static final Map<String, Integer> LIMIT = MapUtil.newHashMap();
+    private static final Map<String, Integer> LIMIT = MapUtil.newConcurrentHashMap(16);
 
     /**
      * 私有
@@ -59,7 +59,8 @@ public final class RequestLimitUtil {
             return false;
         }
 
-        synchronized (this) {
+        LockKeyUtil.lock(key);
+        try {
             sum = LIMIT.get(key);
             if (sum == null || sum < 0) {
                 LIMIT.put(key, 1);
@@ -69,21 +70,24 @@ public final class RequestLimitUtil {
                 return false;
             }
             LIMIT.put(key, ++sum);
+        } finally {
+            LockKeyUtil.unlock(key);
         }
-
         return true;
     }
 
     /**
      * 释放资源
      */
-    public synchronized void release(String key) {
+    public void release(String key) {
+        LockKeyUtil.lock(key);
         Integer sum = LIMIT.get(key);
         if (sum == null || sum < 0) {
             LIMIT.put(key, 0);
         } else {
             LIMIT.put(key, --sum);
         }
+        LockKeyUtil.unlock(key);
     }
 
     public List<String> getKeys() {

@@ -2,20 +2,14 @@ package com.aircraftcarrier.marketing.store.infrastructure.utils;
 
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,7 +22,6 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * @author lwc
@@ -38,10 +31,7 @@ import java.util.ResourceBundle;
 @Getter
 @Setter
 @Configuration
-public class OssFileUtil {
-
-    private OssFileUtil() {
-    }
+public class OssFileHelper implements InitializingBean {
 
     /**
      * upload to local file path
@@ -90,29 +80,6 @@ public class OssFileUtil {
         FILE_TYPE_MAP.put("pdf", 3);
         FILE_TYPE_MAP.put("txt", 3);
     }
-
-    static {
-        ResourceBundle bundle = ResourceBundle.getBundle("project");
-        final String accessKey = bundle.getString("oss.amazonS3.accesskey");
-        final String secretKey = bundle.getString("oss.amazonS3.secretkey");
-        final String endpoint = bundle.getString("oss.amazonS3.endpoint");
-        final String region = bundle.getString("oss.amazonS3.region");
-        ClientConfiguration config = new ClientConfiguration();
-
-        AwsClientBuilder.EndpointConfiguration endpointConfig =
-                new AwsClientBuilder.EndpointConfiguration(endpoint, region);
-
-        AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
-        AWSCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
-
-        amazonS3 = AmazonS3Client.builder()
-                .withEndpointConfiguration(endpointConfig)
-                .withClientConfiguration(config)
-                .withCredentials(awsCredentialsProvider)
-                .disableChunkedEncoding()
-                .build();
-    }
-
 
     /**
      * 上传文件
@@ -175,4 +142,31 @@ public class OssFileUtil {
         }
     }
 
+    /**
+     * 禁止static块 初始化逻辑代码
+     *
+     * @throws Exception
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        /*ResourceBundle bundle = ResourceBundle.getBundle("project");
+        final String accessKey = bundle.getString("oss.amazonS3.accesskey");
+        final String secretKey = bundle.getString("oss.amazonS3.secretkey");
+        final String endpoint = bundle.getString("oss.amazonS3.endpoint");
+        final String region = bundle.getString("oss.amazonS3.region");
+        ClientConfiguration config = new ClientConfiguration();
+
+        AwsClientBuilder.EndpointConfiguration endpointConfig =
+                new AwsClientBuilder.EndpointConfiguration(endpoint, region);
+
+        AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+        AWSCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
+
+        amazonS3 = AmazonS3Client.builder()
+                .withEndpointConfiguration(endpointConfig)
+                .withClientConfiguration(config)
+                .withCredentials(awsCredentialsProvider)
+                .disableChunkedEncoding()
+                .build();*/
+    }
 }

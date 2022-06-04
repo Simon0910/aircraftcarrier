@@ -27,9 +27,19 @@ public interface TestService {
     String testLock(Serializable id);
 
     /**
+     * testLockKey
+     *
+     * @param id id
+     * @return String
+     */
+    String testLockKey(Serializable id);
+
+    /**
      * applyDiscount
      *
      * @param params params
      */
     void applyDiscount(Map<String, Object> params);
+
+
 }

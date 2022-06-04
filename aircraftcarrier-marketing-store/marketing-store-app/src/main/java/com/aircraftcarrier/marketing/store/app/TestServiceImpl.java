@@ -1,7 +1,9 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
+import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.ObjUtil;
+import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
@@ -20,6 +22,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,6 +34,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class TestServiceImpl implements TestService {
+    private final int threadNum = 100;
+    private final CyclicBarrier barrier = new CyclicBarrier(threadNum);
+    private final TraceThreadPoolExecutor pool = new TraceThreadPoolExecutor(threadNum, threadNum, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
@@ -73,6 +83,46 @@ public class TestServiceImpl implements TestService {
         }
         log.info("success");
         return "success";
+    }
+
+    @Override
+    public String testLockKey(Serializable id) {
+        CountDownLatch latch = new CountDownLatch(threadNum);
+
+        RequestLimitUtil limitUtil = RequestLimitUtil.getInstance();
+        for (int i = 0; i < threadNum; i++) {
+            String finalI = String.valueOf(id);
+//            String finalI = String.valueOf(i);
+            pool.execute(() -> {
+                try {
+                    barrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+
+                String name = Thread.currentThread().getName();
+                boolean require = limitUtil.require(finalI);
+                if (require) {
+                    System.out.println("sum ok: " + finalI + "_" + name);
+                    limitUtil.release(finalI);
+                } else {
+                    System.out.println("sum noo: " + finalI + "_" + name);
+                }
+
+                latch.countDown();
+            });
+        }
+
+        try {
+            long start = System.currentTimeMillis();
+            latch.await();
+            long end = System.currentTimeMillis();
+            barrier.reset();
+            System.out.println("耗时：" + (end - start));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "end";
     }
 
     @Override
