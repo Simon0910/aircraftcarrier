@@ -41,5 +41,10 @@ public interface TestService {
      */
     void applyDiscount(Map<String, Object> params);
 
-
+    /**
+     * 并发扣库存防止超卖
+     *
+     * @param goodsNo 商品编号
+     */
+    void deductionInventory(Serializable goodsNo);
 }

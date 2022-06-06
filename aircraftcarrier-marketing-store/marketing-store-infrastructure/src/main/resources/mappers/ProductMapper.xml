@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aircraftcarrier.marketing.store.infrastructure.repository.ProductMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap"
+               type="com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo">
+        <result column="id" property="id"/>
+        <result column="goods_no" property="goodsNo"/>
+        <result column="amount" property="amount"/>
+        <result column="inventory" property="inventory"/>
+        <result column="version" property="version"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 分页查询条件 | 批量下载查询条件 -->
+    <sql id="Page_Where_Clause">
+
+    </sql>
+
+    <!-- 更新库存 -->
+    <update id="updateInventory">
+        UPDATE product
+        SET inventory = #{newInventory},
+            version   = version + 1
+        WHERE id = #{id}
+          AND deleted = 0
+          AND #{newInventory} >= 0
+          AND version = #{version}
+    </update>
+
+    <!-- 分页查询 -->
+    <select id="listPage"
+            resultType="com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo">
+        SELECT
+        id, goods_no, amount, inventory, version
+        FROM product
+        WHERE deleted = 0
+        <include refid="Page_Where_Clause"/>
+        ORDER BY id desc
+    </select>
+
+    <!-- 批量导出 -->
+    <select id="excelExport"
+            resultType="com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo">
+        SELECT
+        id, goods_no, amount, inventory, version
+        FROM product
+        WHERE deleted = 0
+        <include refid="Page_Where_Clause"/>
+    </select>
+</mapper>

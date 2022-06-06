@@ -1,10 +1,12 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.ObjUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
+import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.domain.drools.KieTemplate;
@@ -27,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author lzp
@@ -46,6 +49,8 @@ public class TestServiceImpl implements TestService {
     private KieTemplate kieTemplate;
     @Resource
     private ReloadDroolsRules reloadDroolsRules;
+    @Resource
+    UpdateInventoryExe updateInventoryExe;
 
     @Override
     public void testTransactional() {
@@ -121,6 +126,7 @@ public class TestServiceImpl implements TestService {
             System.out.println("耗时：" + (end - start));
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
         return "end";
     }
@@ -143,6 +149,42 @@ public class TestServiceImpl implements TestService {
 
         kieTemplate.execute(address);
         log.info("执行规则后返回 address2: {}", JSON.toJSONString(address));
+
+    }
+
+    @Override
+    public void deductionInventory(Serializable goodsNo) {
+        final CountDownLatch latch = new CountDownLatch(threadNum);
+        final AtomicInteger success = new AtomicInteger();
+        final AtomicInteger fail = new AtomicInteger();
+
+        // 模拟多人抢购商品
+        for (int i = 0; i < threadNum; i++) {
+            pool.execute(() -> {
+                SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
+                if (response.success()) {
+                    System.out.println("扣减库存 成功");
+                    success.incrementAndGet();
+                } else {
+                    System.out.println("扣减库存 失败 〒_〒");
+                    fail.incrementAndGet();
+                }
+                latch.countDown();
+            });
+        }
+
+        try {
+            long start = System.currentTimeMillis();
+            latch.await();
+            long end = System.currentTimeMillis();
+            System.out.println("耗时：" + (end - start));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+        }
+
+        System.out.println("success: " + success);
+        System.out.println("fail: " + fail);
 
     }
 }
