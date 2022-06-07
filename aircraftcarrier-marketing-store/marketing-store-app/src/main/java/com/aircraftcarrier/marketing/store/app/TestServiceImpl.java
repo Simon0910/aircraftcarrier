@@ -101,20 +101,21 @@ public class TestServiceImpl implements TestService {
             pool.execute(() -> {
                 try {
                     barrier.await();
+
+                    String name = Thread.currentThread().getName();
+                    boolean require = limitUtil.require(finalI);
+                    if (require) {
+                        System.out.println("sum ok: " + finalI + "_" + name);
+                        limitUtil.release(finalI);
+                    } else {
+                        System.out.println("sum noo: " + finalI + "_" + name);
+                    }
+
                 } catch (InterruptedException | BrokenBarrierException e) {
                     e.printStackTrace();
+                } finally {
+                    latch.countDown();
                 }
-
-                String name = Thread.currentThread().getName();
-                boolean require = limitUtil.require(finalI);
-                if (require) {
-                    System.out.println("sum ok: " + finalI + "_" + name);
-                    limitUtil.release(finalI);
-                } else {
-                    System.out.println("sum noo: " + finalI + "_" + name);
-                }
-
-                latch.countDown();
             });
         }
 
@@ -122,11 +123,12 @@ public class TestServiceImpl implements TestService {
             long start = System.currentTimeMillis();
             latch.await();
             long end = System.currentTimeMillis();
-            barrier.reset();
             System.out.println("耗时：" + (end - start));
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
+        } finally {
+            barrier.reset();
         }
         return "end";
     }
@@ -161,15 +163,20 @@ public class TestServiceImpl implements TestService {
         // 模拟多人抢购商品
         for (int i = 0; i < threadNum; i++) {
             pool.execute(() -> {
-                SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
-                if (response.success()) {
-                    System.out.println("扣减库存 成功");
-                    success.incrementAndGet();
-                } else {
-                    System.out.println("扣减库存 失败 〒_〒");
-                    fail.incrementAndGet();
+                try {
+
+                    SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
+                    if (response.success()) {
+                        System.out.println("扣减库存 成功");
+                        success.incrementAndGet();
+                    } else {
+                        System.out.println("扣减库存 失败 〒_〒");
+                        fail.incrementAndGet();
+                    }
+
+                } finally {
+                    latch.countDown();
                 }
-                latch.countDown();
             });
         }
 
