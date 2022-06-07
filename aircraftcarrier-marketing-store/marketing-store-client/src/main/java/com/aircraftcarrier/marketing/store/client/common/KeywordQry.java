@@ -14,6 +14,8 @@ import javax.validation.constraints.Size;
  * 关键字查询
  * <p>
  * 默认 limit 20
+ *
+ * @author lzp
  */
 @ApiModel(value = "KeywordQry")
 @Setter
@@ -28,9 +30,9 @@ public class KeywordQry extends Query {
     private String keyword;
 
     /**
-     * keyword
+     * likeField
      */
-    @ApiModelProperty(value = "关键字", required = false, example = "goodsNo")
+    @ApiModelProperty(value = "匹配字段", required = false, example = "goodsNo")
     private String likeField;
 
     /**
@@ -49,14 +51,14 @@ public class KeywordQry extends Query {
     /**
      * tableName
      */
-    @ApiModelProperty(value = "关键字", required = true, example = "product")
+    @ApiModelProperty(value = "表名称", required = true, example = "product")
     @NotBlank(message = "请输入要查询的表名称")
     private String tableName;
 
     /**
-     * 查询字段
+     * fields
      */
-    @ApiModelProperty(value = "查询字段", required = true, example = "[goodsNo]")
+    @ApiModelProperty(value = "查询字段", required = true, example = "['goodsNo']")
     @NotEmpty(message = "请输入要查询的字段")
     private String[] fields;
 }

@@ -82,7 +82,6 @@ public class UpdateInventoryExe {
         }
 
         int updatedNum = productMapper.updateInventory(id, version, newInventory);
-        System.out.println("updatedNum = " + updatedNum);
         if (updatedNum < 1) {
             LockKeyUtil.lock(id.toString());
             try {

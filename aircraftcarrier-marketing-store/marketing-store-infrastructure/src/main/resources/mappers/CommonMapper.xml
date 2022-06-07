@@ -12,12 +12,12 @@
             #{field}
         </foreach>
         FROM ${tableName}
-        WHERE yn = 0
+        WHERE deleted = 0
         <if test="lastId != null">
             AND id > #{lastId}
         </if>
         <if test="likeField != null">
-            AND #{likeField} like #{keyword}'%'
+            AND #{likeField} like CONCAT(#{keyword}, '%')
         </if>
         limit #{pageSize}
     </select>
