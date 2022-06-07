@@ -2,6 +2,7 @@ package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.CharUtil;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,10 @@ public class StringUtil {
     }
 
     public static String trim(String str) {
+        return StringUtils.trimWhitespace(str);
+    }
+
+    public static String trimAllWhitespace(String str) {
         return org.springframework.util.StringUtils.trimAllWhitespace(str);
     }
 
