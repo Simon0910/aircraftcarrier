@@ -9,7 +9,7 @@
     <select id="keywordsQuery" resultType="java.util.Map">
         SELECT DISTINCT
         <foreach collection="fields" index="index" item="field" separator=",">
-            #{field}
+            ${field}
         </foreach>
         FROM ${tableName}
         WHERE deleted = 0
@@ -17,9 +17,9 @@
             AND id > #{lastId}
         </if>
         <if test="likeField != null">
-            AND #{likeField} like CONCAT(#{keyword}, '%')
+            AND ${likeField} LIKE CONCAT(#{keyword}, '%')
         </if>
-        limit #{pageSize}
+        LIMIT #{pageSize}
     </select>
 
 </mapper>
