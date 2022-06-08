@@ -7,7 +7,7 @@
     </resultMap>
 
     <select id="keywordsQuery" resultType="java.util.Map">
-        SELECT DISTINCT
+        SELECT id,
         <foreach collection="fields" index="index" item="field" separator=",">
             ${field}
         </foreach>

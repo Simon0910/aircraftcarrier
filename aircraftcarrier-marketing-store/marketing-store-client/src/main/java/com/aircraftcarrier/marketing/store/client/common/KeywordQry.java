@@ -25,7 +25,7 @@ public class KeywordQry extends Query {
     /**
      * keyword
      */
-    @ApiModelProperty(value = "关键字", required = false, example = "123")
+    @ApiModelProperty(value = "关键字", required = false, example = "abc")
     @Size(max = 50, message = "请输入关键字长度不大于50")
     private String keyword;
 
@@ -51,7 +51,7 @@ public class KeywordQry extends Query {
     /**
      * tableName
      */
-    @ApiModelProperty(value = "表名称", required = true, example = "product")
+    @ApiModelProperty(value = "表名称", required = true, example = "t_product")
     @NotBlank(message = "请输入要查询的表名称")
     private String tableName;
 
