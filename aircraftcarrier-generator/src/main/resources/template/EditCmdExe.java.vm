@@ -36,10 +36,11 @@ public class ${cfg.EditCmdExe_n} {
     }
 
     /**
-    * 前置校验, 参数校验等
-    *
-    * @param editCmd 编辑Cmd
-    */
+     * 编辑 前置校验
+     * 新增和编辑校验 自行提取共用校验扩展
+     *
+     * @param editCmd editCmd
+     */
     private void beforeCheck(${cfg.EditCmd_n} editCmd) {
         // 1. Entity entity = getById(editCmd.getId());
         // if (editCmd.getBizNo() != entity.getBizNo()) throw 用户错误

@@ -1,7 +1,9 @@
 package ${cfg.AddCmdExe_p};
 
+import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.BeanUtil;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import ${cfg.AddCmd_f};
 import ${cfg.Gateway_f};
 import ${cfg.Entity_f};
@@ -29,8 +31,21 @@ public class ${cfg.AddCmdExe_n} {
 
 
     public SingleResponse<Void> execute(${cfg.AddCmd_n} addCmd) {
+        beforeCheck(addCmd);
         ${cfg.Entity_n} entity = BeanUtil.convert(addCmd, ${cfg.Entity_n}.class);
         ${gatewayI}.add${table.originEntityName}(entity, addCmd.getOperator());
         return SingleResponse.ok();
+    }
+
+    /**
+     * 新增前置校验
+     * 新增和编辑校验 自行提取共用校验扩展
+     *
+     * @param addCmd addCmd
+     */
+    private void beforeCheck(${cfg.AddCmd_n} addCmd) {
+        if (StringUtil.isBlank(addCmd.getOperator())) {
+            throw new BizException("当前操作人为空");
+        }
     }
 }
