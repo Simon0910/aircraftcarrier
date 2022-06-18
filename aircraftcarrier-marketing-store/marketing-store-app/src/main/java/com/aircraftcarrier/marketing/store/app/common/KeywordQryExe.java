@@ -32,9 +32,6 @@ public class KeywordQryExe {
     private static final Map<String, String> FIELD_MAPPING = MapUtil.newHashMap(16);
     private static final Map<String, String> TABLE_MAPPING = MapUtil.newHashMap(16);
 
-    /**
-     * 初始化
-     */
     static {
         LIKE_FIELD_MAPPING.put("goodsNo", "goods_no");
 
@@ -44,26 +41,20 @@ public class KeywordQryExe {
     }
 
     public List<Map<String, Object>> execute(KeywordQry keywordQry) {
+        // query table
         if (StringUtil.isBlank(keywordQry.getTableName())) {
             return Collections.emptyList();
         }
+        keywordQry.setTableName(TABLE_MAPPING.get(keywordQry.getTableName()));
+        if (keywordQry.getTableName() == null) {
+            throw new SysException("table name error");
+        }
 
+        // query fields
         String[] fields = keywordQry.getFields();
         if (ArrayUtil.isEmpty(fields)) {
             return Collections.emptyList();
         }
-
-        // likeField like keyword%
-        String keyword = keywordQry.getKeyword();
-        if (StringUtil.isNotBlank(keyword)) {
-            keywordQry.setKeyword(StringUtil.trim(keyword));
-            keywordQry.setLikeField(LIKE_FIELD_MAPPING.get(keywordQry.getLikeField()));
-            if (keywordQry.getLikeField() == null) {
-                throw new SysException("like field error");
-            }
-        }
-
-        // fields
         for (int i = 0, len = fields.length; i < len; i++) {
             fields[i] = FIELD_MAPPING.get(fields[i]);
         }
@@ -72,10 +63,22 @@ public class KeywordQryExe {
             throw new SysException("field error");
         }
 
-        // table
-        keywordQry.setTableName(TABLE_MAPPING.get(keywordQry.getTableName()));
-        if (keywordQry.getTableName() == null) {
-            throw new SysException("table name error");
+        // likeField like keyword%
+        String keyword = keywordQry.getKeyword();
+        if (StringUtil.isNotBlank(keyword)) {
+
+            // keyword
+            keywordQry.setKeyword(StringUtil.trim(keyword));
+
+            // likeField
+            keywordQry.setLikeField(LIKE_FIELD_MAPPING.get(keywordQry.getLikeField()));
+            if (keywordQry.getLikeField() == null) {
+                throw new SysException("like field error");
+            }
+
+        } else {
+            // likeField set null
+            keywordQry.setLikeField(null);
         }
 
         return commonMapper.keywordsQuery(ObjUtil.obj2Map(keywordQry));
