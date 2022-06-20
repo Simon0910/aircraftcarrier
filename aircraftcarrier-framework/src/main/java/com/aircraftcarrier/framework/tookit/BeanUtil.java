@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -58,6 +59,15 @@ public class BeanUtil {
         }
     }
 
+    /**
+     * 转化复制实体
+     *
+     * @param orig     orig
+     * @param target   target
+     * @param consumer consumer
+     * @param <T>      T
+     * @return T
+     */
     public static <T> T convert(Object orig, Class<T> target, Consumer<T> consumer) {
         if (orig == null) {
             return null;
@@ -67,6 +77,31 @@ public class BeanUtil {
             T destEntry = target.getDeclaredConstructor().newInstance();
             beanCopier.copy(orig, destEntry, null);
             consumer.accept(destEntry);
+            return destEntry;
+        } catch (Exception e) {
+            throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 转化复制实体
+     *
+     * @param orig       orig
+     * @param target     target
+     * @param biConsumer biConsumer
+     * @param <E>        E
+     * @param <T>        T
+     * @return T
+     */
+    public static <E, T> T convert(E orig, Class<T> target, BiConsumer<E, T> biConsumer) {
+        if (orig == null) {
+            return null;
+        }
+        try {
+            final BeanCopier beanCopier = createBeanCopier(orig.getClass(), target);
+            T destEntry = target.getDeclaredConstructor().newInstance();
+            beanCopier.copy(orig, destEntry, null);
+            biConsumer.accept(orig, destEntry);
             return destEntry;
         } catch (Exception e) {
             throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
@@ -103,8 +138,10 @@ public class BeanUtil {
     /**
      * 转化复制实体LIST
      *
-     * @param orig   orig
-     * @param target target
+     * @param orig     orig
+     * @param target   target
+     * @param consumer consumer
+     * @param <T>      T
      * @return java.util.List<T>
      */
     public static <T> List<T> convertList(List<?> orig, Class<T> target, Consumer<T> consumer) {
@@ -128,6 +165,36 @@ public class BeanUtil {
         return dest;
     }
 
+    /**
+     * 转化复制实体LIST
+     *
+     * @param orig       orig
+     * @param target     target
+     * @param biConsumer biConsumer
+     * @param <E>        E
+     * @param <T>        T
+     * @return List<T>
+     */
+    public static <E, T> List<T> convertList(List<E> orig, Class<T> target, BiConsumer<E, T> biConsumer) {
+        if (orig == null || orig.isEmpty()) {
+            return new ArrayList<>(0);
+        }
+        List<T> dest = new ArrayList<>(orig.size());
+        try {
+            final BeanCopier beanCopier = createBeanCopier(orig.get(0).getClass(), target);
+            Constructor<T> constructor = target.getDeclaredConstructor();
+            T destEntry;
+            for (E each : orig) {
+                destEntry = constructor.newInstance();
+                beanCopier.copy(each, destEntry, null);
+                biConsumer.accept(each, destEntry);
+                dest.add(destEntry);
+            }
+        } catch (Exception e) {
+            throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+        return dest;
+    }
 
     /**
      * copyAndParse
