@@ -25,6 +25,7 @@ public class AuthServiceImpl extends AbstractUsernamePasswordAuthentication impl
     @Override
     public LoginUser mockLogin(Long userId) {
         LoginUser loginUser = new LoginUser();
+        loginUser.setId(1L);
         loginUser.setUsername("admin");
         loginUser.setStatus(StatusEnum.ENABLE.code());
         return loginUser;
