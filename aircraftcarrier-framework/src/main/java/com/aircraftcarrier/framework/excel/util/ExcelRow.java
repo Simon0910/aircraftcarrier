@@ -25,4 +25,13 @@ public class ExcelRow implements Serializable {
     public void setRowNo(Integer rowNo) {
         this.rowNo = rowNo;
     }
+
+    /**
+     * genUniqueKey
+     *
+     * @return key
+     */
+    public String genUniqueKey() {
+        return String.valueOf(rowNo);
+    }
 }

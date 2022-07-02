@@ -425,7 +425,14 @@ public class GeneratorStart {
                         return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
-                , new FileOutConfig(templatePath + "ImportCmdExe.java.vm", parentPath + appGroup + "/excel", "ImportCmdExe", "ImportCmdExe") {
+//                , new FileOutConfig(templatePath + "ImportCmdExe.java.vm", parentPath + appGroup + "/excel", "ImportCmdExe", "ImportCmdExe") {
+//                    @Override
+//                    public String outputFile(TableInfo tableInfo) {
+//                        // 自定义输入文件名称
+//                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+//                    }
+//                }
+                , new FileOutConfig(templatePath + "ImportCmdExePlus.java.vm", parentPath + appGroup + "/excel", "ImportCmdExePlus", "ImportCmdExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称

@@ -178,7 +178,7 @@ public class EasyExcelReadUtil {
         return true;
     }
 
-    private static <T extends ExcelRow> AnalysisEventListener buildAnalysisEventListener(LinkedHashSet<T> rowList, LinkedHashMap<Integer, String> errors) {
+    private static <T extends ExcelRow> AnalysisEventListener<T> buildAnalysisEventListener(LinkedHashSet<T> rowList, LinkedHashMap<Integer, String> errors) {
         return new AnalysisEventListener<T>() {
             boolean isEmpty = true;
 
@@ -191,6 +191,7 @@ public class EasyExcelReadUtil {
                 if (isEmpty) {
                     isEmpty = false;
                 }
+                row.setRowNo(EasyExcelReadUtil.getCurrentRowIndex(analysisContext));
                 rowList.add(row);
             }
 
@@ -215,7 +216,7 @@ public class EasyExcelReadUtil {
         };
     }
 
-    private static <T extends ExcelRow> AnalysisEventListener buildAnalysisEventListener(SingleRowListener<T> singleRowListener, Class<T> model) {
+    private static <T extends ExcelRow> AnalysisEventListener<T> buildAnalysisEventListener(SingleRowListener<T> singleRowListener, Class<T> model) {
         return new AnalysisEventListener<T>() {
             boolean isEmpty = true;
 
@@ -256,7 +257,7 @@ public class EasyExcelReadUtil {
         };
     }
 
-    private static <T extends ExcelRow> AnalysisEventListener buildAnalysisEventListener(BatchRowListener<T> batchRowListener, final Class<T> model) {
+    private static <T extends ExcelRow> AnalysisEventListener<T> buildAnalysisEventListener(BatchRowListener<T> batchRowListener, final Class<T> model) {
         return new AnalysisEventListener<T>() {
             boolean isEmpty = true;
             LinkedHashSet<T> rowSet = new LinkedHashSet<>(BATCH_SIZE);

@@ -8,7 +8,7 @@ import ${cfg.AddCmdExe_f};
 import ${cfg.DeleteCmdExe_f};
 import ${cfg.EditCmdExe_f};
 import ${cfg.ExportCmdExe_f};
-import ${cfg.ImportCmdExe_f};
+import ${cfg.ImportCmdExePlus_f};
 import ${cfg.DetailQryExe_f};
 import ${cfg.PageQryExe_f};
 import ${cfg.service_f};
@@ -54,7 +54,7 @@ public class ${table.serviceImplName} implements ${table.serviceName} {
     @Resource
     private ${cfg.ExportCmdExe_n} ${cfg.ExportCmdExe_n_i};
     @Resource
-    private ${cfg.ImportCmdExe_n} ${cfg.ImportCmdExe_n_i};
+    private ${cfg.ImportCmdExePlus_n} ${cfg.ImportCmdExePlus_n_i};
 
 
     @Override
@@ -89,7 +89,7 @@ public class ${table.serviceImplName} implements ${table.serviceName} {
 
     @Override
     public SingleResponse<BatchResult> excelImport(${cfg.ImportCmd_n} importCmd) {
-        return ${cfg.ImportCmdExe_n_i}.execute(importCmd);
+        return ${cfg.ImportCmdExePlus_n_i}.execute(importCmd);
     }
 }
 #end

@@ -1,0 +1,160 @@
+package ${cfg.ImportCmdExePlus_p};
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.CharSequenceUtil;
+import com.aircraftcarrier.framework.excel.AbstractImportUploadWorker;
+import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
+import com.aircraftcarrier.framework.excel.util.ReadResult;
+import com.aircraftcarrier.framework.exception.SysException;
+import com.aircraftcarrier.framework.model.BatchResult;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
+import com.aircraftcarrier.framework.tookit.MapUtil;
+import ${cfg.ImportCmd_f};
+import ${cfg.Import_f};
+import ${cfg.Repository_f};
+import ${cfg.Do_f};
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+
+/**
+ * 批量导入 执行类
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Slf4j
+@Component
+public class ${cfg.ImportCmdExePlus_n} {
+
+    /**
+     * ${cfg.Repository_n}
+     */
+    @Resource
+    #set ($gatewayI = ${cfg.Repository_n_i})
+    private ${cfg.Repository_n} ${gatewayI};
+
+    /**
+     * execute
+     *
+     * @param importCmd importCmd
+     * @return SingleResponse<BatchResult>
+     */
+    public SingleResponse<BatchResult> execute(${cfg.ImportCmd_n} importCmd) {
+        MultipartFile file = importCmd.getFile();
+        InputStream inputStream;
+        try {
+            inputStream = file.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new SysException("file error");
+        }
+
+        EasyExcelReadUtil.checkExcelFile(file);
+        ReadResult<ProductDetailsImport> readResult = EasyExcelReadUtil.readAllList(inputStream, ProductDetailsImport.class, 1);
+
+        ${cfg.Import_n}Upload upload = new ${cfg.Import_n}Upload(readResult.getRowList());
+        upload.doWork();
+
+        return SingleResponse.ok(upload.getBatchResult());
+    }
+
+    /**
+     * 保存数据库
+     *
+     * @param rowList rowList
+     */
+    public void doSaveBatch(List<${cfg.Import_n}> rowList, BatchResult batchResult) {
+        if (CollUtil.isEmpty(rowList)) {
+            return;
+        }
+        // do saveBatch ...
+        List<${entity}> list = BeanUtil.convertList(rowList, ${entity}.class);
+        ${gatewayI}.saveBatch(list);
+        batchResult.increaseSuccess(rowList.size());
+    }
+
+    /**
+     * checkNullField
+     * 如果必要，可能要手写枚举校验
+     *
+     * @param row row
+     * @return boolean
+     */
+    private boolean checkNullField(${cfg.Import_n} row, BatchResult batchResult) {
+    #foreach($field in ${table.fields})
+        #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
+        #if("$!field.propertyType" == "String")
+        if (CharSequenceUtil.isBlank(row.get${sfN}())) {
+            batchResult.addErrorMsg(row.getRowNo(), "${field.comment}为空");
+            return false;
+        }
+        #else
+        if (Objects.isNull(row.get${sfN}())) {
+            batchResult.addErrorMsg(row.getRowNo(), "${field.comment}为null");
+            return false;
+        }
+        #end
+    #end
+        return true;
+    }
+
+    /**
+     * 上传类
+     */
+    class ${cfg.Import_n}Upload extends AbstractImportUploadWorker<${cfg.Import_n}> {
+
+        public ${cfg.Import_n}Upload(List<${cfg.Import_n}> list) {
+            super(list, 10);
+        }
+
+        @Override
+        protected List<${cfg.Import_n}> filter(List<${cfg.Import_n}> rowList) {
+            HashMap<String, Integer> seen = MapUtil.newHashMap(rowList.size());
+            return rowList.stream().filter(row -> {
+                Integer oldRowNo = seen.putIfAbsent(row.genUniqueKey(), row.getRowNo());
+                if (oldRowNo == null) {
+                    return true;
+                }
+                batchResult.addErrorMsg(row.getRowNo(), "与第[" + oldRowNo + "]行数据重复");
+                return false;
+            }).collect(Collectors.toList());
+        }
+
+        @Override
+        protected ${cfg.Import_n} preCheck(${cfg.Import_n} row) {
+            boolean b = checkNullField(row, batchResult);
+            if (b) {
+                return row;
+            }
+            return null;
+        }
+
+        @Override
+        protected List<${cfg.Import_n}> preBatchCheck(List<${cfg.Import_n}> rowList) {
+            log.info("preBatchCheck -> rowList.size:: {}", rowList.size());
+            return new ArrayList<>(rowList);
+        }
+
+        @Override
+        protected void doBatchInvoke(List<${cfg.Import_n}> rowList) {
+            log.info("doBatchInvoke -> rowList.size:: {}", rowList.size());
+            doSaveBatch(rowList, batchResult);
+        }
+
+    }
+
+
+}
