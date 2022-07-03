@@ -55,6 +55,7 @@ public class ${cfg.Import_n} extends ExcelRow {
      *
      * @return uniqueKey: 需要根据实际业务定义
      */
+    @Override
     public String genUniqueKey() {
         return rowNo + "-" + rowNo;
     }
