@@ -7,47 +7,66 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * @author lzp
+ */
 public abstract class AbstractImportUpload<T extends ExcelRow> {
 
-    /**
-     * batch size
-     */
-    public final int batchSize;
     /**
      * Result
      */
     public final BatchResult batchResult = new BatchResult();
     /**
+     * batch check size
+     */
+    protected int batchCheckSize;
+    /**
+     * batch invoke size
+     */
+    protected int batchInvokeSize;
+    /**
      * rows
      */
-    public final List<T> rowList;
+    protected List<T> rowList = new ArrayList<>();
 
     /**
      * AbstractImportUpload
-     *
-     * @param list list
      */
-    public AbstractImportUpload(List<T> list) {
-        this(list, 1000);
+    protected AbstractImportUpload() {
     }
 
 
     /**
      * AbstractImportUpload
      *
-     * @param list      list
-     * @param batchSize batchSize
+     * @param list list
      */
-    public AbstractImportUpload(List<T> list, int batchSize) {
+    protected AbstractImportUpload(List<T> list) {
+        this(list, 100, 1000);
+    }
+
+
+    /**
+     * AbstractImportUpload
+     *
+     * @param list            list
+     * @param batchCheckSize  batchCheckSize
+     * @param batchInvokeSize batchInvokeSize
+     */
+    protected AbstractImportUpload(List<T> list, int batchCheckSize, int batchInvokeSize) {
         if (list == null || list.isEmpty()) {
             throw new IllegalArgumentException("list must not be empty");
         }
-        if (batchSize < 10) {
-            throw new IllegalArgumentException("batchSize is too small");
+        if (batchCheckSize < 10) {
+            throw new IllegalArgumentException("batchCheckSize is too small");
+        }
+        if (batchInvokeSize < 10) {
+            throw new IllegalArgumentException("batchInvokeSize is too small");
         }
 
         this.rowList = list;
-        this.batchSize = batchSize;
+        this.batchCheckSize = batchCheckSize;
+        this.batchInvokeSize = batchInvokeSize;
     }
 
 
@@ -59,7 +78,7 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
      */
     List<T> doCheck(List<T> list) {
         List<T> allBatchCheckedList = new ArrayList<>(list.size());
-        List<T> tempList = new ArrayList<>(batchSize);
+        List<T> tempList = new ArrayList<>(batchCheckSize);
         int i = 1;
         for (Iterator<T> it = list.iterator(); it.hasNext(); i++) {
             // step 1
@@ -68,29 +87,26 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
                 continue;
             }
             tempList.add(t);
-            if (i % batchSize == 0) {
+            if (i % batchCheckSize == 0) {
                 // step 2
                 List<T> checkedList = preBatchCheck(tempList);
-                tempList.clear();
                 if (!checkedList.isEmpty()) {
                     allBatchCheckedList.addAll(checkedList);
                 }
+                tempList = new ArrayList<>(batchCheckSize);
             }
         }
 
         if (!tempList.isEmpty()) {
             // step 2
             List<T> checkedList = preBatchCheck(tempList);
-            tempList.clear(); // help gc
             if (!checkedList.isEmpty()) {
                 allBatchCheckedList.addAll(checkedList);
             }
         }
 
         // step 3
-        List<T> allCheckedList = preAllCheck(allBatchCheckedList);
-        allBatchCheckedList.clear();
-        return allCheckedList;
+        return preAllCheck(allBatchCheckedList);
     }
 
 
@@ -98,30 +114,19 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
      * do invoke
      */
     void doInvoke(List<T> list) {
-        List<T> tempList = new ArrayList<>(batchSize);
+        List<T> tempList = new ArrayList<>(batchInvokeSize);
         int i = 1;
         for (Iterator<T> it = list.iterator(); it.hasNext(); i++) {
             tempList.add(it.next());
-            if (i % batchSize == 0) {
+            if (i % batchInvokeSize == 0) {
                 doBatchInvoke(tempList);
-                tempList.clear();
+                tempList = new ArrayList<>(batchInvokeSize);
             }
         }
 
         if (!tempList.isEmpty()) {
             doBatchInvoke(tempList);
-            tempList.clear(); // help gc
         }
-    }
-
-
-    /**
-     * 获取最终上传结果
-     *
-     * @return BatchResult
-     */
-    public BatchResult getBatchResult() {
-        return batchResult;
     }
 
     /**
