@@ -15,7 +15,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      *
      * @param list list
      */
-    public AbstractImportUploadWorker(List<T> list) {
+    protected AbstractImportUploadWorker(List<T> list) {
         super(list);
     }
 
@@ -25,7 +25,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      * @param list      list
      * @param batchSize batchSize
      */
-    public AbstractImportUploadWorker(List<T> list, int batchSize) {
+    protected AbstractImportUploadWorker(List<T> list, int batchSize) {
         super(list, batchSize);
     }
 
@@ -34,7 +34,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      * 整体去重过滤
      *
      * @param rowList rowList
-     * @return
+     * @return List
      */
     @Override
     protected List<T> filter(List<T> rowList) {
@@ -46,7 +46,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      * 参数基本校验，字段关联校验
      *
      * @param row row
-     * @return
+     * @return T
      */
     @Override
     protected T preCheck(T row) {
@@ -58,7 +58,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      * 接口查询校验，数据库查询校验
      *
      * @param rowList rowList
-     * @return
+     * @return List
      */
     @Override
     protected List<T> preBatchCheck(List<T> rowList) {
@@ -72,7 +72,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      * 自定义分组校验
      *
      * @param rowList rowList
-     * @return
+     * @return List
      */
     @Override
     protected List<T> preAllCheck(List<T> rowList) {

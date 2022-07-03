@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.core.collection.CollUtil;
 import org.springframework.cglib.beans.BeanMap;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -26,7 +27,7 @@ public class ObjUtil {
         try {
             for (Field field : fields) {
                 // 获取在对象f中属性fields[i]对应的对象中的变量
-                field.setAccessible(true);
+                ReflectionUtils.makeAccessible(field);
                 map.put(field.getName(), field.get(obj));
             }
         } catch (IllegalAccessException e) {
@@ -53,7 +54,7 @@ public class ObjUtil {
                     continue;
                 }
                 if (map.containsKey(field.getName())) {
-                    field.setAccessible(true);
+                    ReflectionUtils.makeAccessible(field);
                     field.set(t, map.get(field.getName()));
                 }
             }

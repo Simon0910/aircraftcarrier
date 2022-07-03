@@ -19,6 +19,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -196,7 +197,7 @@ public class MapperRefresh implements ApplicationContextAware {
                 };
                 for (String fieldName : mapFieldNames) {
                     Field field = configuration.getClass().getDeclaredField(fieldName);
-                    field.setAccessible(true);
+                    ReflectionUtils.makeAccessible(field);
                     Map<String, Object> map = ((Map) field.get(configuration));
                     if (!(map instanceof StrictMap)) {
                         Map newMap = new StrictMap(org.springframework.util.StringUtils.capitalize(fieldName) + "collection");
@@ -209,11 +210,11 @@ public class MapperRefresh implements ApplicationContextAware {
 
                 // 清理已加载的资源标识，方便让它重新加载。
                 boolean isSupper = configuration.getClass().getSuperclass() == Configuration.class;
-                Field loadedResourcesField = isSupper ?
+                Field field = isSupper ?
                         configuration.getClass().getSuperclass().getDeclaredField("loadedResources")
                         : configuration.getClass().getDeclaredField("loadedResources");
-                loadedResourcesField.setAccessible(true);
-                Set loadedResourcesSet = ((Set) loadedResourcesField.get(configuration));
+                ReflectionUtils.makeAccessible(field);
+                Set loadedResourcesSet = ((Set) field.get(configuration));
                 loadedResourcesSet.remove(resource);
 
                 //重新编译加载资源文件。
@@ -403,16 +404,16 @@ public class MapperRefresh implements ApplicationContextAware {
 //        this.configuration = sqlSessionFactory.getConfiguration();
 //        boolean isSupper = configuration.getClass().getSuperclass() == Configuration.class;
 //        try {
-//            Field loadedResourcesField = isSupper ? configuration.getClass().getSuperclass().getDeclaredField("loadedResources")
+//            Field field = isSupper ? configuration.getClass().getSuperclass().getDeclaredField("loadedResources")
 //                    : configuration.getClass().getDeclaredField("loadedResources");
-//            loadedResourcesField.setAccessible(true);
-//            Set loadedResourcesSet = ((Set) loadedResourcesField.get(configuration));
+//            ReflectionUtils.makeAccessible(field);
+//            Set loadedResourcesSet = ((Set) field.get(configuration));
 //            XPathParser xPathParser = new XPathParser(resource.getInputStream(), true, configuration.getVariables(),
 //                    new XMLMapperEntityResolver());
 //            XNode context = xPathParser.evalNode("/mapper");
 //            String namespace = context.getStringAttribute("namespace");
-//            Field field = MapperRegistry.class.getDeclaredField("knownMappers");
-//            field.setAccessible(true);
+//            field = MapperRegistry.class.getDeclaredField("knownMappers");
+//            ReflectionUtils.makeAccessible(field);
 //            Map mapConfig = (Map) field.get(configuration.getMapperRegistry());
 //            mapConfig.remove(Resources.classForName(namespace));
 //            loadedResourcesSet.remove(resource.toString());

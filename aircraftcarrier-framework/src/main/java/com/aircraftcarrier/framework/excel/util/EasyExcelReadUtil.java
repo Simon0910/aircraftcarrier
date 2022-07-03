@@ -14,12 +14,11 @@ import com.alibaba.excel.read.metadata.ReadSheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,6 +35,11 @@ import java.util.Set;
  */
 @Slf4j
 public class EasyExcelReadUtil {
+
+    /**
+     * empty file
+     */
+    private static final String EMPTY_FILE = "上传文件为空";
 
     /**
      * 分隔符
@@ -58,10 +62,7 @@ public class EasyExcelReadUtil {
      * @param headRowNumber headRowNumber，表头共占用几行
      */
     private static void doRead(ExcelReaderBuilder builder, Integer startSheetNo, Integer endSheetNo, Integer headRowNumber) {
-        ExcelReader excelReader = builder
-                .headRowNumber(headRowNumber)
-                .autoTrim(true)
-                .build();
+        ExcelReader excelReader = builder.headRowNumber(headRowNumber).autoTrim(true).build();
         if (startSheetNo == null || endSheetNo == null) {
             excelReader.readAll();
             return;
@@ -73,67 +74,6 @@ public class EasyExcelReadUtil {
         excelReader.finish();
     }
 
-    /**
-     * 获取泛型的class
-     *
-     * @param object object
-     * @return class
-     */
-    private static <T> T getModelClass(Object object) {
-        T modelClass = null;
-        Type type = object.getClass().getGenericInterfaces()[0];
-        if (type instanceof ParameterizedType) {
-            Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
-            if (actualTypeArguments != null && actualTypeArguments.length > 0) {
-                modelClass = (T) actualTypeArguments[0];
-            }
-        } else {
-            return (T) ExcelRow.class;
-        }
-        return modelClass;
-    }
-
-
-    /**
-     * 包装自定义异常，包含页号和行号
-     *
-     * @param be              be
-     * @param analysisContext analysisContext
-     */
-    private static void throwNewMessageRuntimeException(RuntimeException be, AnalysisContext analysisContext) {
-        EasyExcelReadUtil.throwNewMessageRuntimeException(be.getMessage(), analysisContext);
-    }
-
-    /**
-     * 包装自定义异常，包含页号和行号
-     *
-     * @param analysisContext analysisContext
-     */
-    private static void throwNewMessageRuntimeException(AnalysisContext analysisContext) {
-        EasyExcelReadUtil.throwNewMessageRuntimeException("excel解析出错", analysisContext);
-    }
-
-    /**
-     * 包装自定义异常，包含页号和行号
-     *
-     * @param message         message
-     * @param analysisContext analysisContext
-     */
-    private static void throwNewMessageRuntimeException(String message, AnalysisContext analysisContext) {
-        throw new BizException(String.format("[%s]页，第[%s]行，[%s]",
-                analysisContext.readSheetHolder().getSheetName(), getCurrentRowIndex(analysisContext), message));
-    }
-
-    /**
-     * 包装自定义异常，包含页号和行号
-     *
-     * @param message         message
-     * @param analysisContext analysisContext
-     */
-    private static void throwNewMessageRuntimeException(String message, Integer columnIndex, AnalysisContext analysisContext) {
-        throw new BizException(String.format("[%s]页，第[%s]行，第[%s]列，[%s]",
-                analysisContext.readSheetHolder().getSheetName(), getCurrentRowIndex(analysisContext), columnIndex + 1, message));
-    }
 
     /**
      * 校验excel 只支持xlsx
@@ -145,7 +85,8 @@ public class EasyExcelReadUtil {
         if (file == null) {
             throw new BizException("file 不能为空");
         }
-        if (file.getOriginalFilename() == null || !ExcelTypeEnum.XLSX.getValue().equals(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(POINT)))) {
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !ExcelTypeEnum.XLSX.getValue().equals(originalFilename.substring(originalFilename.lastIndexOf(POINT)))) {
             throw new BizException("格式只支持xlsx");
         }
     }
@@ -162,7 +103,7 @@ public class EasyExcelReadUtil {
 
     public static boolean allFieldIsNull(ExcelRow o) throws IllegalAccessException {
         for (Field field : o.getClass().getDeclaredFields()) {
-            field.setAccessible(true);
+            ReflectionUtils.makeAccessible(field);
 
             Object object = field.get(o);
             if (object instanceof CharSequence) {
@@ -199,7 +140,7 @@ public class EasyExcelReadUtil {
             public void doAfterAllAnalysed(AnalysisContext analysisContext) {
                 log.info("doAfterAllAnalysed...");
                 if (isEmpty) {
-                    throw new BizException("上传文件为空");
+                    throw new BizException(EMPTY_FILE);
                 }
             }
 
@@ -245,7 +186,7 @@ public class EasyExcelReadUtil {
             public void doAfterAllAnalysed(AnalysisContext analysisContext) {
                 log.info("doAfterAllAnalysed...");
                 if (isEmpty) {
-                    throw new BizException("上传文件为空");
+                    throw new BizException(EMPTY_FILE);
                 }
                 singleRowListener.doAfterAllAnalysed(analysisContext);
             }
@@ -291,7 +232,7 @@ public class EasyExcelReadUtil {
             @Override
             public void doAfterAllAnalysed(AnalysisContext analysisContext) {
                 if (isEmpty) {
-                    throw new BizException("上传文件为空");
+                    throw new BizException(EMPTY_FILE);
                 }
                 if (!rowSet.isEmpty()) {
                     ArrayList<T> list = new ArrayList<>(rowSet);
@@ -313,7 +254,6 @@ public class EasyExcelReadUtil {
      *
      * @param headMap headMap
      * @param model   model
-     * @param <T>
      */
     private static <T extends ExcelRow> void checkHead(Map<Integer, String> headMap, Class<T> model) {
         Map<Integer, String> head = MapUtil.newHashMap();
@@ -338,29 +278,30 @@ public class EasyExcelReadUtil {
     }
 
     /**
-     * @Description 通过class获取类字段信息
-     * @author qingyun
-     * @Date 2021年5月19日 下午1:41:47
+     * getIndexNameMap
+     * 通过class获取类字段信息
+     *
+     * @param clazz clazz
+     * @return Map
+     * @throws NoSuchFieldException NoSuchFieldException
      */
     private static Map<Integer, String> getIndexNameMap(Class<?> clazz) throws NoSuchFieldException {
-        Field field;
         //获取类中所有的属性
         Field[] fields = clazz.getDeclaredFields();
         Map<Integer, String> result = MapUtil.newHashMap(fields.length);
         int index = 0;
         for (Field item : fields) {
-            field = clazz.getDeclaredField(item.getName());
-            field.setAccessible(true);
+            Field field = clazz.getDeclaredField(item.getName());
+            ReflectionUtils.makeAccessible(field);
             //获取根据注解的方式获取ExcelProperty修饰的字段
             ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
             if (excelProperty != null) {
+                StringBuilder stringBuilder = new StringBuilder();
                 //字段值
-                String[] values = excelProperty.value();
-                StringBuilder value = new StringBuilder();
-                for (String v : values) {
-                    value.append(v);
+                for (String v : excelProperty.value()) {
+                    stringBuilder.append(v);
                 }
-                result.put(index, value.toString());
+                result.put(index, stringBuilder.toString());
                 index++;
             }
         }

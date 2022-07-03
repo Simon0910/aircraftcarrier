@@ -18,6 +18,7 @@ package com.aircraftcarrier.framework.tookit;
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.exception.ToolException;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -117,7 +118,7 @@ public final class ClassUtil {
     public static <T> T newInstance(Class<T> clazz) {
         try {
             Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
+            ReflectionUtils.makeAccessible(constructor);
             return constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("实例化对象时出现错误,请尝试给 %s 添加无参的构造方法", clazz.getName()), e);

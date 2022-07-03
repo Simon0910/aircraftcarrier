@@ -19,6 +19,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -160,16 +161,16 @@ public class MybatisMapperRefresh implements Runnable {
         this.configuration = sqlSessionFactory.getConfiguration();
         boolean isSupper = configuration.getClass().getSuperclass() == Configuration.class;
         try {
-            Field loadedResourcesField = isSupper ? configuration.getClass().getSuperclass().getDeclaredField("loadedResources")
+            Field field = isSupper ? configuration.getClass().getSuperclass().getDeclaredField("loadedResources")
                     : configuration.getClass().getDeclaredField("loadedResources");
-            loadedResourcesField.setAccessible(true);
-            Set loadedResourcesSet = ((Set) loadedResourcesField.get(configuration));
+            ReflectionUtils.makeAccessible(field);
+            Set loadedResourcesSet = ((Set) field.get(configuration));
             XPathParser xPathParser = new XPathParser(resource.getInputStream(), true, configuration.getVariables(),
                     new XMLMapperEntityResolver());
             XNode context = xPathParser.evalNode("/mapper");
             String namespace = context.getStringAttribute("namespace");
-            Field field = MapperRegistry.class.getDeclaredField("knownMappers");
-            field.setAccessible(true);
+            field = MapperRegistry.class.getDeclaredField("knownMappers");
+            ReflectionUtils.makeAccessible(field);
             Map mapConfig = (Map) field.get(configuration.getMapperRegistry());
 
             mapConfig.remove(Resources.classForName(namespace));
