@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
  * @author lzp
  */
 @Slf4j
-public class ImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload<T> {
+public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload<T> {
 
     /**
      * ImportUploadWorker
      */
-    protected ImportUploadWorker() {
+    protected AbstractImportUploadWorker() {
     }
 
     /**
@@ -26,7 +26,7 @@ public class ImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload
      *
      * @param list list
      */
-    protected ImportUploadWorker(List<T> list) {
+    protected AbstractImportUploadWorker(List<T> list) {
         super(list);
     }
 
@@ -37,7 +37,7 @@ public class ImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload
      * @param batchCheckSize  batchCheckSize
      * @param batchInvokeSize batchInvokeSize
      */
-    protected ImportUploadWorker(List<T> list, int batchCheckSize, int batchInvokeSize) {
+    protected AbstractImportUploadWorker(List<T> list, int batchCheckSize, int batchInvokeSize) {
         super(list, batchCheckSize, batchInvokeSize);
     }
 
@@ -134,7 +134,7 @@ public class ImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload
         /**
          * worker
          */
-        private final ImportUploadWorker<T> worker;
+        private final AbstractImportUploadWorker<T> worker;
 
         /**
          * batch check size
@@ -151,7 +151,7 @@ public class ImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload
          */
         private List<T> rowList = new ArrayList<>();
 
-        ImportUploadWorkerBuilder(ImportUploadWorker<T> worker) {
+        ImportUploadWorkerBuilder(AbstractImportUploadWorker<T> worker) {
             this.worker = worker;
         }
 
@@ -170,7 +170,7 @@ public class ImportUploadWorker<T extends ExcelRow> extends AbstractImportUpload
             return this;
         }
 
-        public ImportUploadWorker<T> build() {
+        public AbstractImportUploadWorker<T> build() {
             worker.batchCheckSize = this.batchCheckSize;
             worker.batchInvokeSize = this.batchInvokeSize;
             worker.rowList = this.rowList;
