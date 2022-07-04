@@ -1,0 +1,17 @@
+package ${cfg.MybatisPlus_p};
+
+import ${cfg.Do_f};
+import ${cfg.mapper_f};
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.stereotype.Component;
+
+/**
+ * $!{table.comment} MybatisPlus
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Component
+public class ${cfg.MybatisPlus_n} extends ServiceImpl<${cfg.mapper_n}, ${entity}> {
+}

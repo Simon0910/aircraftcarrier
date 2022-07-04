@@ -4,8 +4,8 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.BeanUtil;
 import ${cfg.DetailQry_f};
 import ${cfg.Co_f};
-import ${cfg.Gateway_f};
-import ${cfg.Entity_f};
+import ${cfg.Repository_f};
+import ${cfg.Do_f};
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -21,16 +21,17 @@ import javax.annotation.Resource;
 @Component
 public class ${cfg.DetailQryExe_n} {
 
+
     /**
-     * ${cfg.Gateway_n}
+     * ${cfg.Repository_n}
      */
     @Resource
-    private ${cfg.Gateway_n} ${cfg.Gateway_n_i};
+    ${cfg.Repository_n} ${cfg.Repository_n_i};
 
 
     public SingleResponse<${cfg.Co_n}> execute(${cfg.DetailQry_n} detailQry) {
-        ${cfg.Entity_n} detailEntity = ${cfg.Gateway_n_i}.getDetail(detailQry.getId());
-        ${cfg.Co_n} detail${cfg.Co_cs} = BeanUtil.convert(detailEntity, ${cfg.Co_n}.class);
+        ${entity} ${cfg.Do_n_i} = ${cfg.Repository_n_i}.getDetail(detailQry.getId());
+        ${cfg.Co_n} detail${cfg.Co_cs} = BeanUtil.convert(${cfg.Do_n_i}, ${cfg.Co_n}.class);
         return SingleResponse.ok(detail${cfg.Co_cs});
     }
 }

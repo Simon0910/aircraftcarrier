@@ -1,16 +1,13 @@
 package ${cfg.Repository_p};
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.exception.SysException;
-import com.aircraftcarrier.framework.tookit.BeanUtil;
-import ${cfg.Gateway_f};
-import ${cfg.Entity_f};
-import ${cfg.mapper_f};
+import ${cfg.MybatisPlus_f};
 import ${cfg.Do_f};
+import ${cfg.mapper_f};
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
 import java.util.Collection;
@@ -25,9 +22,8 @@ import java.util.List;
  * @date ${date}
  * @since 1.0
  */
-@Component
-public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${entity}>
-        implements ${cfg.Gateway_n} {
+@Repository
+public class ${cfg.Repository_n} {
 
     /**
      * ${cfg.mapper_n}
@@ -36,57 +32,86 @@ public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${enti
     #set ($mapperI = ${cfg.mapper_n_i})
     private ${cfg.mapper_n} ${mapperI};
 
+    /**
+     * ${cfg.MybatisPlus_n}
+     */
+    @Resource
+    #set ($plusI = ${cfg.MybatisPlus_n_i})
+    private ${cfg.MybatisPlus_n} ${cfg.MybatisPlus_n_i};
 
-    @Override
-    public ${cfg.Entity_n} add${table.originEntityName}(${cfg.Entity_n} entity, String operator) {
-        if (StrUtil.isBlank(operator)) {
+    /**
+     * addProductDetails
+     *
+     * @param insertDo insertDo
+     * @param operator operator
+     * @return ${entity}
+     */
+    public ${entity} add${table.originEntityName}(${entity} insertDo, String operator) {
+        if (CharSequenceUtil.isBlank(operator)) {
             throw new SysException("add operator must not be empty!");
         }
-        ${entity} insertDo = BeanUtil.convert(entity, ${entity}.class);
         ${mapperI}.insert(insertDo);
-        return entity;
+        return insertDo;
     }
 
-    @Override
-    public ${cfg.Entity_n} getDetail(Long id) {
+    /**
+     * getDetail
+     *
+     * @param id id
+     * @return ${entity}
+     */
+    public ${entity} getDetail(Long id) {
         if (id == null) {
             throw new SysException("getDetail id must not be null");
         }
-        ${entity} ${entityI} = ${mapperI}.selectById(id);
-        return BeanUtil.convert(${entityI}, ${cfg.Entity_n}.class);
+        return ${mapperI}.selectById(id);
     }
 
-    @Override
-    public ${cfg.Entity_n} editSave(Long id, ${cfg.Entity_n} entity, String operator) {
-        if (StrUtil.isBlank(operator)) {
+    /**
+     * editSave
+     *
+     * @param updateSelectiveDo updateSelectiveDo
+     * @param operator          operator
+     * @return ProductDetailsDo
+     */
+    public ${entity} editSave(${entity} updateSelectiveDo, String operator) {
+        if (CharSequenceUtil.isBlank(operator)) {
             throw new SysException("editSave operator must not be empty!");
         }
-        if (id == null) {
+        if (updateSelectiveDo.getId() == null) {
             throw new SysException("editSave id must not be null!");
         }
         // 针对多个人看到同一条记录的情况并发时, 并做编辑时的乐观锁+版本号解决冲突
         // update table set xx = xx, version = version + 1 where version = editCmd.getVersion()
-        // if (return 0 throw 系统繁忙,请重试)
-        ${entity} updateSelectiveDo = BeanUtil.convert(entity, ${entity}.class);
-        updateSelectiveDo.setId(id);
+        // return 0 throw 系统繁忙,请重试
         ${mapperI}.updateById(updateSelectiveDo);
-        entity.setId(id);
-        return entity;
+        return updateSelectiveDo;
     }
 
-    @Override
-    public int deleteBatch(Collection<Long> idList, String operator) {
-        if (StrUtil.isBlank(operator)) {
+    /**
+     * deleteBatch
+     *
+     * @param ids      ids
+     * @param operator operator
+     * @return int
+     */
+    public int deleteBatch(Collection<Long> ids, String operator) {
+        if (CharSequenceUtil.isBlank(operator)) {
             throw new SysException("deleteBatch operator must not be empty!");
         }
-        if (CollUtil.isEmpty(idList)) {
-            throw new SysException("deleteBatch idList must not be empty!");
+        if (CollUtil.isEmpty(ids)) {
+            throw new SysException("deleteBatch ids must not be empty!");
         }
-        return ${mapperI}.deleteBatchIds(idList);
+        return ${mapperI}.deleteBatchIds(ids);
     }
 
-    @Override
-    public List<${cfg.Entity_n}> selectByIds(Collection<Long> ids) {
+    /**
+     * selectByIds
+     *
+     * @param ids ids
+     * @return List
+     */
+    public List<${entity}> selectByIds(Collection<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             throw new SysException("selectByIds ids must not be empty!");
         }
@@ -94,8 +119,19 @@ public class ${cfg.Repository_n} extends ServiceImpl<${table.mapperName}, ${enti
         LambdaQueryWrapper<${entity}> queryWrapper = new LambdaQueryWrapper<${entity}>()
                 .in(${entity}::getId, ids);
 
-        List<${entity}> doList = ${mapperI}.selectList(queryWrapper);
-        return BeanUtil.convertList(doList, ${cfg.Entity_n}.class);
+        return ${mapperI}.selectList(queryWrapper);
     }
 
+    /**
+     * saveBatch
+     *
+     * @param list list
+     */
+    public void saveBatch(List<${entity}> list) {
+        if (list == null || list.isEmpty()) {
+            throw new SysException("saveBatch list must not be empty!");
+        }
+
+        ${plusI}.saveBatch(list);
+    }
 }

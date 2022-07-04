@@ -204,15 +204,17 @@ public class GeneratorStart {
 
         String entityTemplate = templatePath + "Do.java.vm";
         String mapperTemplate = templatePath + "mapper.java.vm";
+        String mybatisPlusTemplate = templatePath + "MybatisPlus.java.vm";
         String xmlTemplate = templatePath + "mapper.xml.vm";
         String gatewayTemplate = templatePath + "Gateway.java.vm";
+        String gatewayImplTemplate = templatePath + "GatewayImpl.java.vm";
         String repositoryTemplate = templatePath + "Repository.java.vm";
         String serviceTemplate = templatePath + "service.java.vm";
         String serviceImplTemplate = templatePath + "serviceImpl.java.vm";
         String controllerTemplate = templatePath + "controller.java.vm";
 
 
-        String mapperPackage = "infrastructure.repository";
+        String mapperPackage = "infrastructure.repository.mapper";
         String xmlPath = "resources/mappers";
         String rootPath = outputDir + "/";
 
@@ -248,6 +250,27 @@ public class GeneratorStart {
                         return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getMapperName(), StringPool.DOT_JAVA);
                     }
                 }
+                , new FileOutConfig(mybatisPlusTemplate, parentPath + "infrastructure/mybatisplus", "MybatisPlus", "MybatisPlus") {
+                    @Override
+                    public String outputFile(TableInfo tableInfo) {
+                        // 自定义输入文件名称
+                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                    }
+                }
+                , new FileOutConfig(gatewayImplTemplate, parentPath + "infrastructure/gateway", "GatewayImpl", "GatewayImpl") {
+                    @Override
+                    public String outputFile(TableInfo tableInfo) {
+                        // 自定义输入文件名称
+                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                    }
+                }
+                , new FileOutConfig(repositoryTemplate, parentPath + "infrastructure/repository", "Repository", "Repository") {
+                    @Override
+                    public String outputFile(TableInfo tableInfo) {
+                        // 自定义输入文件名称
+                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                    }
+                }
                 , new FileOutConfig(templatePath + "Entity.java.vm", parentPath + domainGroup, "Entity", "Entity") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
@@ -260,13 +283,6 @@ public class GeneratorStart {
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
                         return rootPath + domainProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
-                    }
-                }
-                , new FileOutConfig(repositoryTemplate, parentPath + "infrastructure/gatewayimpl", "Repository", "GatewayImpl") {
-                    @Override
-                    public String outputFile(TableInfo tableInfo) {
-                        // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 // ==============================Do End===========================================

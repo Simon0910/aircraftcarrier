@@ -1,10 +1,9 @@
 package ${cfg.EditCmdExe_p};
 
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.BeanUtil;
 import ${cfg.EditCmd_f};
-import ${cfg.Gateway_f};
-import ${cfg.Entity_f};
+import ${cfg.Repository_f};
+import ${cfg.Do_f};
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -21,17 +20,17 @@ import javax.annotation.Resource;
 public class ${cfg.EditCmdExe_n} {
 
     /**
-     * ${cfg.Gateway_n}
+     * ${cfg.Repository_n}
      */
+    #set ($RepositoryI = ${cfg.Repository_n_i})
     @Resource
-    #set ($gatewayI = ${cfg.Gateway_n_i})
-    private ${cfg.Gateway_n} ${gatewayI};
+    ${cfg.Repository_n} ${cfg.Repository_n_i};
 
 
     public SingleResponse<Void> execute(${cfg.EditCmd_n} editCmd) {
         beforeCheck(editCmd);
-        ${cfg.Entity_n} entity = copyEdit(editCmd);
-        ${gatewayI}.editSave(editCmd.getId(), entity, editCmd.getOperator());
+        ${entity} ${cfg.Do_n_i} = copyEdit(editCmd);
+        ${RepositoryI}.editSave(${cfg.Do_n_i}, editCmd.getOperator());
         return SingleResponse.ok();
     }
 
@@ -54,12 +53,12 @@ public class ${cfg.EditCmdExe_n} {
      * @param editCmd 编辑Cmd
      * @return Entity 用户确认后的信息
      */
-    private ${cfg.Entity_n} copyEdit(${cfg.EditCmd_n} editCmd) {
-        ${cfg.Entity_n} entity = new ${cfg.Entity_n}();
+    private ${entity} copyEdit(${cfg.EditCmd_n} editCmd) {
+        ${entity} ${cfg.Do_n_i} = new ${entity}();
 #foreach($field in ${table.fields})
     #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
-        entity.set${sfN}(editCmd.get${sfN}());
+        ${cfg.Do_n_i}.set${sfN}(editCmd.get${sfN}());
 #end
-        return entity;
+        return ${cfg.Do_n_i};
     }
 }
