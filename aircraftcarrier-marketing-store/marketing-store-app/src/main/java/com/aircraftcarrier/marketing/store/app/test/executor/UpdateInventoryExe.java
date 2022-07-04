@@ -2,7 +2,7 @@ package com.aircraftcarrier.marketing.store.app.test.executor;
 
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.LockKeyUtil;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.ProductMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.ProductMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import lombok.extern.slf4j.Slf4j;

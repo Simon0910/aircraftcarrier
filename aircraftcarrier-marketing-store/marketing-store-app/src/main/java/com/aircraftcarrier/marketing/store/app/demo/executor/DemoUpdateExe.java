@@ -3,7 +3,7 @@ package com.aircraftcarrier.marketing.store.app.demo.executor;
 import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoUpdate;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

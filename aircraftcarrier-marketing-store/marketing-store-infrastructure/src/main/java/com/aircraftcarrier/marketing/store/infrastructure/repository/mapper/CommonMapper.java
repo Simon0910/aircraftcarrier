@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.infrastructure.repository;
+package com.aircraftcarrier.marketing.store.infrastructure.repository.mapper;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.springframework.stereotype.Repository;

@@ -16,8 +16,8 @@ import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImportExcel;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoPageVo;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoVo;
-import com.aircraftcarrier.marketing.store.domain.gateway.DemoGateway;
 import com.aircraftcarrier.marketing.store.domain.model.demo.DemoEntity;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoRepository;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ import java.util.List;
 public class DemoServiceImpl implements DemoService {
 
     @Resource
-    private DemoGateway demoGateway;
+    private DemoRepository demoRepository;
     @Resource
     private DemoPageQryCmdExe demoPageQryCmdExe;
     @Resource
@@ -66,8 +66,8 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public DemoVo getById(Serializable id) {
-        DemoEntity entity = demoGateway.getEntityById(id);
-        return BeanUtil.convert(entity, DemoVo.class);
+        DemoDo demoDo = demoRepository.getById(id);
+        return BeanUtil.convert(demoDo, DemoVo.class);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public int delete(ApprovalDeleteCmd deleteCmd) {
+    public boolean delete(ApprovalDeleteCmd deleteCmd) {
         return demoDeleteExe.execute(deleteCmd);
     }
 

@@ -1,7 +1,8 @@
 package com.aircraftcarrier.marketing.store.app.demo.executor;
 
 import com.aircraftcarrier.marketing.store.client.demo.cmd.ApprovalDeleteCmd;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoRepository;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,9 @@ import javax.annotation.Resource;
 public class DemoDeleteExe {
 
     @Resource
-    private DemoMapper demoMapper;
+    private DemoRepository demoRepository;
 
-    public int execute(ApprovalDeleteCmd deleteCmd) {
-        LambdaUpdateWrapper<DemoDo> condition = new LambdaUpdateWrapper<DemoDo>()
-                .in(DemoDo::getId, deleteCmd.getIds());
-        return demoMapper.delete(condition);
+    public boolean execute(ApprovalDeleteCmd deleteCmd) {
+        return demoRepository.deleteByIds(deleteCmd.getIds());
     }
 }

@@ -63,7 +63,7 @@ public interface DemoService {
      * @param deleteCmd deleteCmd
      * @return
      */
-    int delete(ApprovalDeleteCmd deleteCmd);
+    boolean delete(ApprovalDeleteCmd deleteCmd);
 
     /**
      * export

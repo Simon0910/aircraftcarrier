@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Component;

@@ -6,7 +6,7 @@ import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.ObjUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.aircraftcarrier.marketing.store.client.common.KeywordQry;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.CommonMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.CommonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

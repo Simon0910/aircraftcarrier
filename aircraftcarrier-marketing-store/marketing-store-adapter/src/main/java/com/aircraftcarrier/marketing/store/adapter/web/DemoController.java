@@ -100,7 +100,7 @@ public class DemoController extends BaseController {
     @ApiOperationSupport(order = 35)
     @ApiOperation("批量删除")
     @PostMapping("delete")
-    public int delete(@RequestParam(value = "ids") List<Long> ids) {
+    public boolean delete(@RequestParam(value = "ids") List<Long> ids) {
         return demoService.delete(new ApprovalDeleteCmd(ids));
     }
 

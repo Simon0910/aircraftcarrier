@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.infrastructure.repository;
+package com.aircraftcarrier.marketing.store.infrastructure.repository.mapper;
 
 import com.aircraftcarrier.framework.data.core.MybatisBaseMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;

@@ -5,7 +5,7 @@ import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.tookit.ObjUtil;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoPageQry;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import org.springframework.stereotype.Component;
 
