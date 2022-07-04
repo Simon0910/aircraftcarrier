@@ -3,8 +3,8 @@ package com.aircraftcarrier.framework.enums;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.Getter;
 
-import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * @author lzp
@@ -36,7 +36,7 @@ public enum LanguageEnum implements IEnum<String> {
     /**
      * MAPPINGS
      */
-    private static final HashMap<String, LanguageEnum> MAPPINGS = MapUtil.newHashMap(values().length);
+    private static final Map<String, LanguageEnum> MAPPINGS = MapUtil.newHashMap(values().length);
 
     static {
         for (LanguageEnum value : values()) {

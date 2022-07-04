@@ -12,7 +12,6 @@ import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.metadata.property.ExcelContentProperty;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -77,7 +76,7 @@ public class IEnumCodeConverter implements Converter<Object> {
         String name = annotation.sourceEnumClass().getName();
         Map<Object, String> integerStringMap = codeMap.get(name);
         if (integerStringMap == null) {
-            HashMap<Object, String> innerMap = MapUtil.newHashMap(32);
+            Map<Object, String> innerMap = MapUtil.newHashMap(32);
             Class<IEnum> anEnum = (Class<IEnum>) Class.forName(name);
             IEnum[] enumConstants = anEnum.getEnumConstants();
             for (IEnum enumConstant : enumConstants) {

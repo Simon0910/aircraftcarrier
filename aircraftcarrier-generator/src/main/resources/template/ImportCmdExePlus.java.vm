@@ -22,8 +22,8 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -77,7 +77,7 @@ public class ${cfg.ImportCmdExePlus_n} {
 
         @Override
         protected List<${cfg.Import_n}> filter(List<${cfg.Import_n}> rowList) {
-            HashMap<String, Integer> seen = MapUtil.newHashMap(rowList.size());
+            Map<String, Integer> seen = MapUtil.newHashMap(rowList.size());
             return rowList.stream().filter(row -> {
                 Integer oldRowNo = seen.putIfAbsent(row.genUniqueKey(), row.getRowNo());
                 if (oldRowNo == null) {

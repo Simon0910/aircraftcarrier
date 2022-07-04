@@ -8,7 +8,7 @@ package com.aircraftcarrier.framework.enums;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.Getter;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author lzp
@@ -28,7 +28,7 @@ public enum DeletedEnum implements IEnum<Integer> {
     /**
      * MAPPINGS
      */
-    private static final HashMap<Integer, DeletedEnum> MAPPINGS = MapUtil.newHashMap(values().length);
+    private static final Map<Integer, DeletedEnum> MAPPINGS = MapUtil.newHashMap(values().length);
 
     static {
         for (DeletedEnum value : values()) {

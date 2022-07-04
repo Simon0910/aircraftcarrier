@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.enums;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.Getter;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author lzp
@@ -22,7 +22,7 @@ public enum StatusEnum implements IEnum<Integer> {
     /**
      * MAPPINGS
      */
-    private static final HashMap<Integer, StatusEnum> MAPPINGS = MapUtil.newHashMap(values().length);
+    private static final Map<Integer, StatusEnum> MAPPINGS = MapUtil.newHashMap(values().length);
 
     static {
         for (StatusEnum value : values()) {

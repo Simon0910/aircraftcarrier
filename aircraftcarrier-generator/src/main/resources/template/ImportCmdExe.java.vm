@@ -23,8 +23,8 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -85,11 +85,11 @@ public class ${cfg.ImportCmdExe_n} {
      */
     class ${cfg.Import_n}Upload implements BatchRowListener<${cfg.Import_n}> {
         // 全局数据和数据库保持一致
-        HashMap<Integer, Integer> insertMap = MapUtil.newHashMap(GLOBAL_SIZE);
+        Map<Integer, Integer> insertMap = MapUtil.newHashMap(GLOBAL_SIZE);
         // 所有批次的重复数据, 第一条数据
-        ConcurrentHashMap<Integer, String> globalRepeatMap = MapUtil.newConcurrentHashMap(GLOBAL_SIZE);
+        Map<Integer, String> globalRepeatMap = MapUtil.newConcurrentHashMap(GLOBAL_SIZE);
         // 和Excel读取数据保持一致的数据(去除残缺的数据)
-        HashMap<String, Integer> uniqueMap = MapUtil.newHashMap(GLOBAL_SIZE);
+        Map<String, Integer> uniqueMap = MapUtil.newHashMap(GLOBAL_SIZE);
         // 上传结果
         BatchResult batchResult = new BatchResult();
 
@@ -98,7 +98,7 @@ public class ${cfg.ImportCmdExe_n} {
             // 临时容器
             List<ProductDetailsImport> tempResult = new ArrayList<>(SIZE);
             // 临时的重复数据, 第一条数据
-            HashMap<Integer, String> tempRepeatMap = MapUtil.newHashMap(SIZE);
+            Map<Integer, String> tempRepeatMap = MapUtil.newHashMap(SIZE);
             // 遍历当前批次
             for (${cfg.Import_n} row : rowList) {
                 boolean ok = checkNullField(row);
@@ -174,7 +174,7 @@ public class ${cfg.ImportCmdExe_n} {
          * @param tempRepeatMap 本批次保存需要过滤到数据
          * @return boolean
          */
-        private boolean checkRepeatRow(${cfg.Import_n} row, HashMap<Integer, String> tempRepeatMap) {
+        private boolean checkRepeatRow(${cfg.Import_n} row, Map<Integer, String> tempRepeatMap) {
             Integer oldRowNo = uniqueMap.putIfAbsent(row.genUniqueKey(), row.getRowNo());
             if (oldRowNo == null) {
                 return true;
