@@ -13,26 +13,40 @@ import java.util.List;
 public abstract class AbstractImportUpload<T extends ExcelRow> {
 
     /**
+     * BATCH_CHECK_SIZE_LOWER
+     */
+    public static final int BATCH_CHECK_SIZE_LOWER = 10;
+
+    /**
+     * BATCH_INVOKE_SIZE_LOWER
+     */
+    public static final int BATCH_INVOKE_SIZE_LOWER = 10;
+
+    /**
      * Result
      */
     public final BatchResult batchResult = new BatchResult();
+
     /**
      * batch check size
      */
     protected int batchCheckSize;
+
     /**
      * batch invoke size
      */
     protected int batchInvokeSize;
+
     /**
      * rows
      */
-    protected List<T> rowList = new ArrayList<>();
+    protected List<T> rowList;
 
     /**
      * AbstractImportUpload
      */
     protected AbstractImportUpload() {
+        this(new ArrayList<>());
     }
 
 
@@ -57,10 +71,10 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
         if (list == null || list.isEmpty()) {
             throw new IllegalArgumentException("list must not be empty");
         }
-        if (batchCheckSize < 10) {
+        if (batchCheckSize < BATCH_CHECK_SIZE_LOWER) {
             throw new IllegalArgumentException("batchCheckSize is too small");
         }
-        if (batchInvokeSize < 10) {
+        if (batchInvokeSize < BATCH_INVOKE_SIZE_LOWER) {
             throw new IllegalArgumentException("batchInvokeSize is too small");
         }
 

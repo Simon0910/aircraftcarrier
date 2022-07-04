@@ -50,7 +50,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      */
     @Override
     protected List<T> filter(List<T> rowList) {
-        return rowList.stream().filter(PredicateUtil.distinctByKey(T::genUniqueKey)).collect(Collectors.toList());
+        return rowList.stream().filter(PredicateUtil.distinctByKey(T::genUniqueKey, rowList.size())).collect(Collectors.toList());
     }
 
     /**
