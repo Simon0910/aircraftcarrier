@@ -68,8 +68,8 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
      * @param batchInvokeSize batchInvokeSize
      */
     protected AbstractImportUpload(List<T> list, int batchCheckSize, int batchInvokeSize) {
-        if (list == null || list.isEmpty()) {
-            throw new IllegalArgumentException("list must not be empty");
+        if (list == null) {
+            throw new IllegalArgumentException("list must not be null");
         }
         if (batchCheckSize < BATCH_CHECK_SIZE_LOWER) {
             throw new IllegalArgumentException("batchCheckSize is too small");
