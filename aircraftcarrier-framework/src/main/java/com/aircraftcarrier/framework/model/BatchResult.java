@@ -2,7 +2,6 @@ package com.aircraftcarrier.framework.model;
 
 
 import com.aircraftcarrier.framework.tookit.MapUtil;
-import com.aircraftcarrier.framework.tookit.StringUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,16 +19,19 @@ import java.util.TreeMap;
  * @date 2020/7/24
  */
 public class BatchResult implements Serializable {
-    /**
-     * 详细信息错误码
-     */
-    public static final String DETAIL_ERROR = "DETAIL_ERROR";
+
     /**
      * serialVersionUID
      */
     private static final long serialVersionUID = 1L;
+
     /**
-     * key: 行号
+     * 批量结果明细类型
+     */
+    public static final String BATCH_RESULT_ERROR = "BATCH_RESULT_ERROR";
+
+    /**
+     * rowNo: 行号
      */
     private static final String ROW_NO = "rowNo";
 
@@ -37,28 +39,49 @@ public class BatchResult implements Serializable {
      * msg: 错误信息
      */
     private static final String MSG = "msg";
+
+    /**
+     * errorType: 错误类型
+     */
+    private static final String ERROR_TYPE = "errorType";
+
+    /**
+     * errorCode: 错误码
+     */
+    private static final String ERROR_CODE = "errorCode";
+
+    /**
+     * ID: 数据主键
+     */
+    private static final String ID = "id";
+
     /**
      * 批量操作
      * 错误明细
      */
-    private Map<String, Map<String, Object>> errorTipMap;
+    private final transient Map<String, Map<String, Object>> errorTypeMap;
+
     /**
      * 批量上传
      * 错误明细
      */
-    private final TreeMap<Integer, Map<String, Object>> errorRowTreeMap = new TreeMap<>();
+    private final transient TreeMap<Integer, Map<String, Object>> errorRowTreeMap = new TreeMap<>();
+
     /**
      * 错误明细上限
      */
     private final Integer errorUpLimit;
+
     /**
      * 成功条数
      */
     private Integer successCount = 0;
+
     /**
      * 错误条数
      */
     private Integer errorCount = 0;
+
     /**
      * 最后错误行号
      */
@@ -78,7 +101,7 @@ public class BatchResult implements Serializable {
      */
     public BatchResult(int errorUpLimit) {
         this.errorUpLimit = errorUpLimit;
-        this.errorTipMap = MapUtil.newHashMap(errorUpLimit);
+        this.errorTypeMap = MapUtil.newHashMap(errorUpLimit);
     }
 
     /**
@@ -110,12 +133,17 @@ public class BatchResult implements Serializable {
     }
 
     /**
-     * 追加成功数
+     * 追加成功统计数
      */
     public void increaseSuccess(int successSum) {
         this.successCount += successSum;
     }
 
+    /**
+     * 追加错误统计数
+     *
+     * @param errorSum errorSum
+     */
     public void increaseError(int errorSum) {
         this.errorCount += errorSum;
     }
@@ -147,84 +175,87 @@ public class BatchResult implements Serializable {
     /**
      * 添加错误明细
      *
-     * @param tip      tip
-     * @param errorMsg errorMsg
-     */
-    public void addErrorMsg(String tip, Long id, String errorCode, String errorMsg) {
-        if (errorCount > errorUpLimit) {
-            return;
-        }
-
-        Map<String, Object> errorTip = new HashMap<>(6);
-        errorTip.put("tip", tip);
-        errorTip.put("id", id);
-        errorTip.put("errorCode", errorCode);
-        errorTip.put(MSG, errorMsg);
-        putErrorMsgMap(tip, errorTip);
-    }
-
-    /**
-     * 添加错误明细
-     *
-     * @param tip      tip
-     * @param errorMsg errorMsg
-     */
-    public void addErrorMsg(String tip, String errorMsg) {
-        if (errorCount > errorUpLimit) {
-            return;
-        }
-        Map<String, Object> errorTip = new HashMap<>(3);
-        errorTip.put("tip", tip);
-        errorTip.put(MSG, errorMsg);
-        putErrorMsgMap(tip, errorTip);
-    }
-
-    /**
-     * 添加错误明细
-     *
      * @param errorMsg errorMsg
      */
     public void addErrorMsg(String errorMsg) {
         if (errorCount > errorUpLimit) {
             return;
         }
-        Map<String, Object> uploadFileErrorMsgTip = new HashMap<>(2);
-        uploadFileErrorMsgTip.put(MSG, errorMsg);
-        putErrorMsgMap(null, uploadFileErrorMsgTip);
+        Map<String, Object> uploadFileErrorMsgType = new HashMap<>(2);
+        uploadFileErrorMsgType.put(MSG, errorMsg);
+        putErrorMsgMap(String.valueOf(System.nanoTime()), uploadFileErrorMsgType);
     }
 
     /**
-     * 根据tip 添加错误信息
+     * 添加错误明细
      *
-     * @param tip      tip
-     * @param errorTip errorTip
+     * @param errorType errorType
+     * @param errorMsg  errorMsg
      */
-    private void putErrorMsgMap(String tip, Map<String, Object> errorTip) {
-        if (StringUtil.isBlank(tip)) {
-            errorTipMap.put(String.valueOf(System.nanoTime()), errorTip);
+    public void addErrorMsg(String errorType, String errorMsg) {
+        if (errorCount > errorUpLimit) {
+            return;
+        }
+        Map<String, Object> errorObj = new HashMap<>(3);
+        errorObj.put(ERROR_TYPE, errorType);
+        errorObj.put(MSG, errorMsg);
+        putErrorMsgMap(errorType, errorObj);
+    }
+
+    /**
+     * 添加错误明细
+     *
+     * @param errorType errorType
+     * @param errorCode errorCode
+     * @param errorMsg  errorMsg
+     * @param id        id
+     */
+    public void addErrorMsg(String errorType, String errorCode, String errorMsg, Long id) {
+        if (errorCount > errorUpLimit) {
+            return;
+        }
+        Map<String, Object> errorObj = new HashMap<>(6);
+        errorObj.put(ERROR_TYPE, errorType);
+        errorObj.put(ID, id);
+        errorObj.put(ERROR_CODE, errorCode);
+        errorObj.put(MSG, errorMsg);
+        putErrorMsgMap(errorType, errorObj);
+    }
+
+    /**
+     * 根据错误类型 添加错误信息
+     *
+     * @param errorType errorType
+     * @param errorObj  errorObj
+     */
+    private void putErrorMsgMap(String errorType, Map<String, Object> errorObj) {
+        Map<String, Object> originObj = errorTypeMap.get(errorType);
+        if (originObj != null) {
+            originObj.put(MSG, originObj.get(MSG) + ", " + errorObj.get(MSG));
         } else {
-            Map<String, Object> originErrorTip = errorTipMap.get(tip);
-            if (originErrorTip != null) {
-                originErrorTip.put(MSG, originErrorTip.get(MSG) + ", " + errorTip.get(MSG));
-            } else {
-                errorTipMap.put(tip, errorTip);
-                errorCount++;
-            }
+            errorTypeMap.put(errorType, errorObj);
+            errorCount++;
         }
     }
 
+    /**
+     * 检查某行是否有错误记录
+     *
+     * @param rowNo rowNo
+     * @return boolean
+     */
     public boolean hasErrorByRowNo(Integer rowNo) {
         return errorRowTreeMap.get(rowNo) != null;
     }
 
+    /**
+     * 最后一个统计错误的行号
+     *
+     * @return Integer
+     */
     public Integer lastErrorRowNo() {
         return lastErrorRowNo;
     }
-
-    public boolean hasErrorByLastErrorRowNo(Integer lastErrorRowNo) {
-        return this.lastErrorRowNo.equals(lastErrorRowNo);
-    }
-
 
     /**
      * 总条数展示
@@ -235,10 +266,20 @@ public class BatchResult implements Serializable {
         return successCount + errorCount;
     }
 
+    /**
+     * 成功数展示
+     *
+     * @return Integer
+     */
     public Integer getSuccessCount() {
         return successCount;
     }
 
+    /**
+     * 错误数展示
+     *
+     * @return Integer
+     */
     public Integer getErrorCount() {
         return errorCount;
     }
@@ -247,8 +288,8 @@ public class BatchResult implements Serializable {
      * 错误明细
      */
     public List<Map<String, Object>> getDetails() {
-        if (!errorTipMap.isEmpty()) {
-            return new ArrayList<>(errorTipMap.values());
+        if (!errorTypeMap.isEmpty()) {
+            return new ArrayList<>(errorTypeMap.values());
         }
         return new ArrayList<>(errorRowTreeMap.values());
     }
