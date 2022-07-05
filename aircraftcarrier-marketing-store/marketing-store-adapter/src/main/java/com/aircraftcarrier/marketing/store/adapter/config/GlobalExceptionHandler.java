@@ -21,6 +21,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -38,27 +39,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({HttpMediaTypeNotSupportedException.class, HttpRequestMethodNotSupportedException.class})
     public void httpHandler(ServletException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), response);
+        this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class})
     public void httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e, HttpServletResponse response) {
-        ResponseWriterUtil.handlerExceptionMessage(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), response);
+        this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({BizException.class})
     public void bizExceptionHandler(BizException e, HttpServletResponse response) {
-        this.doHandle(e.getErrCode(), e.getErrMessage(), response);
+        this.doHandle(e.getErrCode(), e.getErrMessage(), e, response);
     }
 
     @ExceptionHandler({FrameworkException.class})
     public void frameworkExceptionHandler(FrameworkException e, HttpServletResponse response) {
-        this.doHandle(e.getErrCode(), e.getErrMessage(), response);
+        this.doHandle(e.getErrCode(), e.getErrMessage(), e, response);
     }
 
     @ExceptionHandler({BindException.class})
     public void bindExceptionHandler(BindException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.PARAMS_GET_ERROR, "", response);
+        this.doHandle(ErrorCode.PARAMS_GET_ERROR, "", e, response);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
@@ -73,28 +74,36 @@ public class GlobalExceptionHandler {
                 sb.append("; ");
             }
         }
-        ResponseWriterUtil.handlerExceptionMessage(ErrorCode.PARAMS_GET_ERROR, sb.toString(), response);
+        this.doHandle(ErrorCode.PARAMS_GET_ERROR, sb.toString(), e, response);
     }
 
     @ExceptionHandler({ExcelAnalysisException.class})
     public void excelAnalysisExceptionHandler(ExcelAnalysisException e, HttpServletResponse response) {
-        log.error("内部系统错误: ", e);
-        this.doHandle(ErrorCode.SYS, e.getMessage(), response);
+        this.doHandle(ErrorCode.SYS, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({SysException.class})
     public void sysExceptionHandler(SysException e, HttpServletResponse response) {
-        log.error("内部系统错误: ", e);
-        this.doHandle(ErrorCode.SYS, e.getErrMessage(), response);
+        this.doHandle(ErrorCode.SYS, e.getErrMessage(), e, response);
+    }
+
+    @ExceptionHandler({MissingServletRequestPartException.class})
+    public void uploadExceptionHandler(MissingServletRequestPartException e, HttpServletResponse response) {
+        this.doHandle(ErrorCode.SYS, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({Exception.class})
     public void exceptionHandler(Exception e, HttpServletResponse response) {
-        log.error("内部系统错误: ", e);
-        this.doHandle(ErrorCode.SYS, "内部系统错误", response);
+        this.doHandle(ErrorCode.SYS, "内部系统错误", e, response);
     }
 
-    private void doHandle(int errorCode, String errorMsg, HttpServletResponse response) {
+    private void doHandle(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
+        log.error("内部系统错误: ", e);
+        ResponseWriterUtil.handlerExceptionMessage(errorCode, errorMsg, response);
+    }
+
+    private void doHandleI18n(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
+        log.error("内部系统错误: ", e);
         ResponseWriterUtil.handlerExceptionMessageI18n(errorCode, errorMsg, response);
     }
 }
