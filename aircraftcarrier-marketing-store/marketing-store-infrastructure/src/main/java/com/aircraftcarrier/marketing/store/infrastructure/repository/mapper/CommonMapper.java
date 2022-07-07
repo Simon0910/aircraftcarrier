@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.infrastructure.repository.mapper;
 
 import org.apache.ibatis.annotations.MapKey;
-import org.springframework.stereotype.Repository;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * @author lzp
  */
-@Repository
+@Mapper
 public interface CommonMapper {
 
 
