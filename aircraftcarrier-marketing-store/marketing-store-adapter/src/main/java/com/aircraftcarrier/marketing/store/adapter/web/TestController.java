@@ -43,21 +43,20 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class TestController {
 
-    private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(3, 3, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+    private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(3, 3, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
     @Value("classpath:demo.json")
     private org.springframework.core.io.Resource demoResource;
 
-    RedisTemplate redisTemplate;
 
     @Resource
     private TestService testService;
 
 
-    @ApiOperationSupport(order = 0)
+    @ApiOperationSupport(order = -1)
     @ApiOperation("hello")
     @GetMapping("/hello")
-    public SingleResponse<String> hello() throws IOException {
+    public SingleResponse<String> hello() {
         return SingleResponse.ok("hello world");
     }
 
@@ -71,7 +70,7 @@ public class TestController {
     @ApiOperationSupport(order = 10)
     @ApiOperation("事件发布")
     @GetMapping("/publishEvent")
-    public SingleResponse<Void> publishEvent() throws IOException {
+    public SingleResponse<Void> publishEvent() {
         LoginUser loginUser = LoginUserUtil.getLoginUser();
         log.info("LoginUser：{}", JsonUtil.obj2Json(loginUser));
 
@@ -138,6 +137,16 @@ public class TestController {
     public SingleResponse<String> deductionInventory(@RequestParam Serializable goodsNo) {
         for (int i = 0; i < 10; i++) {
             testService.deductionInventory(goodsNo);
+        }
+        return SingleResponse.ok();
+    }
+
+    @ApiOperationSupport(order = 37)
+    @ApiOperation(value = "多线程测试")
+    @GetMapping("/multiThread")
+    public SingleResponse<String> multiThread() {
+        for (int i = 0; i < 1; i++) {
+            testService.multiThread();
         }
         return SingleResponse.ok();
     }

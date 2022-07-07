@@ -1,6 +1,7 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
+import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.ObjUtil;
@@ -23,10 +24,15 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,10 +43,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 public class TestServiceImpl implements TestService {
-    private final int threadNum = 100;
-    private final CyclicBarrier barrier = new CyclicBarrier(threadNum);
-    private final TraceThreadPoolExecutor pool = new TraceThreadPoolExecutor(threadNum, threadNum, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-
+    private static final int THREAD_NUM = 100;
+    private final CyclicBarrier barrier = new CyclicBarrier(THREAD_NUM);
+    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(THREAD_NUM, THREAD_NUM, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    @Resource
+    UpdateInventoryExe updateInventoryExe;
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
@@ -49,8 +56,6 @@ public class TestServiceImpl implements TestService {
     private KieTemplate kieTemplate;
     @Resource
     private ReloadDroolsRules reloadDroolsRules;
-    @Resource
-    UpdateInventoryExe updateInventoryExe;
 
     @Override
     public void testTransactional() {
@@ -92,27 +97,28 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public String testLockKey(Serializable id) {
-        CountDownLatch latch = new CountDownLatch(threadNum);
+        CountDownLatch latch = new CountDownLatch(THREAD_NUM);
 
         RequestLimitUtil limitUtil = RequestLimitUtil.getInstance();
-        for (int i = 0; i < threadNum; i++) {
+        for (int i = 0; i < THREAD_NUM; i++) {
             String finalI = String.valueOf(id);
-//            String finalI = String.valueOf(i);
-            pool.execute(() -> {
+            threadPool.execute(() -> {
                 try {
                     barrier.await();
 
                     String name = Thread.currentThread().getName();
                     boolean require = limitUtil.require(finalI);
                     if (require) {
-                        System.out.println("sum ok: " + finalI + "_" + name);
+                        log.info("sum ok: " + finalI + "_" + name);
                         limitUtil.release(finalI);
                     } else {
-                        System.out.println("sum noo: " + finalI + "_" + name);
+                        log.info("sum noo: " + finalI + "_" + name);
                     }
 
                 } catch (InterruptedException | BrokenBarrierException e) {
-                    e.printStackTrace();
+                    log.warn("Interrupted!", e);
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 } finally {
                     latch.countDown();
                 }
@@ -123,7 +129,7 @@ public class TestServiceImpl implements TestService {
             long start = System.currentTimeMillis();
             latch.await();
             long end = System.currentTimeMillis();
-            System.out.println("耗时：" + (end - start));
+            log.info("耗时：" + (end - start));
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
@@ -156,21 +162,21 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void deductionInventory(Serializable goodsNo) {
-        final CountDownLatch latch = new CountDownLatch(threadNum);
+        final CountDownLatch latch = new CountDownLatch(THREAD_NUM);
         final AtomicInteger success = new AtomicInteger();
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        for (int i = 0; i < threadNum; i++) {
-            pool.execute(() -> {
+        for (int i = 0; i < THREAD_NUM; i++) {
+            threadPool.execute(() -> {
                 try {
 
                     SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
                     if (response.success()) {
-                        System.out.println("扣减库存 成功");
+                        log.info("扣减库存 成功");
                         success.incrementAndGet();
                     } else {
-                        System.out.println("扣减库存 失败 〒_〒");
+                        log.info("扣减库存 失败 〒_〒");
                         fail.incrementAndGet();
                     }
 
@@ -184,14 +190,53 @@ public class TestServiceImpl implements TestService {
             long start = System.currentTimeMillis();
             latch.await();
             long end = System.currentTimeMillis();
-            System.out.println("耗时：" + (end - start));
+            log.info("耗时：" + (end - start));
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("success: " + success);
-        System.out.println("fail: " + fail);
+        log.info("success: " + success);
+        log.info("fail: " + fail);
 
     }
+
+    @Override
+    public void multiThread() {
+        List<Callable<Boolean>> batchTasks = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            int finalI = i;
+            batchTasks.add(() -> {
+                // do task
+                TimeUnit.SECONDS.sleep(3);
+                log.error("task_" + finalI);
+                return true;
+            });
+        }
+
+        try {
+            List<Future<Boolean>> futures = threadPool.invokeAll(batchTasks);
+            for (Future<Boolean> future : futures) {
+                Boolean aBoolean = future.get();
+                log.info("result: {}", aBoolean);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ignore) {
+            throw new SysException("ignore");
+        }
+
+        log.error("multiThread end");
+    }
 }
+
+
+
+
+
+
+
+
+

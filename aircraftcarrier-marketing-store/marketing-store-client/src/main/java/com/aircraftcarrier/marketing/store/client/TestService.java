@@ -47,4 +47,9 @@ public interface TestService {
      * @param goodsNo 商品编号
      */
     void deductionInventory(Serializable goodsNo);
+
+    /**
+     * 多线程测试
+     */
+    void multiThread();
 }
