@@ -13,7 +13,7 @@ public class MessageUtil {
     private static final MessageSource MESSAGE_SOURCE;
 
     static {
-        MESSAGE_SOURCE = (MessageSource) SpringContextUtil.getBean("messageSource");
+        MESSAGE_SOURCE = (MessageSource) ApplicationContextUtil.getBean("messageSource");
     }
 
     private MessageUtil() {

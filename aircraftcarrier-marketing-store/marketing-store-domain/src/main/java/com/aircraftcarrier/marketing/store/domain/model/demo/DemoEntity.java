@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store.domain.model.demo;
 
+import com.aircraftcarrier.framework.core.Entity;
 import com.aircraftcarrier.framework.model.AbstractDTO;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 /**
  * @author lzp
  */
+@Entity
 @Data
 public class DemoEntity extends AbstractDTO<DemoEntity> {
     /**

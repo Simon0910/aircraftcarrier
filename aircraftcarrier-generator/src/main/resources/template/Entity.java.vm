@@ -1,5 +1,6 @@
 package ${cfg.Entity_p};
 
+import com.aircraftcarrier.framework.core.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  * @date ${date}
  * @since 1.0
  */
+@Entity
 @Setter
 @Getter
 public class ${cfg.Entity_n} implements Serializable {

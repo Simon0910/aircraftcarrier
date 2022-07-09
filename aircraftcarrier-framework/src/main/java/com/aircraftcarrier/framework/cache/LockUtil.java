@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.cache;
 
 import com.aircraftcarrier.framework.exception.FrameworkException;
-import com.aircraftcarrier.framework.tookit.SpringContextUtil;
+import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class LockUtil {
     private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
 
     static {
-        LOCK_TEMPLATE = SpringContextUtil.getBean(LockTemplate.class);
+        LOCK_TEMPLATE = ApplicationContextUtil.getBean(LockTemplate.class);
     }
 
     private LockUtil() {

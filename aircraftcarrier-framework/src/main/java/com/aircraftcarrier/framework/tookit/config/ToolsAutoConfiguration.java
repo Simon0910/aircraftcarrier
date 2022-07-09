@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.tookit.config;
 
-import com.aircraftcarrier.framework.tookit.SpringContextUtil;
+import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class ToolsAutoConfiguration {
 
     public void springContextUtil(ApplicationContext applicationContext) {
-        SpringContextUtil.setApplicationContext(applicationContext);
+        ApplicationContextUtil.setApplicationContext(applicationContext);
     }
 
 }
