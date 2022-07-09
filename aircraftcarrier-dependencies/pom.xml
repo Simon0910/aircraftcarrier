@@ -15,7 +15,7 @@
         <knife4j.version>2.0.9</knife4j.version>
         <joda.time.version>2.10.5</joda.time.version>
         <hutool.version>5.7.8</hutool.version>
-        <fastjson.version>1.2.79</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <validation.api.version>2.0.0.Final</validation.api.version>
         <hibernate.validator.version>6.1.6.Final</hibernate.validator.version>
         <commons.beanutils.version>1.9.3</commons.beanutils.version>

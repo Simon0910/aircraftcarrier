@@ -35,7 +35,7 @@ public class TreeNodeUtil {
      * @param <T>  树
      * @return List<T> 树
      */
-    public static <T extends AbstractTreeNode> List<T> listToTreeFast(List<T> list) {
+    public static <T extends AbstractTreeNode<T>> List<T> listToTreeFast(List<T> list) {
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
@@ -46,11 +46,11 @@ public class TreeNodeUtil {
         Map<Serializable, T> nodeMap = list.stream().collect(Collectors.toMap(AbstractTreeNode::getAbstractId, Function.identity()));
 
         list.forEach(node -> {
-            AbstractTreeNode parent = nodeMap.get(node.getAbstractParentId());
+            AbstractTreeNode<T> parent = nodeMap.get(node.getAbstractParentId());
             if (parent != null) {
                 parent.getChildren().add(node);
             } else {
-                AbstractTreeNode rootNode = root.get(node.getAbstractId());
+                AbstractTreeNode<T> rootNode = root.get(node.getAbstractId());
                 if (rootNode != null) {
                     return;
                 }
@@ -70,7 +70,7 @@ public class TreeNodeUtil {
      * @param <T>  树
      * @return List<T> 树
      */
-    public static <T extends AbstractTreeNode> List<T> listToTreeFast(List<T> list, final Serializable rootParentId) {
+    public static <T extends AbstractTreeNode<T>> List<T> listToTreeFast(List<T> list, final Serializable rootParentId) {
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
@@ -81,11 +81,11 @@ public class TreeNodeUtil {
         Map<Serializable, T> nodeMap = list.stream().collect(Collectors.toMap(AbstractTreeNode::getAbstractId, Function.identity()));
 
         list.forEach(node -> {
-            AbstractTreeNode parent = nodeMap.get(node.getAbstractParentId());
+            AbstractTreeNode<T> parent = nodeMap.get(node.getAbstractParentId());
             if (parent != null) {
                 parent.getChildren().add(node);
             } else {
-                AbstractTreeNode rootNode = root.get(node.getAbstractId());
+                AbstractTreeNode<T> rootNode = root.get(node.getAbstractId());
                 if (rootNode != null) {
                     return;
                 }
@@ -108,7 +108,7 @@ public class TreeNodeUtil {
      * @param <T>  树
      * @return List<T> 树
      */
-    public static <T extends AbstractTreeNode> List<T> listToTree(List<T> list) {
+    public static <T extends AbstractTreeNode<T>> List<T> listToTree(List<T> list) {
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
@@ -129,7 +129,7 @@ public class TreeNodeUtil {
      * @param <T>  树
      * @return 树
      */
-    public static <T extends AbstractTreeNode> List<T> listToTree(List<T> list, final Serializable rootParentId) {
+    public static <T extends AbstractTreeNode<T>> List<T> listToTree(List<T> list, final Serializable rootParentId) {
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
@@ -167,7 +167,7 @@ public class TreeNodeUtil {
         return rootChildList;
     }
 
-    private static <T extends AbstractTreeNode> Map<Serializable, T> valid(List<T> list) {
+    private static <T extends AbstractTreeNode<T>> Map<Serializable, T> valid(List<T> list) {
         return list.stream().collect(Collectors.toMap(AbstractTreeNode::getAbstractId, e -> {
             if (Objects.equals(e.getAbstractId(), e.getAbstractParentId())) {
                 throw new IllegalArgumentException(String.format("abstractId:[%s] abstractParentId must not be equal", e.getAbstractId()));
@@ -185,7 +185,7 @@ public class TreeNodeUtil {
      * @param <T>          树
      * @return List<T> 树
      */
-    public static <T extends AbstractTreeNode> List<T> treeToList(List<T> treeNodeList) {
+    public static <T extends AbstractTreeNode<T>> List<T> treeToList(List<T> treeNodeList) {
         List<T> list = new ArrayList<>();
         if (treeNodeList == null || treeNodeList.isEmpty()) {
             return list;
@@ -203,7 +203,7 @@ public class TreeNodeUtil {
      * @param list         list
      * @param <T>          树
      */
-    private static <T extends AbstractTreeNode> void childrenToList(List<T> childrenList, List<T> list) {
+    private static <T extends AbstractTreeNode<T>> void childrenToList(List<T> childrenList, List<T> list) {
         if (childrenList == null || childrenList.isEmpty()) {
             return;
         }
@@ -221,7 +221,7 @@ public class TreeNodeUtil {
      * @param id    id
      * @return Boolean
      */
-    private static <T extends AbstractTreeNode> Boolean isNotTreeNodeExist(Map<Serializable, T> idMap, Serializable id) {
+    private static <T extends AbstractTreeNode<T>> Boolean isNotTreeNodeExist(Map<Serializable, T> idMap, Serializable id) {
         if (id == null) {
             return false;
         }
@@ -237,7 +237,7 @@ public class TreeNodeUtil {
      * @param level            level
      * @return T
      */
-    private static <T extends AbstractTreeNode> T getTreeNode(Map<Serializable, List<T>> childTreeNodeMap, T t, Integer level) {
+    private static <T extends AbstractTreeNode<T>> T getTreeNode(Map<Serializable, List<T>> childTreeNodeMap, T t, Integer level) {
         t.setLevel(level++);
 
         List<T> childTreeNodeList = childTreeNodeMap.get(t.getAbstractId());

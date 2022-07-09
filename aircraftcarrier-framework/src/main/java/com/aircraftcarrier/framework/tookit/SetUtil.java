@@ -11,6 +11,9 @@ import java.util.Set;
  */
 public class SetUtil {
 
+    private SetUtil() {
+    }
+
     public static <T> Set<T> asSet(T... objs) {
         return new HashSet<>(Arrays.asList(objs));
     }

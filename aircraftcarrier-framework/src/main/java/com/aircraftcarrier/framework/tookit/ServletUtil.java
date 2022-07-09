@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -20,6 +20,10 @@ import java.net.URLEncoder;
  */
 public class ServletUtil {
 
+    private ServletUtil() {
+
+    }
+
     /**
      * 返回 JSON 字符串
      * 必须使用 APPLICATION_JSON_UTF8_VALUE，否则会乱码
@@ -27,7 +31,7 @@ public class ServletUtil {
      * @param response 响应
      * @param object   对象，会序列化成 JSON 字符串
      */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public static void writeJSON(HttpServletResponse response, Object object) {
         String content = JsonUtil.obj2Json(object);
         cn.hutool.extra.servlet.ServletUtil.write(response, content, MediaType.APPLICATION_JSON_VALUE);
@@ -39,7 +43,7 @@ public class ServletUtil {
      * @param response 响应
      * @param filename 文件名
      * @param content  附件内容
-     * @throws IOException
+     * @throws IOException e
      */
     public static void writeAttachment(HttpServletResponse response, String filename, byte[] content) throws IOException {
         // 设置 header 和 contentType
@@ -88,7 +92,7 @@ public class ServletUtil {
     }
 
     public static boolean isJsonRequest(ServletRequest request) {
-        return StrUtil.startWithIgnoreCase(request.getContentType(), MediaType.APPLICATION_JSON_VALUE);
+        return CharSequenceUtil.startWithIgnoreCase(request.getContentType(), MediaType.APPLICATION_JSON_VALUE);
     }
 
 }

@@ -16,19 +16,19 @@ public class LockKeyUtil {
     private LockKeyUtil() {
     }
 
-    private static ConcurrentHashMap<String, LockWrapper> locks = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, LockWrapper> LOCKS = new ConcurrentHashMap<>();
 
     public static void lock(String key) {
-        LockWrapper lockWrapper = locks.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
+        LockWrapper lockWrapper = LOCKS.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
         lockWrapper.lock.lock();
         lockWrapper.addThreadInQueue();
     }
 
     public static void unlock(String key) {
-        LockWrapper lockWrapper = locks.get(key);
+        LockWrapper lockWrapper = LOCKS.get(key);
         if (lockWrapper.removeThreadFromQueue() == 0) {
             // NB : We pass in the specific value to remove to handle the case where another thread would queue right before the removal
-            locks.remove(key, lockWrapper);
+            LOCKS.remove(key, lockWrapper);
         }
         lockWrapper.lock.unlock();
     }

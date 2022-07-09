@@ -14,6 +14,10 @@ import java.io.PrintWriter;
 @Slf4j
 public class ResponseWriterUtil {
 
+    private ResponseWriterUtil() {
+
+    }
+
     public static void handlerExceptionMessage(int errorCode, String errorMsg, HttpServletResponse response) {
         log.error("errorCode : {}, errorMsg : {}", errorCode, errorMsg);
 

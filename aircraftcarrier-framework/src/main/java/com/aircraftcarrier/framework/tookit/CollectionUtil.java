@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
  * @author lzp
  */
 public class CollectionUtil {
-    private static final int MAX_POWER_OF_TWO = 1073741824;
 
     private CollectionUtil() {
     }
@@ -104,7 +103,7 @@ public class CollectionUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return new ArrayList<>();
     }
 
 

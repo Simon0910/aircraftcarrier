@@ -12,7 +12,10 @@ import org.springframework.context.ApplicationContext;
 public class SpringContextUtil {
     private static ApplicationContext applicationContext;
 
-    public SpringContextUtil(ApplicationContext applicationContext) {
+    private SpringContextUtil() {
+    }
+
+    public static void setApplicationContext(ApplicationContext applicationContext) {
         SpringContextUtil.applicationContext = applicationContext;
     }
 
@@ -39,5 +42,6 @@ public class SpringContextUtil {
     public static Class<?> getType(String name) {
         return applicationContext.getType(name);
     }
+
 
 }

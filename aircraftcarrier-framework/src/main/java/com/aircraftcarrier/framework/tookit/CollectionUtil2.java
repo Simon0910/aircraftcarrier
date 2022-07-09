@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
  */
 public class CollectionUtil2 {
 
+    private CollectionUtil2() {
+    }
+
     public static boolean containsAny(Object source, Object... targets) {
         return Arrays.asList(targets).contains(source);
     }

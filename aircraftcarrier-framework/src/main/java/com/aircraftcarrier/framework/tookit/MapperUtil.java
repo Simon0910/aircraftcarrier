@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,22 +46,22 @@ public class MapperUtil {
     /**
      * 转换为 JSON 字符串
      *
-     * @param obj
-     * @return
-     * @throws Exception
+     * @param obj obj
+     * @return String
+     * @throws JsonProcessingException e
      */
-    public static String obj2json(Object obj) throws Exception {
+    public static String obj2json(Object obj) throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(obj);
     }
 
     /**
      * 转换为 JSON 字符串，忽略空值
      *
-     * @param obj
-     * @return
-     * @throws Exception
+     * @param obj obj
+     * @return String
+     * @throws JsonProcessingException e
      */
-    public static String obj2jsonIgnoreNull(Object obj) throws Exception {
+    public static String obj2jsonIgnoreNull(Object obj) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return mapper.writeValueAsString(obj);
@@ -144,12 +145,12 @@ public class MapperUtil {
     /**
      * 转换为 JavaBean
      *
-     * @param jsonString
-     * @param clazz
-     * @return
-     * @throws Exception
+     * @param jsonString jsonString
+     * @param clazz      clazz
+     * @return T
+     * @throws JsonProcessingException e
      */
-    public static <T> T json2pojo(String jsonString, Class<T> clazz) throws Exception {
+    public static <T> T json2pojo(String jsonString, Class<T> clazz) throws JsonProcessingException {
         OBJECT_MAPPER.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         return OBJECT_MAPPER.readValue(jsonString, clazz);
     }
@@ -157,24 +158,30 @@ public class MapperUtil {
     /**
      * 字符串转换为 Map<String, Object>
      *
-     * @param jsonString
-     * @return
-     * @throws Exception
+     * @param jsonString jsonString
+     * @return Map
+     * @throws JsonProcessingException e
      */
-    public static <T> Map<String, Object> json2map(String jsonString) throws Exception {
+    public static Map<String, Object> json2map(String jsonString) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        return mapper.readValue(jsonString, Map.class);
+        return mapper.readValue(jsonString, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     /**
      * 字符串转换为 Map<String, T>
+     *
+     * @param jsonString jsonString
+     * @param clazz      clazz
+     * @return Map
+     * @throws JsonProcessingException e
      */
-    public static <T> Map<String, T> json2map(String jsonString, Class<T> clazz) throws Exception {
-        Map<String, Map<String, Object>> map = (Map<String, Map<String, Object>>) OBJECT_MAPPER.readValue(jsonString, new TypeReference<Map<String, T>>() {
+    public static <T> Map<String, T> json2map(String jsonString, Class<T> clazz) throws JsonProcessingException {
+        Map<String, Map<String, T>> map = OBJECT_MAPPER.readValue(jsonString, new TypeReference<Map<String, Map<String, T>>>() {
         });
         Map<String, T> result = MapUtil.newHashMap(map.size());
-        for (Map.Entry<String, Map<String, Object>> entry : map.entrySet()) {
+        for (Map.Entry<String, Map<String, T>> entry : map.entrySet()) {
             result.put(entry.getKey(), map2pojo(entry.getValue(), clazz));
         }
         return result;
@@ -183,35 +190,37 @@ public class MapperUtil {
     /**
      * 深度转换 JSON 成 Map
      *
-     * @param json
-     * @return
+     * @param json json
+     * @return Map
+     * @throws JsonProcessingException e
      */
-    public static Map<String, Object> json2mapDeeply(String json) throws Exception {
+    public static Map<String, Object> json2mapDeeply(String json) throws JsonProcessingException {
         return json2MapRecursion(json, OBJECT_MAPPER);
     }
 
     /**
      * 把 JSON 解析成 List，如果 List 内部的元素存在 jsonString，继续解析
      *
-     * @param json
+     * @param json   json
      * @param mapper 解析工具
-     * @return
-     * @throws Exception
+     * @return List
+     * @throws JsonProcessingException e
      */
-    private static List<Object> json2ListRecursion(String json, ObjectMapper mapper) throws Exception {
+    private static List<Object> json2ListRecursion(String json, ObjectMapper mapper) throws JsonProcessingException {
         if (json == null) {
-            return null;
+            return new ArrayList<>();
         }
 
-        List<Object> list = mapper.readValue(json, List.class);
+        List<Object> list = mapper.readValue(json, new TypeReference<List<Object>>() {
+        });
 
         for (Object obj : list) {
-            if (obj != null && obj instanceof String) {
+            if (obj instanceof String) {
                 String str = (String) obj;
                 if (str.startsWith("[")) {
-                    obj = json2ListRecursion(str, mapper);
+                    json2ListRecursion(str, mapper);
                 } else if (obj.toString().startsWith("{")) {
-                    obj = json2MapRecursion(str, mapper);
+                    json2MapRecursion(str, mapper);
                 }
             }
         }
@@ -222,21 +231,22 @@ public class MapperUtil {
     /**
      * 把 JSON 解析成 Map，如果 Map 内部的 Value 存在 jsonString，继续解析
      *
-     * @param json
-     * @param mapper
-     * @return
-     * @throws Exception
+     * @param json   json
+     * @param mapper ObjectMapper
+     * @return Map
+     * @throws JsonProcessingException e
      */
-    private static Map<String, Object> json2MapRecursion(String json, ObjectMapper mapper) throws Exception {
+    private static Map<String, Object> json2MapRecursion(String json, ObjectMapper mapper) throws JsonProcessingException {
         if (json == null) {
-            return null;
+            return new HashMap<>(16);
         }
 
-        Map<String, Object> map = mapper.readValue(json, Map.class);
+        Map<String, Object> map = mapper.readValue(json, new TypeReference<Map<String, Object>>() {
+        });
 
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             Object obj = entry.getValue();
-            if (obj != null && obj instanceof String) {
+            if (obj instanceof String) {
                 String str = ((String) obj);
 
                 if (str.startsWith("[")) {
@@ -255,15 +265,14 @@ public class MapperUtil {
     /**
      * 将 JSON 数组转换为集合
      *
-     * @param jsonArrayStr
-     * @param clazz
-     * @return
-     * @throws Exception
+     * @param jsonArrayStr jsonArrayStr
+     * @param clazz        clazz
+     * @return List
+     * @throws JsonProcessingException e
      */
-    public static <T> List<T> json2list(String jsonArrayStr, Class<T> clazz) throws Exception {
+    public static <T> List<T> json2list(String jsonArrayStr, Class<T> clazz) throws JsonProcessingException {
         JavaType javaType = getCollectionType(ArrayList.class, clazz);
-        List<T> list = OBJECT_MAPPER.readValue(jsonArrayStr, javaType);
-        return list;
+        return OBJECT_MAPPER.readValue(jsonArrayStr, javaType);
     }
 
 
@@ -282,21 +291,21 @@ public class MapperUtil {
     /**
      * 将 Map 转换为 JavaBean
      *
-     * @param map
-     * @param clazz
-     * @return
+     * @param map   map
+     * @param clazz clazz
+     * @return T
      */
-    public static <T> T map2pojo(Map map, Class<T> clazz) {
+    public static <T> T map2pojo(Map<String, ?> map, Class<T> clazz) {
         return OBJECT_MAPPER.convertValue(map, clazz);
     }
 
     /**
      * 将 Map 转换为 JSON
      *
-     * @param map
-     * @return
+     * @param map map
+     * @return String
      */
-    public static String mapToJson(Map map) {
+    public static String mapToJson(Map<String, Object> map) {
         try {
             return OBJECT_MAPPER.writeValueAsString(map);
         } catch (Exception e) {
@@ -308,9 +317,9 @@ public class MapperUtil {
     /**
      * 将 JSON 对象转换为 JavaBean
      *
-     * @param obj
-     * @param clazz
-     * @return
+     * @param obj   obj
+     * @param clazz clazz
+     * @return T
      */
     public static <T> T obj2pojo(Object obj, Class<T> clazz) {
         return OBJECT_MAPPER.convertValue(obj, clazz);

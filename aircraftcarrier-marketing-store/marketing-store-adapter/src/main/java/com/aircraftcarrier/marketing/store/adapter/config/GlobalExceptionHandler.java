@@ -98,12 +98,12 @@ public class GlobalExceptionHandler {
     }
 
     private void doHandle(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
-        log.error("内部系统错误: ", e);
+        log.error("doHandle: ", e);
         ResponseWriterUtil.handlerExceptionMessage(errorCode, errorMsg, response);
     }
 
     private void doHandleI18n(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
-        log.error("内部系统错误: ", e);
+        log.error("doHandleI18n: ", e);
         ResponseWriterUtil.handlerExceptionMessageI18n(errorCode, errorMsg, response);
     }
 }

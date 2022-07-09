@@ -9,11 +9,14 @@ package com.aircraftcarrier.framework.tookit;
 public class StrUtil {
     private static final char UNDER_LINE = '_';
 
+    private StrUtil() {
+    }
+
     /**
      * 下划线转驼峰
      *
-     * @param name
-     * @return
+     * @param name name
+     * @return String
      */
     public static String toCamelCase(String name) {
         if (null == name || name.length() == 0) {
