@@ -171,6 +171,15 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
         }
 
         public AbstractImportUploadWorker<T> build() {
+            if (this.rowList == null) {
+                throw new IllegalArgumentException("list must not be null");
+            }
+            if (this.batchCheckSize < BATCH_CHECK_SIZE_LOWER) {
+                throw new IllegalArgumentException("batchCheckSize is too small");
+            }
+            if (this.batchInvokeSize < BATCH_INVOKE_SIZE_LOWER) {
+                throw new IllegalArgumentException("batchInvokeSize is too small");
+            }
             worker.batchCheckSize = this.batchCheckSize;
             worker.batchInvokeSize = this.batchInvokeSize;
             worker.rowList = this.rowList;
