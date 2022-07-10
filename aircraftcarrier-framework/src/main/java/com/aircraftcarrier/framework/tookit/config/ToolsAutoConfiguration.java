@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ToolsAutoConfiguration {
 
-    public void springContextUtil(ApplicationContext applicationContext) {
+    public ToolsAutoConfiguration(ApplicationContext applicationContext) {
         ApplicationContextUtil.setApplicationContext(applicationContext);
     }
 

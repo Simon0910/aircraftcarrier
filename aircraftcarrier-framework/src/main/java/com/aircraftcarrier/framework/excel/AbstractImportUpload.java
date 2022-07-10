@@ -106,8 +106,9 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
                 List<T> checkedList = preBatchCheck(tempList);
                 if (!checkedList.isEmpty()) {
                     allBatchCheckedList.addAll(checkedList);
+                    checkedList.clear();
                 }
-                tempList = new ArrayList<>(batchCheckSize);
+                tempList.clear();
             }
         }
 
@@ -116,7 +117,9 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
             List<T> checkedList = preBatchCheck(tempList);
             if (!checkedList.isEmpty()) {
                 allBatchCheckedList.addAll(checkedList);
+                checkedList.clear();
             }
+            tempList.clear();
         }
 
         // step 3
@@ -134,12 +137,13 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
             tempList.add(it.next());
             if (i % batchInvokeSize == 0) {
                 doBatchInvoke(tempList);
-                tempList = new ArrayList<>(batchInvokeSize);
+                tempList.clear();
             }
         }
 
         if (!tempList.isEmpty()) {
             doBatchInvoke(tempList);
+            tempList.clear();
         }
     }
 
