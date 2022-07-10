@@ -48,15 +48,15 @@ public class MybatisBatchUtil {
     private MybatisBatchUtil() {
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper, MybatisBaseMapper<T> mapper) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper, MybatisBaseMapper<T> mapper) {
         return selectAllListBatchByWrapper(queryWrapper, mapper, MybatisBatchUtil::invokeData, Integer.MAX_VALUE);
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper, MybatisBaseMapper<T> mapper, Consumer<List<T>> callback) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper, MybatisBaseMapper<T> mapper, Consumer<List<T>> callback) {
         return selectAllListBatchByWrapper(queryWrapper, mapper, callback, Integer.MAX_VALUE);
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper, MybatisBaseMapper<T> mapper, int maxRowCount) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper, MybatisBaseMapper<T> mapper, int maxRowCount) {
         return selectAllListBatchByWrapper(queryWrapper, mapper, MybatisBatchUtil::invokeData, maxRowCount);
     }
 
@@ -69,14 +69,14 @@ public class MybatisBatchUtil {
      * @param maxRowCount  maxRowCount
      * @return List<T>
      */
-    public static <T extends BaseDO> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper,
-                                                                         MybatisBaseMapper<T> mapper,
-                                                                         Consumer<List<T>> callback,
-                                                                         int maxRowCount) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchByWrapper(LambdaQueryWrapper<T> queryWrapper,
+                                                                            MybatisBaseMapper<T> mapper,
+                                                                            Consumer<List<T>> callback,
+                                                                            int maxRowCount) {
         long start = System.currentTimeMillis();
         List<T> result = new ArrayList<>();
         Long count = mapper.selectCount(queryWrapper);
-        log.info("count: 【{}】 ", count);
+        log.info("selectAllListBatchByWrapper - count: 【{}】 ", count);
         if (count < 1) {
             return result;
         }
@@ -90,38 +90,37 @@ public class MybatisBatchUtil {
         }
 
         int pages = PageUtil.totalPage(count.intValue(), PAGE_SIZE);
-        log.info("总页数: 【{}】", pages);
+        log.info("selectAllListBatchByWrapper - 总页数: 【{}】", pages);
+        PageSerializable<T> pageSerializable;
         Serializable id = 0;
-        PageSerializable<T> objectPageSerializable;
         for (int i = 0; i < pages; i++) {
             queryWrapper.gt(T::getId, id);
-            objectPageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
+            pageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
                     .doSelectPageSerializable(() -> mapper.selectList(queryWrapper));
 
-            List<T> list = objectPageSerializable.getList();
+            List<T> list = pageSerializable.getList();
             if (list.isEmpty()) {
                 return result;
             }
             callback.accept(list);
             result.addAll(list);
-
             T t = list.get(list.size() - 1);
             id = t.getId();
             list.clear(); //help gc
         }
-        log.info("批量查询完成 耗时：【{}】", (System.currentTimeMillis() - start));
+        log.info("selectAllListBatchByWrapper - 批量查询完成 耗时：【{}】", (System.currentTimeMillis() - start));
         return result;
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatch(ISelect iSelect) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatch(ISelect iSelect) {
         return selectAllListBatch(iSelect, MybatisBatchUtil::invokeData, Integer.MAX_VALUE);
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatch(ISelect iSelect, Consumer<List<T>> callback) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatch(ISelect iSelect, Consumer<List<T>> callback) {
         return selectAllListBatch(iSelect, callback, Integer.MAX_VALUE);
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatch(ISelect iSelect, int maxRowCount) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatch(ISelect iSelect, int maxRowCount) {
         return selectAllListBatch(iSelect, MybatisBatchUtil::invokeData, maxRowCount);
     }
 
@@ -134,20 +133,22 @@ public class MybatisBatchUtil {
      * @param <T>      返回类型
      * @return List<T> 返回结果
      */
-    public static <T extends BaseDO> List<T> selectAllListBatch(ISelect iSelect,
-                                                                Consumer<List<T>> callback,
-                                                                int maxRowCount) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatch(ISelect iSelect,
+                                                                   Consumer<List<T>> callback,
+                                                                   int maxRowCount) {
         long start = System.currentTimeMillis();
         List<T> result = new ArrayList<>();
         long count = PageMethod.count(iSelect);
-        log.info("count: 【{}】 ", count);
+        log.info("selectAllListBatch - count: 【{}】 ", count);
         if (count < 1) {
             return result;
         }
+
+        PageSerializable<T> pageSerializable;
         if (count <= PAGE_SIZE) {
-            PageSerializable<T> objectPageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
+            pageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
                     .doSelectPageSerializable(iSelect);
-            List<T> list = objectPageSerializable.getList();
+            List<T> list = pageSerializable.getList();
             callback.accept(list);
             return list;
         }
@@ -156,33 +157,32 @@ public class MybatisBatchUtil {
         }
 
         int pages = PageUtil.totalPage((int) count, PAGE_SIZE);
-        log.info("总页数: 【{}】", pages);
+        log.info("selectAllListBatch - 总页数: 【{}】", pages);
         for (int i = 0; i < pages; i++) {
-            PageSerializable<T> objectPageSerializable = PageMethod.startPage(i + 1, PAGE_SIZE, false)
+            pageSerializable = PageMethod.startPage(i + 1, PAGE_SIZE, false)
                     .doSelectPageSerializable(iSelect);
 
-            List<T> list = objectPageSerializable.getList();
+            List<T> list = pageSerializable.getList();
             if (list.isEmpty()) {
                 return result;
             }
             callback.accept(list);
             result.addAll(list);
-
             list.clear(); //help gc
         }
-        log.info("批量查询完成 耗时：【{}】", (System.currentTimeMillis() - start));
+        log.info("selectAllListBatch - 批量查询完成 耗时：【{}】", (System.currentTimeMillis() - start));
         return result;
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatchWithId(ISelect iSelect) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchWithId(ISelect iSelect) {
         return selectAllListBatchWithId(iSelect, MybatisBatchUtil::invokeData, Integer.MAX_VALUE);
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatchWithId(ISelect iSelect, Consumer<List<T>> callback) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchWithId(ISelect iSelect, Consumer<List<T>> callback) {
         return selectAllListBatchWithId(iSelect, callback, Integer.MAX_VALUE);
     }
 
-    public static <T extends BaseDO> List<T> selectAllListBatchWithId(ISelect iSelect, int maxRowCount) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchWithId(ISelect iSelect, int maxRowCount) {
         return selectAllListBatchWithId(iSelect, MybatisBatchUtil::invokeData, maxRowCount);
     }
 
@@ -195,20 +195,21 @@ public class MybatisBatchUtil {
      * @param <T>      返回类型
      * @return List<T> 返回结果
      */
-    public static <T extends BaseDO> List<T> selectAllListBatchWithId(ISelect iSelect,
-                                                                      Consumer<List<T>> callback,
-                                                                      int maxRowCount) {
+    public static <T extends BaseDO<T>> List<T> selectAllListBatchWithId(ISelect iSelect,
+                                                                         Consumer<List<T>> callback,
+                                                                         int maxRowCount) {
         long start = System.currentTimeMillis();
         List<T> result = new ArrayList<>();
         long count = PageMethod.count(iSelect);
-        log.info("count: 【{}】 ", count);
+        log.info("selectAllListBatchWithId - count: 【{}】 ", count);
         if (count < 1) {
             return result;
         }
+
+        PageSerializable<T> pageSerializable;
         if (count <= PAGE_SIZE) {
-            PageSerializable<T> objectPageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
-                    .doSelectPageSerializable(iSelect);
-            result = objectPageSerializable.getList();
+            pageSerializable = PageMethod.startPage(1, PAGE_SIZE, false).doSelectPageSerializable(iSelect);
+            result = pageSerializable.getList();
             callback.accept(result);
             return result;
         }
@@ -216,30 +217,29 @@ public class MybatisBatchUtil {
             count = maxRowCount;
         }
 
-        Serializable id = 0;
         int pages = PageUtil.totalPage((int) count, PAGE_SIZE);
-        log.info("总页数: 【{}】", pages);
+        log.info("selectAllListBatchWithId - 总页数: 【{}】", pages);
+        Serializable id = 0;
         for (int i = 0; i < pages; i++) {
-            PageSerializable<T> objectPageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
+            pageSerializable = PageMethod.startPage(1, PAGE_SIZE, false)
                     .boundSqlInterceptor(new MyBoundSqlInterceptor(id))
                     .doSelectPageSerializable(iSelect);
-            List<T> list = objectPageSerializable.getList();
 
+            List<T> list = pageSerializable.getList();
             if (list.isEmpty()) {
                 return result;
             }
             callback.accept(list);
             result.addAll(list);
-
             T t = list.get(list.size() - 1);
             id = t.getId();
             list.clear(); //help gc
         }
-        log.info("批量查询完成 耗时：【{}】", (System.currentTimeMillis() - start));
+        log.info("selectAllListBatchWithId - 批量查询完成 耗时：【{}】", (System.currentTimeMillis() - start));
         return result;
     }
 
-    public static <T extends BaseDO> void invokeData(List<T> list) {
+    public static <T extends BaseDO<T>> void invokeData(List<T> list) {
         log.debug("invokeData...");
     }
 
