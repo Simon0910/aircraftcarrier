@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.tookit;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -16,7 +16,7 @@ public class LockKeyUtil {
     private LockKeyUtil() {
     }
 
-    private static final ConcurrentHashMap<String, LockWrapper> LOCKS = new ConcurrentHashMap<>();
+    private static final Map<String, LockWrapper> LOCKS = MapUtil.newConcurrentHashMap(1024);
 
     public static void lock(String key) {
         LockWrapper lockWrapper = LOCKS.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
