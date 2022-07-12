@@ -19,8 +19,10 @@ public final class RequestLimitUtil {
 
     /**
      * 资源池
+     * 预估好同时申请资源的key的种类数量，防止因为map扩容缩容造成卡顿现象 （极端现象同时一万个不同的key来申请，会扩容，移除后缩容）
+     * { @link https://developer.aliyun.com/article/776568 }
      */
-    private static final Map<String, Integer> LIMIT = MapUtil.newConcurrentHashMap(16);
+    private static final Map<String, Integer> LIMIT = MapUtil.newConcurrentHashMap(1024);
 
     /**
      * 私有
@@ -33,7 +35,7 @@ public final class RequestLimitUtil {
      * <p>
      * 内部类的初始化，一定只会发生一次，不管多少个线程并发去初始化
      *
-     * @return
+     * @return RequestLimitUtil
      */
     public static RequestLimitUtil getInstance() {
         return Singleton.getInstance();

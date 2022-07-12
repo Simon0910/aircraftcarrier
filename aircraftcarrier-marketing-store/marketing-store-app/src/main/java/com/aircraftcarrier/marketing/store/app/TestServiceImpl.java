@@ -107,8 +107,10 @@ public class TestServiceImpl implements TestService {
                     barrier.await();
 
                     String name = Thread.currentThread().getName();
-                    boolean require = limitUtil.require(finalI);
+                    boolean require = limitUtil.require(finalI, 3);
                     if (require) {
+                        // do task
+                        TimeUnit.SECONDS.sleep(3);
                         log.info("sum ok: " + finalI + "_" + name);
                         limitUtil.release(finalI);
                     } else {

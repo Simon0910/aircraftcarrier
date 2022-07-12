@@ -117,7 +117,7 @@ public class TestController {
     @ApiOperation(value = "锁测试JVM")
     @GetMapping("/testLockKey")
     public SingleResponse<String> testLockKey(@RequestParam Serializable id) {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
             testService.testLockKey(id);
         }
         return SingleResponse.ok();
