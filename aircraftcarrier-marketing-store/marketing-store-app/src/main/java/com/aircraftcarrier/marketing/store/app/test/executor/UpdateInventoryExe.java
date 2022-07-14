@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
+import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.LockKeyUtil;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo;
@@ -57,6 +58,10 @@ public class UpdateInventoryExe {
         if (list.isEmpty()) {
             log.error("商品不存在");
             return SingleResponse.error("商品不存在");
+        }
+        if (list.size() != 1) {
+            // 暴漏数据异常，此问题需要从源头解决！！！
+            throw new SysException("Duplicate keys result in objects that cannot be mapped");
         }
 
         ProductDo productDo = list.get(0);
