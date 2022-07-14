@@ -2,8 +2,8 @@ package com.aircraftcarrier.marketing.store.app.test.executor;
 
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.LockKeyUtil;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.ProductMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.ProductMapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -75,6 +75,12 @@ public class UpdateInventoryExe {
      * @return SingleResponse
      */
     public SingleResponse<Void> updateInventory(Long id, Long version, Integer originInventory, Integer appendInventory) {
+        if (appendInventory == 0) {
+            // 避免无效递增版本号，无需不发送MQ库存变更通知，若更新所有字段和数据库相同避免死循环
+            log.warn("库存无变化");
+            return SingleResponse.error("库存无变化");
+        }
+
         int newInventory = originInventory + appendInventory;
         if (newInventory < 0) {
             log.warn("库存不足");
