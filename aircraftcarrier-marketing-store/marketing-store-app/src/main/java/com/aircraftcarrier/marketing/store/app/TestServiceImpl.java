@@ -205,32 +205,51 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void multiThread() {
-        List<Callable<Boolean>> batchTasks = new ArrayList<>();
+        List<Callable<String>> batchTasks = new ArrayList<>(10);
 
         for (int i = 0; i < 10; i++) {
             int finalI = i;
             batchTasks.add(() -> {
                 // do task
                 TimeUnit.SECONDS.sleep(3);
-                log.error("task_" + finalI);
-                return true;
+                if (finalI == 8) {
+                    log.error("task_" + finalI + " " + Thread.currentThread().getName() + " 〒_〒 〒_〒 !");
+                    // throw e 会被future.get()捕获;@1
+                    throw new SysException("ThreadName: " + Thread.currentThread().getName());
+                }
+                log.info("task_" + finalI + " " + Thread.currentThread().getName());
+                return "I'm OK: " + finalI;
             });
         }
 
+        // 异步执行
+        List<Future<String>> futures;
         try {
-            List<Future<Boolean>> futures = threadPool.invokeAll(batchTasks);
-            for (Future<Boolean> future : futures) {
-                Boolean aBoolean = future.get();
-                log.info("result: {}", aBoolean);
-            }
+            futures = threadPool.invokeAll(batchTasks);
+            // 等待批量任务执行完成。。。
         } catch (InterruptedException e) {
-            e.printStackTrace();
             Thread.currentThread().interrupt();
-        } catch (ExecutionException ignore) {
-            throw new SysException("ignore");
+            log.error("invokeAll - Interrupted error: ", e);
+            throw new SysException("invokeAll 中断异常", e);
         }
 
-        log.error("multiThread end");
+        // 按list顺序获取
+        for (Future<String> future : futures) {
+            try {
+                String result = future.get();
+                log.info("get result: {}", result);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("get - Interrupted error: ", e);
+//                throw new SysException("get 中断异常", e);
+            } catch (ExecutionException e) {
+                // 捕获某个线程任务抛出的异常;@1
+                log.error("get - Execution error: ", e);
+//                throw new SysException("get 执行异常", e);
+            }
+        }
+
+        log.info("multiThread end");
     }
 }
 
