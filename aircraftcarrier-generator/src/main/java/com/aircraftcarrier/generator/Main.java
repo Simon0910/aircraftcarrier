@@ -9,7 +9,7 @@ package com.aircraftcarrier.generator;
  *
  * @author lzp
  */
-public class Generator {
+public class Main {
     private static final String URL = "jdbc:mysql://localhost:3306/aircraftcarrier?allowMultiQueries=true&useSSL=false&rewriteBatchedStatements=true&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "12345678";
