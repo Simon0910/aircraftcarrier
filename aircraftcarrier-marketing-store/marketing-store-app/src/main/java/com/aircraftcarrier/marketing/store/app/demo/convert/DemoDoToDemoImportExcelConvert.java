@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * mapstruct 性能最好
+ * mapstruct
  *
  * @author lzp
  */
 @Mapper
-public interface DemoDo2DemoImportExcelConvert {
+public interface DemoDoToDemoImportExcelConvert {
     /**
      * INSTANCE
      */
-    DemoDo2DemoImportExcelConvert INSTANCE = Mappers.getMapper(DemoDo2DemoImportExcelConvert.class);
+    DemoDoToDemoImportExcelConvert INSTANCE = Mappers.getMapper(DemoDoToDemoImportExcelConvert.class);
 
     /**
      * 字段相同，但是含义不同，忽略
@@ -41,8 +41,8 @@ public interface DemoDo2DemoImportExcelConvert {
      */
     default DemoImportExcel convert(DemoDo bean) {
         DemoImportExcel importExcel = convert0(bean);
-        if (importExcel == null) {
-            return null;
+        if (importExcel != null) {
+            importExcel.setDataType(DataTypeEnum.GENERAL);
         }
         return importExcel;
     }

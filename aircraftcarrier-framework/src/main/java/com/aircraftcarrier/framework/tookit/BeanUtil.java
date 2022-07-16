@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
@@ -41,18 +42,18 @@ public class BeanUtil {
     /**
      * 转化复制实体
      *
-     * @param orig   orig
+     * @param source source
      * @param target target
      * @return T
      */
-    public static <T> T convert(Object orig, Class<T> target) {
-        if (orig == null) {
+    public static <T> T convert(Object source, Class<T> target) {
+        if (source == null) {
             return null;
         }
         try {
-            final BeanCopier beanCopier = createBeanCopier(orig.getClass(), target);
+            final BeanCopier beanCopier = createBeanCopier(source.getClass(), target);
             T destEntry = target.getDeclaredConstructor().newInstance();
-            beanCopier.copy(orig, destEntry, null);
+            beanCopier.copy(source, destEntry, null);
             return destEntry;
         } catch (Exception e) {
             throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
@@ -62,20 +63,20 @@ public class BeanUtil {
     /**
      * 转化复制实体
      *
-     * @param orig     orig
+     * @param source   source
      * @param target   target
      * @param consumer consumer
      * @param <T>      T
      * @return T
      */
-    public static <T> T convert(Object orig, Class<T> target, Consumer<T> consumer) {
-        if (orig == null) {
+    public static <T> T convert(Object source, Class<T> target, Consumer<T> consumer) {
+        if (source == null) {
             return null;
         }
         try {
-            final BeanCopier beanCopier = createBeanCopier(orig.getClass(), target);
+            final BeanCopier beanCopier = createBeanCopier(source.getClass(), target);
             T destEntry = target.getDeclaredConstructor().newInstance();
-            beanCopier.copy(orig, destEntry, null);
+            beanCopier.copy(source, destEntry, null);
             consumer.accept(destEntry);
             return destEntry;
         } catch (Exception e) {
@@ -86,22 +87,47 @@ public class BeanUtil {
     /**
      * 转化复制实体
      *
-     * @param orig       orig
+     * @param source     source
      * @param target     target
      * @param biConsumer biConsumer
-     * @param <E>        E
+     * @param <S>        S
      * @param <T>        T
      * @return T
      */
-    public static <E, T> T convert(E orig, Class<T> target, BiConsumer<E, T> biConsumer) {
-        if (orig == null) {
+    public static <S, T> T convert(S source, Class<T> target, BiConsumer<S, T> biConsumer) {
+        if (source == null) {
             return null;
         }
         try {
-            final BeanCopier beanCopier = createBeanCopier(orig.getClass(), target);
+            final BeanCopier beanCopier = createBeanCopier(source.getClass(), target);
             T destEntry = target.getDeclaredConstructor().newInstance();
-            beanCopier.copy(orig, destEntry, null);
-            biConsumer.accept(orig, destEntry);
+            beanCopier.copy(source, destEntry, null);
+            biConsumer.accept(source, destEntry);
+            return destEntry;
+        } catch (Exception e) {
+            throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 转化复制实体
+     *
+     * @param source source
+     * @param target target
+     * @param fun    fun
+     * @param <S>    S
+     * @param <T>    T
+     * @return T
+     */
+    public static <S, T> T convert(S source, Class<T> target, BiFunction<S, T, T> fun) {
+        if (source == null) {
+            return null;
+        }
+        try {
+            final BeanCopier beanCopier = createBeanCopier(source.getClass(), target);
+            T destEntry = target.getDeclaredConstructor().newInstance();
+            beanCopier.copy(source, destEntry, null);
+            fun.apply(source, destEntry);
             return destEntry;
         } catch (Exception e) {
             throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
@@ -111,20 +137,20 @@ public class BeanUtil {
     /**
      * 转化复制实体LIST
      *
-     * @param orig   orig
+     * @param source source
      * @param target target
      * @return java.util.List<T>
      */
-    public static <T> List<T> convertList(List<?> orig, Class<T> target) {
-        if (orig == null || orig.isEmpty()) {
+    public static <S, T> List<T> convertList(List<S> source, Class<T> target) {
+        if (source == null || source.isEmpty()) {
             return new ArrayList<>(0);
         }
-        List<T> dest = new ArrayList<>(orig.size());
+        List<T> dest = new ArrayList<>(source.size());
         try {
-            final BeanCopier beanCopier = createBeanCopier(orig.get(0).getClass(), target);
+            final BeanCopier beanCopier = createBeanCopier(source.get(0).getClass(), target);
             Constructor<T> constructor = target.getDeclaredConstructor();
             T destEntry;
-            for (Object each : orig) {
+            for (Object each : source) {
                 destEntry = constructor.newInstance();
                 beanCopier.copy(each, destEntry, null);
                 dest.add(destEntry);
@@ -138,22 +164,22 @@ public class BeanUtil {
     /**
      * 转化复制实体LIST
      *
-     * @param orig     orig
+     * @param source   source
      * @param target   target
      * @param consumer consumer
      * @param <T>      T
      * @return java.util.List<T>
      */
-    public static <T> List<T> convertList(List<?> orig, Class<T> target, Consumer<T> consumer) {
-        if (orig == null || orig.isEmpty()) {
+    public static <S, T> List<T> convertList(List<S> source, Class<T> target, Consumer<T> consumer) {
+        if (source == null || source.isEmpty()) {
             return new ArrayList<>(0);
         }
-        List<T> dest = new ArrayList<>(orig.size());
+        List<T> dest = new ArrayList<>(source.size());
         try {
-            final BeanCopier beanCopier = createBeanCopier(orig.get(0).getClass(), target);
+            final BeanCopier beanCopier = createBeanCopier(source.get(0).getClass(), target);
             Constructor<T> constructor = target.getDeclaredConstructor();
             T destEntry;
-            for (Object each : orig) {
+            for (Object each : source) {
                 destEntry = constructor.newInstance();
                 beanCopier.copy(each, destEntry, null);
                 consumer.accept(destEntry);
@@ -168,26 +194,57 @@ public class BeanUtil {
     /**
      * 转化复制实体LIST
      *
-     * @param orig       orig
+     * @param source     source
      * @param target     target
      * @param biConsumer biConsumer
-     * @param <E>        E
+     * @param <S>        S
      * @param <T>        T
      * @return List<T>
      */
-    public static <E, T> List<T> convertList(List<E> orig, Class<T> target, BiConsumer<E, T> biConsumer) {
-        if (orig == null || orig.isEmpty()) {
+    public static <S, T> List<T> convertList(List<S> source, Class<T> target, BiConsumer<S, T> biConsumer) {
+        if (source == null || source.isEmpty()) {
             return new ArrayList<>(0);
         }
-        List<T> dest = new ArrayList<>(orig.size());
+        List<T> dest = new ArrayList<>(source.size());
         try {
-            final BeanCopier beanCopier = createBeanCopier(orig.get(0).getClass(), target);
+            final BeanCopier beanCopier = createBeanCopier(source.get(0).getClass(), target);
             Constructor<T> constructor = target.getDeclaredConstructor();
             T destEntry;
-            for (E each : orig) {
+            for (S each : source) {
                 destEntry = constructor.newInstance();
                 beanCopier.copy(each, destEntry, null);
                 biConsumer.accept(each, destEntry);
+                dest.add(destEntry);
+            }
+        } catch (Exception e) {
+            throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+        return dest;
+    }
+
+    /**
+     * 转化复制实体LIST
+     *
+     * @param source source
+     * @param target target
+     * @param fun    fun
+     * @param <S>    S
+     * @param <T>    T
+     * @return List<T>
+     */
+    public static <S, T> List<T> convertList(List<S> source, Class<T> target, BiFunction<S, T, T> fun) {
+        if (source == null || source.isEmpty()) {
+            return new ArrayList<>(0);
+        }
+        List<T> dest = new ArrayList<>(source.size());
+        try {
+            final BeanCopier beanCopier = createBeanCopier(source.get(0).getClass(), target);
+            Constructor<T> constructor = target.getDeclaredConstructor();
+            T destEntry;
+            for (S each : source) {
+                destEntry = constructor.newInstance();
+                beanCopier.copy(each, destEntry, null);
+                fun.apply(each, destEntry);
                 dest.add(destEntry);
             }
         } catch (Exception e) {
@@ -203,7 +260,7 @@ public class BeanUtil {
      * @param target target
      * @return List<T>
      */
-    public static <T> List<T> copyAndParseList(List<?> source, Class<T> target) {
+    public static <S, T> List<T> copyAndParseList(List<S> source, Class<T> target) {
         if (source == null || source.isEmpty()) {
             return new ArrayList<>(0);
         }
@@ -231,7 +288,7 @@ public class BeanUtil {
      * @param target target
      * @return T
      */
-    public static <T> T copyAndParse(Object source, Class<T> target) {
+    public static <S, T> T copyAndParse(S source, Class<T> target) {
         T dest;
         try {
             final BeanCopier copier = createCglibBeanCopier(source.getClass(), target);
@@ -251,7 +308,7 @@ public class BeanUtil {
      * @param target target
      * @return org.springframework.cglib.beans.BeanCopier
      */
-    private static <T> BeanCopier createCglibBeanCopier(Class<?> source, Class<T> target) {
+    private static <S, T> BeanCopier createCglibBeanCopier(Class<S> source, Class<T> target) {
         String key = genKey(source, target) + "$";
         BeanCopier beanCopier = CACHE.getIfPresent(key);
         if (beanCopier == null) {
@@ -269,7 +326,7 @@ public class BeanUtil {
      * @param target target
      * @return org.springframework.cglib.beans.BeanCopier
      */
-    private static <T> BeanCopier createBeanCopier(Class<?> source, Class<T> target) {
+    private static <S, T> BeanCopier createBeanCopier(Class<S> source, Class<T> target) {
         String key = genKey(source, target);
         BeanCopier beanCopier = CACHE.getIfPresent(key);
         if (beanCopier == null) {
@@ -287,7 +344,7 @@ public class BeanUtil {
      * @param target target
      * @return java.lang.String
      */
-    private static String genKey(Class<?> source, Class<?> target) {
+    private static <S, T> String genKey(Class<S> source, Class<T> target) {
         return source.getName() + target.getName();
     }
 }
