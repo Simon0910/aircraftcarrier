@@ -47,6 +47,9 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
         try {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
+        } catch (Throwable throwable) {
+            log.error("TraceIdFilter Throwable: ", throwable);
+            throw throwable;
         } finally {
             TraceIdUtil.removeTraceId();
         }

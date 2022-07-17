@@ -13,8 +13,7 @@
     <packaging>pom</packaging>
     <name>Aircraft Carrier Parent</name>
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.level>11</maven.compiler.level>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -96,8 +95,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <source>${maven.compiler.level}</source>
+                    <target>${maven.compiler.level}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <!-- 跳过编译 -->
                     <skip>true</skip>
