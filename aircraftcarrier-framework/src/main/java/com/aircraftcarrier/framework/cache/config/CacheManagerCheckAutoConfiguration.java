@@ -35,8 +35,6 @@ public class CacheManagerCheckAutoConfiguration implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        logger.info("\n" + "==========================================================\n"
-                + "Using cache manager: " + this.cacheManager.getClass().getName() + "\n"
-                + "==========================================================");
+        logger.info("Using cache manager: " + this.cacheManager.getClass().getName());
     }
 }

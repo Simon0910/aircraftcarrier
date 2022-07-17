@@ -1,11 +1,13 @@
 package com.aircraftcarrier.marketing.store.app.demo.executor.excel;
 
 import com.aircraftcarrier.framework.data.MybatisBatchUtil;
-import com.aircraftcarrier.marketing.store.app.demo.convert.DemoDo2DemoImportExcelConvert;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
+import com.aircraftcarrier.marketing.store.app.demo.convert.DemoDoToDemoImportExcelConvert;
+import com.aircraftcarrier.marketing.store.app.demo.convert.DemoDoToImportExcelConvert;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImportExcel;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,7 @@ public class DemoExportExe {
 
         List<DemoDo> list = MybatisBatchUtil.selectAllListBatchWithId(() -> demoMapper.farmExport());
 
-        return DemoDo2DemoImportExcelConvert.INSTANCE.convertList(list);
+        List<DemoImportExcel> excels = DemoDoToDemoImportExcelConvert.INSTANCE.convertList(list);
+        return BeanUtil.convertList(list, DemoImportExcel.class, DemoDoToImportExcelConvert::convertDifference);
     }
 }
