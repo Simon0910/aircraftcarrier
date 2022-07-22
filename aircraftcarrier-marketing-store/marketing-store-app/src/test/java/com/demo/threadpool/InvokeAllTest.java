@@ -18,7 +18,7 @@ public class InvokeAllTest {
  
     // https://bugs.openjdk.org/browse/JDK-8286463
     // DiscardPolicy may block invokeAll forever
-    @Test
+//    @Test
     public void test01() {
 
         AtomicInteger counter = new AtomicInteger(0);

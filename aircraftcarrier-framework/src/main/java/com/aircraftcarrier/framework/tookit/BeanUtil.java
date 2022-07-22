@@ -254,13 +254,13 @@ public class BeanUtil {
     }
 
     /**
-     * copyAndParse
+     * convertListWithUnderline
      *
      * @param source source
      * @param target target
      * @return List<T>
      */
-    public static <S, T> List<T> copyAndParseList(List<S> source, Class<T> target) {
+    public static <S, T> List<T> convertListWithUnderline(List<S> source, Class<T> target) {
         if (source == null || source.isEmpty()) {
             return new ArrayList<>(0);
         }
@@ -282,13 +282,13 @@ public class BeanUtil {
 
 
     /**
-     * copyAndParse
+     * convertWithUnderline
      *
      * @param source source
      * @param target target
      * @return T
      */
-    public static <S, T> T copyAndParse(S source, Class<T> target) {
+    public static <S, T> T convertWithUnderline(S source, Class<T> target) {
         T dest;
         try {
             final BeanCopier copier = createCglibBeanCopier(source.getClass(), target);
