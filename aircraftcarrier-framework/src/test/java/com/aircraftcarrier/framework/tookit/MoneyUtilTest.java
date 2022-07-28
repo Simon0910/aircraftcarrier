@@ -11,9 +11,6 @@ import java.math.RoundingMode;
 
 /**
  * MoneyUtilTest
- * 可封装 {@link cn.hutool.core.util.NumberUtil} 相关方法。
- * 涉及金额相关工具类的方法封装必须提供对应方法的各种情况的测试用例！
- * 对于金额类：高效安全 > 安全 > 高效
  *
  * @author zhipengliu
  * @date 2022/7/28
