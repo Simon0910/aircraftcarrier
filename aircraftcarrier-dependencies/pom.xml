@@ -183,6 +183,27 @@
                 <artifactId>httpclient</artifactId>
                 <version>4.5.3</version>
             </dependency>
+
+            <!--映射相关定制信息,帮助joda-money类的映射-->
+            <dependency>
+                <groupId>org.jadira.usertype</groupId>
+                <artifactId>usertype.core</artifactId>
+                <version>6.0.1.GA</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.joda/joda-money -->
+            <dependency>
+                <groupId>org.joda</groupId>
+                <artifactId>joda-money</artifactId>
+                <version>1.0.1</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.javamoney/moneta -->
+            <dependency>
+                <groupId>org.javamoney</groupId>
+                <artifactId>moneta</artifactId>
+                <version>1.4.2</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 </project>
