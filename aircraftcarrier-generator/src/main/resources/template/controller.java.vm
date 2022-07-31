@@ -1,9 +1,11 @@
 package ${cfg.controller_p};
 
+import com.aircraftcarrier.framework.excel.util.EasyExcelWriteUtil;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 #if(${superControllerClassPackage})
 import ${superControllerClassPackage};
 #end
@@ -97,7 +99,7 @@ public class ${table.controllerName} {
     @PostMapping(value = "/add${table.originEntityName}")
     public SingleResponse<Void> add${table.originEntityName}(@RequestBody @Valid ${cfg.AddCmd_n} addCmd,
                                                   HttpServletRequest request) {
-        addCmd.initCreate(getOperator(request));
+        addCmd.initCreate(LoginUserUtil.getOperator());
         return ${serviceI}.add${table.originEntityName}(addCmd);
     }
 
@@ -117,7 +119,7 @@ public class ${table.controllerName} {
     @PostMapping(value = "/editSave")
     public SingleResponse<Void> editSave(@RequestBody @Valid ${cfg.EditCmd_n} editCmd,
                                          HttpServletRequest request) {
-        editCmd.initUpdate(getOperator(request));
+        editCmd.initUpdate(LoginUserUtil.getOperator());
         return ${serviceI}.editSave(editCmd);
     }
 
@@ -128,7 +130,7 @@ public class ${table.controllerName} {
     @PostMapping(value = "/deleteBatch")
     public SingleResponse<Void> deleteBatch(@RequestBody @Valid ${cfg.DeleteCmd_n} deleteCmd,
                                             HttpServletRequest request) {
-        deleteCmd.initUpdate(getOperator(request));
+        deleteCmd.initUpdate(LoginUserUtil.getOperator());
         return ${serviceI}.delete(deleteCmd);
     }
 
@@ -143,7 +145,7 @@ public class ${table.controllerName} {
         ${cfg.ExportCmd_n} exportCmd = new ${cfg.ExportCmd_n}(exportQry);
         MultiResponse<${cfg.Export_n}> multiResponse = ${serviceI}.excelExport(exportCmd);
         List<${cfg.Export_n}> list = (List<${cfg.Export_n}>) multiResponse.getData();
-        exportExcel(response, "$!{table.comment}", "$!{table.comment}", list, ${cfg.Export_n}.class);
+        EasyExcelWriteUtil.exportExcel(response, "$!{table.comment}", "$!{table.comment}", list, ${cfg.Export_n}.class);
     }
 
 
@@ -169,7 +171,7 @@ public class ${table.controllerName} {
 #end
 #end
         List<${cfg.Import_n}> importExcels = Collections.singletonList(importExcel);
-        exportExcel(response, "$!{table.comment}", "$!{table.comment}", importExcels, ${cfg.Import_n}.class);
+        EasyExcelWriteUtil.exportExcel(response, "$!{table.comment}", "$!{table.comment}", importExcels, ${cfg.Import_n}.class);
     }
 
 
@@ -184,7 +186,7 @@ public class ${table.controllerName} {
                                                    @NotNull(message = "上传文件必传") MultipartFile file,
                                                    HttpServletRequest request) {
         ${cfg.ImportCmd_n} importCmd = new ${cfg.ImportCmd_n}();
-        importCmd.initCreate(getOperator(request));
+        importCmd.initCreate(LoginUserUtil.getOperator());
         importCmd.setFile(file);
         return ${serviceI}.excelImport(importCmd);
     }
