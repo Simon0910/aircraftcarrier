@@ -1,0 +1,41 @@
+package ${clazz.packageName};
+
+
+/**
+ * $!{clazz.comment}
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.0
+ */
+@Getter
+@Setter
+public class $!{clazz.className} implements Serializable {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in ${clazz.fields})
+
+    #if("$!field.comment" != "")
+    /**
+     * ${field.comment}
+     */
+    #end
+    #if("$!field.required" == "true")
+    @ApiModelProperty(value = "${field.comment}", required = true, example = "${field.example}")
+    #else
+    @ApiModelProperty(value = "${field.comment}", example = "${field.example}")
+    #end
+    #if("$!field.propertyType" == "List")
+    private List<${field.generic}> ${field.propertyName};
+    #elseif("$!field.propertyType" == "Map")
+    private Map<${field.mapGenericKey}, ${field.mapGenericValue}> ${field.propertyName};
+    #else
+    private ${field.propertyType} ${field.propertyName};
+    #end
+#end
+## ----------  END 字段循环遍历  ----------
+
+}
