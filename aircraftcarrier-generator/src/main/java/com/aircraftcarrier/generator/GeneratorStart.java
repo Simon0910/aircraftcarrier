@@ -41,7 +41,7 @@ public class GeneratorStart {
     private static final String domainProjectName = "marketing-store-domain";
     private static final String infrastructureProjectName = "marketing-store-infrastructure";
     private static final String entitySupperClassName = "com.aircraftcarrier.framework.data.BaseDO";
-    private static final String controllerSupperClassName = "com.aircraftcarrier.marketing.store.adapter.common.BaseController";
+    private static final String controllerSupperClassName = "";
     private static final String serviceSupperClassName = "";
     private static final String mapperSupperClassName = "com.aircraftcarrier.framework.data.core.MybatisBaseMapper";
     private static final String entitySuffix = "Do";

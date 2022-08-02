@@ -11,7 +11,11 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author lzp
@@ -19,8 +23,8 @@ import java.util.*;
 @Slf4j
 public class EnumMappingContext {
 
-    private static final String NAME = "code";
-    private static final String DESC = "name";
+    private static final String NAME = "name";
+    private static final String DESC = "description";
     /**
      * MAPPING
      */
@@ -33,25 +37,25 @@ public class EnumMappingContext {
         init();
     }
 
-    public static List<Map<String, Object>> queryEnumsByName(String enumName) {
-        List<Map<String, Object>> maps = MAPPINGS.get(enumName);
-        if (maps == null) {
+    public static List<Map<String, Object>> getEnumByClassName(String className) {
+        List<Map<String, Object>> iEnum = MAPPINGS.get(className);
+        if (iEnum == null) {
             return new ArrayList<>();
         }
-        return maps;
+        return iEnum;
     }
 
-    public static Map<String, List<Map<String, Object>>> queryAllEnums() {
+    public static Map<String, List<Map<String, Object>>> getEnumList() {
         return MAPPINGS;
     }
 
-    private static List<Map<String, Object>> transferEnums(IEnum[] enumArr) {
-        List<Map<String, Object>> list = new ArrayList<>(enumArr.length);
-        for (IEnum anEnum : enumArr) {
-            Map<String, Object> map = MapUtil.newHashMap(2);
-            map.put(NAME, ((Enum) anEnum).name());
-            map.put(DESC, anEnum.desc());
-            list.add(map);
+    private static List<Map<String, Object>> transferMembers(IEnum<?>[] members) {
+        List<Map<String, Object>> list = new ArrayList<>(members.length);
+        for (IEnum<?> member : members) {
+            Map<String, Object> anObj = MapUtil.newHashMap(2);
+            anObj.put(NAME, ((Enum<?>) member).name());
+            anObj.put(DESC, member.desc());
+            list.add(anObj);
         }
         return list;
     }
@@ -72,15 +76,19 @@ public class EnumMappingContext {
                         .filterInputsBy(new FilterBuilder().includePackage(scanBasePackages))
         );
 
-        Set<Class<? extends IEnum>> allTypes = reflections.getSubTypesOf(IEnum.class);
+        Set<Class<? extends IEnum>> iEnums = reflections.getSubTypesOf(IEnum.class);
 
-        Map<String, List<Map<String, Object>>> map = MapUtil.newHashMap(allTypes.size());
-        for (Class<? extends IEnum> anEnum : allTypes) {
-            IEnum[] enumArr = anEnum.getEnumConstants();
-            List<Map<String, Object>> maps = transferEnums(enumArr);
-            map.put(anEnum.getSimpleName(), maps);
+        Map<String, List<Map<String, Object>>> iEnumMap = MapUtil.newHashMap(iEnums.size());
+        for (Class<? extends IEnum> iEnum : iEnums) {
+            IEnum<?>[] members = iEnum.getEnumConstants();
+            List<Map<String, Object>> objs = transferMembers(members);
+            List<Map<String, Object>> pre = iEnumMap.get(iEnum.getSimpleName());
+            if (pre != null) {
+                throw new RuntimeException("Duplicate enum name");
+            }
+            iEnumMap.put(iEnum.getSimpleName(), objs);
         }
-        MAPPINGS = Collections.unmodifiableMap(map);
+        MAPPINGS = Collections.unmodifiableMap(iEnumMap);
         log.info("DisplayEnumMapping init finish!");
     }
 }

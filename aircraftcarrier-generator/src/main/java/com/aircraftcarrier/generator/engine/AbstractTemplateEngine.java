@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -287,7 +288,9 @@ public abstract class AbstractTemplateEngine {
             List<TableInfo> tableInfoList = config.getTableInfoList();
             tableInfoList.forEach(tableInfo -> {
                 Map<String, Object> objectMap = this.getObjectMap(config, tableInfo);
-                ConcurrentHashMap<String, Object> newObjectMap = new ConcurrentHashMap<>(objectMap);
+                Map<String, Object> filterObjectMap = objectMap.entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                ConcurrentHashMap<String, Object> newObjectMap = new ConcurrentHashMap<>(filterObjectMap);
                 // 自定义内容
                 outputCustomFile(config, tableInfo, newObjectMap);
                 // entity
