@@ -6,8 +6,15 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Date;
 
+/**
+ * admin
+ */
 public class JodaTimeUtil {
 
+    /**
+     * YYYY_MM_DD_FORMAT
+     */
+    public static final String YYYY_MM_DD = "yyyy-MM-dd";
     /**
      * STANDARD_FORMAT
      */
@@ -20,13 +27,35 @@ public class JodaTimeUtil {
     }
 
     /**
+     * 当前时间
+     *
+     * @return org.joda.time.DateTime
+     */
+    public static DateTime now() {
+        return DateTime.now();
+    }
+
+    /**
+     * millis->Date
+     *
+     * @param timeMillis timeMillis
+     * @return java.util.Date
+     */
+    public static Date millisToDate(Long timeMillis) {
+        DateTime date = new DateTime(timeMillis);
+        return date.toDate();
+    }
+
+    /**
      * date类型 -> string类型
      *
      * @param date date
      * @return String
      */
     public static String dateToStr(Date date) {
-        if (date == null) return StringPool.EMPTY;
+        if (date == null) {
+            return StringPool.EMPTY;
+        }
         DateTime dateTime = new DateTime(date);
         return dateTime.toString(STANDARD_FORMAT);
     }
@@ -39,7 +68,9 @@ public class JodaTimeUtil {
      * @return String
      */
     public static String dateToStr(Date date, String formatPattern) {
-        if (date == null) return StringPool.EMPTY;
+        if (date == null) {
+            return StringPool.EMPTY;
+        }
         DateTime dateTime = new DateTime(date);
         return dateTime.toString(formatPattern);
     }
@@ -57,13 +88,28 @@ public class JodaTimeUtil {
     }
 
     /**
+     * str->Date
+     *
+     * @param dateTimeStr dateTimeStr
+     * @param formatStr   formatStr
+     * @return java.util.Date
+     */
+    public static Date strToDate(String dateTimeStr, String formatStr) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(formatStr);
+        DateTime dateTime = dateTimeFormatter.parseDateTime(dateTimeStr);
+        return dateTime.toDate();
+    }
+
+    /**
      * 判断date日期是否过期(与当前时刻比较)
      *
      * @param date date
      * @return boolean
      */
     public static boolean isTimeExpired(Date date) {
-        if (null == date) return true;
+        if (null == date) {
+            return true;
+        }
         String timeStr = dateToStr(date);
         return isBeforeNow(timeStr);
     }
@@ -75,8 +121,23 @@ public class JodaTimeUtil {
      * @return boolean
      */
     public static boolean isTimeExpired(String timeStr) {
-        if (StringUtil.isBlank(timeStr)) return true;
+        if (StringUtil.isBlank(timeStr)) {
+            return true;
+        }
         return isBeforeNow(timeStr);
+    }
+
+    /**
+     * 判断date日期是否过期(与当前时刻比较)
+     *
+     * @param time time
+     * @return boolean
+     */
+    public static boolean isTimeExpired(Long time) {
+        if (time == null) {
+            return true;
+        }
+        return time <= now().getMillis();
     }
 
     /**
@@ -122,7 +183,9 @@ public class JodaTimeUtil {
      * @return Date
      */
     private static Date plusOrMinusDays(Date date, Integer days, Integer type) {
-        if (null == date) return null;
+        if (null == date) {
+            return null;
+        }
         days = null == days ? 0 : days;
 
         DateTime dateTime = new DateTime(date);
@@ -166,7 +229,9 @@ public class JodaTimeUtil {
      * @return Date
      */
     private static Date plusOrMinusMinutes(Date date, Integer minutes, Integer type) {
-        if (null == date) return null;
+        if (null == date) {
+            return null;
+        }
         minutes = null == minutes ? 0 : minutes;
 
         DateTime dateTime = new DateTime(date);
@@ -174,6 +239,52 @@ public class JodaTimeUtil {
             dateTime = dateTime.plusMinutes(minutes);
         } else {
             dateTime = dateTime.minusMinutes(minutes);
+        }
+
+        return dateTime.toDate();
+    }
+
+    /**
+     * 日期加秒
+     *
+     * @param date    date
+     * @param seconds seconds
+     * @return Date
+     */
+    public static Date plusSeconds(Date date, Integer seconds) {
+        return plusOrMinusSeconds(date, seconds, 0);
+    }
+
+    /**
+     * 日期减秒
+     *
+     * @param date    date
+     * @param seconds seconds
+     * @return Date
+     */
+    public static Date minusSeconds(Date date, Integer seconds) {
+        return plusOrMinusSeconds(date, seconds, 1);
+    }
+
+    /**
+     * 加减秒
+     *
+     * @param date    date
+     * @param seconds seconds
+     * @param type    0:加秒 1:减秒
+     * @return Date
+     */
+    private static Date plusOrMinusSeconds(Date date, Integer seconds, Integer type) {
+        if (null == date) {
+            return null;
+        }
+        seconds = null == seconds ? 0 : seconds;
+
+        DateTime dateTime = new DateTime(date);
+        if (type == 0) {
+            dateTime = dateTime.plusSeconds(seconds);
+        } else {
+            dateTime = dateTime.minusSeconds(seconds);
         }
 
         return dateTime.toDate();
@@ -210,7 +321,9 @@ public class JodaTimeUtil {
      * @return Date
      */
     private static Date plusOrMinusMonths(Date date, Integer months, Integer type) {
-        if (null == date) return null;
+        if (null == date) {
+            return null;
+        }
         months = null == months ? 0 : months;
 
         DateTime dateTime = new DateTime(date);
