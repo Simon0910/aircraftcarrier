@@ -37,14 +37,14 @@ public class OssFileHelper implements InitializingBean {
      * upload to local file path
      */
     @Value("${oss.amazonS3.uploadFilePath:}")
-    private static String uploadFilePath;
+    private String uploadFilePath;
 
     /**
      * bucketName
      * example: img-dev
      */
     @Value("${oss.amazonS3.bucketName:}")
-    private static String bucketName;
+    private String bucketName;
 
     /**
      * AmazonS3
@@ -87,7 +87,7 @@ public class OssFileHelper implements InitializingBean {
      * @param filePath filePath
      * @return String
      */
-    public static String uploadFile(String filePath) throws FileNotFoundException {
+    public String uploadFile(String filePath) throws FileNotFoundException {
         String key = Paths.get(filePath).getFileName().toString();
 
         //获取输入流
@@ -115,7 +115,7 @@ public class OssFileHelper implements InitializingBean {
      * @param key      key
      * @param fileName fileName
      */
-    public static void downloadFile(HttpServletResponse response, String key, String fileName) {
+    public void downloadFile(HttpServletResponse response, String key, String fileName) {
         log.info("Downloading {} from S3 bucket {}...", key, bucketName);
 
         try {

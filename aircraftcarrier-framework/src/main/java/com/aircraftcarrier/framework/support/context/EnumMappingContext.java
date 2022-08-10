@@ -80,12 +80,13 @@ public class EnumMappingContext {
 
         Map<String, List<Map<String, Object>>> iEnumMap = MapUtil.newHashMap(iEnums.size());
         for (Class<? extends IEnum> iEnum : iEnums) {
-            IEnum<?>[] members = iEnum.getEnumConstants();
-            List<Map<String, Object>> objs = transferMembers(members);
             List<Map<String, Object>> pre = iEnumMap.get(iEnum.getSimpleName());
             if (pre != null) {
                 throw new RuntimeException("Duplicate enum name");
             }
+
+            IEnum<?>[] members = iEnum.getEnumConstants();
+            List<Map<String, Object>> objs = transferMembers(members);
             iEnumMap.put(iEnum.getSimpleName(), objs);
         }
         MAPPINGS = Collections.unmodifiableMap(iEnumMap);
