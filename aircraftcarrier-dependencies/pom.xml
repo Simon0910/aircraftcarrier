@@ -22,7 +22,7 @@
         <easyexcel.version>3.0.5</easyexcel.version>
         <mybatisplus.version>3.5.1</mybatisplus.version>
         <lock4j.version>2.2.1</lock4j.version>
-        <guava.version>29.0-jre</guava.version>
+        <guava.version>31.1-jre</guava.version>
         <mysql.version>8.0.21</mysql.version>
         <druid.version>1.2.8</druid.version>
         <reflections.version>0.9.12</reflections.version>
