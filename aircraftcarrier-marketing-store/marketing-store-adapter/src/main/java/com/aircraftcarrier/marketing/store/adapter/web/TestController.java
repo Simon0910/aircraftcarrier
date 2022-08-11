@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.Serializable;
@@ -148,5 +149,14 @@ public class TestController {
             testService.multiThread();
         }
         return SingleResponse.ok();
+    }
+
+    @ApiOperationSupport(order = 40)
+    @ApiOperation(value = "接受jsonString")
+    @PostMapping("/receiveJson")
+    public SingleResponse<String> receiveJsonStr(HttpServletRequest request) {
+        System.out.println("in");
+
+        return SingleResponse.ok("okk");
     }
 }
