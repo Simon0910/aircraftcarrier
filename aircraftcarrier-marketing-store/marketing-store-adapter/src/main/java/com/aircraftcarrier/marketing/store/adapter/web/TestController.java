@@ -10,6 +10,8 @@ import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -154,8 +157,19 @@ public class TestController {
     @ApiOperationSupport(order = 40)
     @ApiOperation(value = "接受jsonString")
     @PostMapping("/receiveJson")
-    public SingleResponse<String> receiveJsonStr(HttpServletRequest request) {
+    public SingleResponse<String> receiveJsonStr(HttpServletRequest request) throws Exception {
         System.out.println("in");
+        ServletInputStream in = request.getInputStream();
+
+        try {
+            byte[] bytes = in.readAllBytes();
+            String requestParams = new String(bytes, StandardCharsets.UTF_8);
+            System.out.println(requestParams);
+
+            JSONObject jsonObject = JSON.parseObject(requestParams);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return SingleResponse.ok("okk");
     }

@@ -153,6 +153,18 @@ public class OkHttpUtil {
     /**
      * POST
      *
+     * @param url     url
+     * @param params  params
+     * @param headers headers
+     * @throws HttpException HttpException
+     */
+    public static void postVoid(String url, Object params, Map<String, String> headers) throws HttpException {
+        post(url, headers, params, null);
+    }
+
+    /**
+     * POST
+     *
      * @param url          url
      * @param params       params
      * @param responseType responseType
@@ -162,20 +174,20 @@ public class OkHttpUtil {
     public static <T> T post(String url, Object params, TypeReference<T> responseType) throws HttpException {
         Map<String, String> headers = new HashMap<>(2);
         headers.put("token", "token");
-        return post(url, params, responseType, headers);
+        return post(url, headers, params, responseType);
     }
 
     /**
      * POST
      *
      * @param url          url
+     * @param headers      headers
      * @param params       params
      * @param responseType responseType
-     * @param headers      headers
      * @return String
      * @throws HttpException HttpException
      */
-    public static <T> T post(String url, Object params, TypeReference<T> responseType, Map<String, String> headers) throws HttpException {
+    public static <T> T post(String url, Map<String, String> headers, Object params, TypeReference<T> responseType) throws HttpException {
         String jsonString = JSON.toJSONString(params);
         RequestBody requestBody = RequestBody.create(jsonString, HTTP_JSON);
         Request.Builder builder = new Request.Builder().url(url).post(requestBody)
@@ -216,7 +228,9 @@ public class OkHttpUtil {
             }
             urlBuilder.deleteCharAt(urlBuilder.length() - 1);
         }
-        Request.Builder builder = new Request.Builder().url(url)
+        Request.Builder builder = new Request.Builder()
+                // url
+                .url(urlBuilder.toString())
                 // method
                 .method("GET", null)
                 // Content-Type
