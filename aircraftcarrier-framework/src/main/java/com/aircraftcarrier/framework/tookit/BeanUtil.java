@@ -22,10 +22,13 @@ public class BeanUtil {
 
     /**
      * BeanCopier 缓存
+     * expireAfterAccess 在访问之后指定多少秒过期
+     * expireAfterWrite 在写入数据后指定多少秒过期
+     * expireAfter 通过重写Expire接口，指定过期时间
      */
     private static final Cache<String, BeanCopier> CACHE = Caffeine.newBuilder()
-            // 设置最后一次写入或访问后经过固定时间过期
-            .expireAfterWrite(60, TimeUnit.SECONDS)
+            // 在访问之后指定多少秒过期
+            .expireAfterAccess(60, TimeUnit.SECONDS)
             // 初始的缓存空间大小
             .initialCapacity(100)
             // 缓存的最大条数

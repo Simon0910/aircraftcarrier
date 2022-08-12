@@ -133,8 +133,7 @@ public class OkHttpUtil {
             contentType = "application/json";
         }
         if (isJsonMime(contentType)) {
-            return JSON.parseObject(respBody, new TypeReference<T>() {
-            });
+            return JSON.parseObject(respBody, returnType);
         }
         throw new HttpException("Content type \"" + contentType + "\" is not supported for type: " + returnType, response.code(), response.headers().toMultimap(), respBody);
     }
