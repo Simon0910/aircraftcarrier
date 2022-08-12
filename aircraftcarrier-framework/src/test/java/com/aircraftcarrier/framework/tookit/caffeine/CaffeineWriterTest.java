@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.CacheWriter;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.RemovalCause;
-import lombok.NonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.Test;
 
 import javax.annotation.Nullable;

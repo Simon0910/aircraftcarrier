@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -171,6 +172,26 @@ public class TestController {
             e.printStackTrace();
         }
 
+        return SingleResponse.ok("okk");
+    }
+
+    @ApiOperationSupport(order = 45)
+    @ApiOperation(value = "getAccessToken")
+    @PostMapping("/getAccessToken")
+    public SingleResponse<String> getAccessToken(@RequestHeader("Authorization") String auth,
+                                                 @RequestBody String body) throws Exception {
+        System.out.println("auth: " + auth);
+        System.out.println("body: " + JSON.toJSONString(body));
+        return SingleResponse.ok("okk");
+    }
+
+    @ApiOperationSupport(order = 45)
+    @ApiOperation(value = "通知消息")
+    @PostMapping("/notifyMessage")
+    public SingleResponse<String> notifyMessage(@RequestHeader("Authorization") String auth,
+                                                @RequestBody String messageBody) throws Exception {
+        System.out.println("auth: " + auth);
+        System.out.println("messageBody: " + JSON.toJSONString(messageBody));
         return SingleResponse.ok("okk");
     }
 }

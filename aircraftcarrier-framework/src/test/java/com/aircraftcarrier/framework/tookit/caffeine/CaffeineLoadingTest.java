@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.tookit.caffeine;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import lombok.NonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.Test;
 
 import javax.annotation.Nullable;

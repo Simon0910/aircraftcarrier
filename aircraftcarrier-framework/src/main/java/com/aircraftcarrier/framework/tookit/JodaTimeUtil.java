@@ -137,7 +137,7 @@ public class JodaTimeUtil {
         if (time == null) {
             return true;
         }
-        return time <= now().getMillis();
+        return time <= System.currentTimeMillis();
     }
 
     /**
