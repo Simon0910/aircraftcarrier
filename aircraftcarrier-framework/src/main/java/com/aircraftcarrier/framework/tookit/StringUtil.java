@@ -158,4 +158,17 @@ public class StringUtil {
 
         return buf.toString();
     }
+
+    public static String append(String str1, String str2, String separator) {
+        if (isBlank(str1)) {
+            str1 = StringPool.EMPTY;
+        }
+        if (isBlank(str2)) {
+            str2 = StringPool.EMPTY;
+        }
+        if (isBlank(separator)) {
+            str2 = StringPool.EMPTY;
+        }
+        return str1 + separator + str2;
+    }
 }

@@ -7,7 +7,7 @@
 
     <!-- 日志文件目录、日志格式配置 -->
     <properties>
-        <Property name="fileName">~/export/Logs/aircraftcarrier</Property>
+        <Property name="fileName">~/export/logs/aircraftcarrier</Property>
         <property name="LOG_PATTERN">
             %d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}] [%thread] %-5level %class{1.}:%L(%M) - %msg%xEx%n
         </property>
