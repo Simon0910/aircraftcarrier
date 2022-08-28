@@ -17,6 +17,8 @@ import java.util.List;
 @Setter
 public class ClassModel {
 
+    private String type;
+
     private String className;
 
     private String comment;

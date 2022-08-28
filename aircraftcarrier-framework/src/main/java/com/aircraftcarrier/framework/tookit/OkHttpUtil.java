@@ -1,8 +1,10 @@
 package com.aircraftcarrier.framework.tookit;
 
+import cn.hutool.http.HttpStatus;
 import com.aircraftcarrier.framework.exception.HttpException;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -10,6 +12,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.collections4.MapUtils;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +23,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * OkHttpUtil
- *
- * @author mcjohn
- * @date 2020/11/16
+ * @author zhipengliu
  */
+@Slf4j
 public class OkHttpUtil {
     /**
      * MediaType
@@ -64,7 +65,7 @@ public class OkHttpUtil {
      */
     private static <T> T handleResponse(Response response, TypeReference<T> returnType) throws HttpException {
         if (response.isSuccessful()) {
-            if (returnType == null || response.code() == 204) {
+            if (returnType == null || response.code() == HttpStatus.HTTP_NO_CONTENT) {
                 // returning null if the returnType is not defined,
                 // or the status code is 204 (No Content)
                 if (response.body() != null) {
@@ -76,21 +77,18 @@ public class OkHttpUtil {
                 }
                 return null;
             }
-
             return deserialize(response, returnType);
-
-        } else {
-            String respBody = null;
-            if (response.body() != null) {
-                try {
-                    respBody = response.body().string();
-                } catch (IOException e) {
-                    throw new HttpException(response.message(), e, response.code(), response.headers().toMultimap());
-                }
-            }
-            throw new HttpException(response.message(), response.code(), response.headers().toMultimap(), respBody);
         }
 
+        String respBody = null;
+        if (response.body() != null) {
+            try {
+                respBody = response.body().string();
+            } catch (IOException e) {
+                throw new HttpException(response.message(), e, response.code(), response.headers().toMultimap());
+            }
+        }
+        throw new HttpException(response.message(), response.code(), response.headers().toMultimap(), respBody);
     }
 
     /**
@@ -122,6 +120,7 @@ public class OkHttpUtil {
             return null;
         }
 
+        log.info("OkHttp - 原始报文：【{}】", respBody);
         if (returnType.getType().equals(String.class)) {
             // Expecting string, return the raw response body.
             return (T) respBody;
@@ -146,7 +145,27 @@ public class OkHttpUtil {
      */
     private static boolean isJsonMime(String mime) {
         String jsonMime = "(?i)^(application/json|[^;/ \t]+/[^;/ \t]+[+]json)[ \t]*(;.*)?$";
-        return mime != null && (mime.matches(jsonMime) || mime.equals("*/*"));
+        return mime != null && (mime.matches(jsonMime) || "*/*".equals(mime));
+    }
+
+    /**
+     * execute
+     *
+     * @param responseType responseType
+     * @param call         call
+     * @param <T>          T
+     * @return T
+     * @throws HttpException
+     */
+    @Nullable
+    private static <T> T execute(TypeReference<T> responseType, Call call) throws HttpException {
+        try {
+            Response response = call.execute();
+            return handleResponse(response, responseType);
+        } catch (IOException e) {
+            LOGGER.error("OkHttp - IOException");
+            throw new HttpException(e);
+        }
     }
 
     /**
@@ -162,6 +181,17 @@ public class OkHttpUtil {
     }
 
     /**
+     * getHttpUrl
+     *
+     * @param hostUrl hostUrl
+     * @param path    path
+     * @return String
+     */
+    public static String getHttpUrl(String hostUrl, String path) {
+        return hostUrl + path;
+    }
+
+    /**
      * POST
      *
      * @param url          url
@@ -170,9 +200,11 @@ public class OkHttpUtil {
      * @return String
      * @throws HttpException HttpException
      */
-    public static <T> T post(String url, Object params, TypeReference<T> responseType) throws HttpException {
-        Map<String, String> headers = new HashMap<>(2);
-        headers.put("token", "token");
+    public static <T> T post2AdapterTb(String url, Object params, TypeReference<T> responseType) throws HttpException {
+        Map<String, String> headers = new HashMap<>(4);
+        // TODO: 2022/8/12
+        headers.put("event-sign", "test-sign");
+        headers.put("app-id", "test-id");
         return post(url, headers, params, responseType);
     }
 
@@ -188,6 +220,7 @@ public class OkHttpUtil {
      */
     public static <T> T post(String url, Map<String, String> headers, Object params, TypeReference<T> responseType) throws HttpException {
         String jsonString = JSON.toJSONString(params);
+        log.info("POST - params: 【{}】, url: 【{}】", JSON.toJSONString(params), url);
         RequestBody requestBody = RequestBody.create(jsonString, HTTP_JSON);
         Request.Builder builder = new Request.Builder().url(url).post(requestBody)
                 // content-type
@@ -198,13 +231,7 @@ public class OkHttpUtil {
         }
 
         Call call = HTTP_CLIENT.newCall(builder.build());
-        try {
-            Response response = call.execute();
-            return handleResponse(response, responseType);
-        } catch (IOException e) {
-            LOGGER.error("HTTP POST IOException: ", e);
-            throw new HttpException(e);
-        }
+        return execute(responseType, call);
     }
 
     /**
@@ -218,6 +245,7 @@ public class OkHttpUtil {
      * @throws HttpException HttpException
      */
     public static <T> T get(String url, Map<String, Object> params, TypeReference<T> responseType, Map<String, String> headers) throws HttpException {
+        log.info("GET - params: 【{}】, url: 【{}】", JSON.toJSONString(params), url);
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(url);
         if (MapUtils.isNotEmpty(params)) {
@@ -242,13 +270,7 @@ public class OkHttpUtil {
         }
 
         Call call = HTTP_CLIENT.newCall(builder.build());
-        try {
-            Response response = call.execute();
-            return handleResponse(response, responseType);
-        } catch (IOException e) {
-            LOGGER.error("HTTP GET IOException: ", e);
-            throw new HttpException(e);
-        }
+        return execute(responseType, call);
     }
 
 

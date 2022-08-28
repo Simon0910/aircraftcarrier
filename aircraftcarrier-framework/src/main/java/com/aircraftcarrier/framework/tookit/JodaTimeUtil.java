@@ -42,6 +42,9 @@ public class JodaTimeUtil {
      * @return java.util.Date
      */
     public static Date millisToDate(Long timeMillis) {
+        if (timeMillis == null) {
+            throw new RuntimeException("timeMillis is null");
+        }
         DateTime date = new DateTime(timeMillis);
         return date.toDate();
     }
