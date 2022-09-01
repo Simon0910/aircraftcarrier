@@ -1,5 +1,6 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.aircraftcarrier.framework.config.FrameworkAutoConfiguration,\
   com.aircraftcarrier.framework.cache.config.CacheAutoConfiguration,\
   com.aircraftcarrier.framework.cache.config.CacheManagerCheckAutoConfiguration,\
   com.aircraftcarrier.framework.cache.config.LockTemplateAutoConfiguration,\

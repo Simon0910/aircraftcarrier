@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.http.HttpStatus;
+import com.aircraftcarrier.framework.config.FrameworkProperties;
 import com.aircraftcarrier.framework.exception.HttpException;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
@@ -28,25 +29,28 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OkHttpUtil {
     /**
-     * MediaType
-     */
-    private static final MediaType HTTP_JSON = MediaType.get("application/json;charset=UTF-8");
-    /**
      * Logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(OkHttpUtil.class);
     /**
+     * MediaType: application/json
+     */
+    private static final MediaType HTTP_JSON = MediaType.get("application/json;charset=UTF-8");
+    /**
+     * header
+     */
+    private static final String AUTHENTICATION = "Authentication";
+
+    /**
+     * FrameworkProperties
+     */
+    private static FrameworkProperties frameworkProperties;
+
+    /**
      * OkHttpClient
      */
-    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
-            // connectTimeout
-            .connectTimeout(10, TimeUnit.SECONDS)
-            // writeTimeout
-            .writeTimeout(10, TimeUnit.SECONDS)
-            // readTimeout
-            .readTimeout(10, TimeUnit.SECONDS)
-            // build
-            .build();
+    private static OkHttpClient defaultHttpClient;
+
 
     /**
      * OkHttpUtil
@@ -200,11 +204,9 @@ public class OkHttpUtil {
      * @return String
      * @throws HttpException HttpException
      */
-    public static <T> T post2AdapterTb(String url, Object params, TypeReference<T> responseType) throws HttpException {
-        Map<String, String> headers = new HashMap<>(4);
-        // TODO: 2022/8/12
-        headers.put("event-sign", "test-sign");
-        headers.put("app-id", "test-id");
+    public static <T> T post2FixSystem(String url, Object params, TypeReference<T> responseType) throws HttpException {
+        Map<String, String> headers = new HashMap<>(2);
+        headers.put(AUTHENTICATION, frameworkProperties.getAuthentication());
         return post(url, headers, params, responseType);
     }
 
@@ -220,7 +222,7 @@ public class OkHttpUtil {
      */
     public static <T> T post(String url, Map<String, String> headers, Object params, TypeReference<T> responseType) throws HttpException {
         String jsonString = JSON.toJSONString(params);
-        log.info("POST - params: 【{}】, url: 【{}】", JSON.toJSONString(params), url);
+        log.info("OkHttp POST - params: 【{}】, url: 【{}】", JSON.toJSONString(params), url);
         RequestBody requestBody = RequestBody.create(jsonString, HTTP_JSON);
         Request.Builder builder = new Request.Builder().url(url).post(requestBody)
                 // content-type
@@ -230,7 +232,7 @@ public class OkHttpUtil {
             headers.forEach(builder::addHeader);
         }
 
-        Call call = HTTP_CLIENT.newCall(builder.build());
+        Call call = defaultHttpClient.newCall(builder.build());
         return execute(responseType, call);
     }
 
@@ -245,7 +247,7 @@ public class OkHttpUtil {
      * @throws HttpException HttpException
      */
     public static <T> T get(String url, Map<String, Object> params, TypeReference<T> responseType, Map<String, String> headers) throws HttpException {
-        log.info("GET - params: 【{}】, url: 【{}】", JSON.toJSONString(params), url);
+        log.info("OkHttp GET - params: 【{}】, url: 【{}】", JSON.toJSONString(params), url);
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(url);
         if (MapUtils.isNotEmpty(params)) {
@@ -269,9 +271,40 @@ public class OkHttpUtil {
             headers.forEach(builder::addHeader);
         }
 
-        Call call = HTTP_CLIENT.newCall(builder.build());
+        Call call = defaultHttpClient.newCall(builder.build());
         return execute(responseType, call);
     }
+
+    /**
+     * init
+     */
+    public static void init() {
+        OkHttpUtil.frameworkProperties = ApplicationContextUtil.getBean(FrameworkProperties.class);
+        OkHttpUtil.defaultHttpClient = new OkHttpClient.Builder()
+                // connectTimeout
+                .connectTimeout(frameworkProperties.getOkHttpClientConnectTimeout(), TimeUnit.SECONDS)
+                // writeTimeout
+                .writeTimeout(frameworkProperties.getOkHttpClientWriteTimeout(), TimeUnit.SECONDS)
+                // readTimeout
+                .readTimeout(frameworkProperties.getOkHttpClientReadTimeout(), TimeUnit.SECONDS)
+                // build
+                .build();
+    }
+
+
+//    @Autowired
+//    public void setFrameworkProperties(FrameworkProperties frameworkProperties) {
+//        OkHttpUtil.frameworkProperties = frameworkProperties;
+//        OkHttpUtil.defaultHttpClient = new OkHttpClient.Builder()
+//                // connectTimeout
+//                .connectTimeout(frameworkProperties.getOkHttpClientConnectTimeout(), TimeUnit.SECONDS)
+//                // writeTimeout
+//                .writeTimeout(frameworkProperties.getOkHttpClientWriteTimeout(), TimeUnit.SECONDS)
+//                // readTimeout
+//                .readTimeout(frameworkProperties.getOkHttpClientReadTimeout(), TimeUnit.SECONDS)
+//                // build
+//                .build();
+//    }
 
 
 }
