@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
+import com.aircraftcarrier.framework.exception.ThreadException;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,15 +53,15 @@ public class ThreadPoolUtil {
      * executeAllVoid
      */
     public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks) {
-        List<Callable<String>> callables = new ArrayList<>(batchTasks.size());
+        List<Callable<Void>> callables = new ArrayList<>(batchTasks.size());
         for (CallableVoid batchTask : batchTasks) {
             callables.add(() -> {
                 try {
                     batchTask.call();
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new ThreadException(e);
                 }
-                return "void";
+                return null;
             });
         }
         executeAll(pool, callables);
@@ -71,13 +72,49 @@ public class ThreadPoolUtil {
      */
     public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> batchTasks) {
         // 异步执行
-        List<Future<T>> futures = new ArrayList<>(batchTasks.size());
+        List<Future<T>> futures;
         try {
             futures = pool.invokeAll(batchTasks);
             // 等待批量任务执行完成。。。
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("invokeAll - Interrupted error: ", e);
+            throw new ThreadException(e);
+        }
+
+        // 按list顺序获取
+        List<T> resultList = new ArrayList<>(futures.size());
+        for (Future<T> future : futures) {
+            try {
+                T result = future.get();
+                resultList.add(result);
+                log.info("get result: {}", JSON.toJSONString(result));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("get - Interrupted error: ", e);
+                throw new ThreadException(e);
+            } catch (ExecutionException e) {
+                log.error("get - Execution error: ", e);
+                throw new ThreadException(e);
+            }
+        }
+        return resultList;
+    }
+
+
+    /**
+     * executeAll Ignore Fail
+     */
+    public static <T> List<T> executeAllIgnoreFail(ThreadPoolExecutor pool, List<Callable<T>> batchTasks) {
+        // 异步执行
+        List<Future<T>> futures;
+        try {
+            futures = pool.invokeAll(batchTasks);
+            // 等待批量任务执行完成。。。
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("invokeAll - Interrupted error: ", e);
+            throw new ThreadException(e);
         }
 
         // 按list顺序获取
@@ -92,7 +129,6 @@ public class ThreadPoolUtil {
                 log.error("get - Interrupted error: ", e);
             } catch (ExecutionException e) {
                 log.error("get - Execution error: ", e);
-                throw new RuntimeException(e);
             }
         }
         return resultList;
