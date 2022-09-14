@@ -1,10 +1,10 @@
 package com.aircraftcarrier.marketing.store.adapter.web;
 
 import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
+import com.aircraftcarrier.framework.excel.util.EasyExcelWriteUtil;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.marketing.store.adapter.common.BaseController;
 import com.aircraftcarrier.marketing.store.client.DemoService;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.ApprovalDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
@@ -48,7 +48,7 @@ import java.util.List;
 @Slf4j
 @RequestMapping(value = "/web/demo")
 @RestController
-public class DemoController extends BaseController {
+public class DemoController {
 
     @Resource
     private DemoService demoService;
@@ -110,7 +110,7 @@ public class DemoController extends BaseController {
     @PostMapping("export")
     public void export(@RequestBody DemoPageQry pageQry, HttpServletResponse response) throws Exception {
         List<DemoImportExcel> list = demoService.export(new DemoPageQryCmd(pageQry));
-        exportExcel(response, "模板", "Excel导入演示",
+        EasyExcelWriteUtil.exportExcel(response, "模板", "Excel导入演示",
                 list, DemoImportExcel.class);
     }
 

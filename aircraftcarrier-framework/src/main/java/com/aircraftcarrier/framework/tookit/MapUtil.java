@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,6 +25,10 @@ public class MapUtil {
 
     public static <K, V> Map<K, V> newConcurrentHashMap(int expectedSize) {
         return new ConcurrentHashMap<>(capacity(expectedSize));
+    }
+
+    public static <K, V> Map<K, V> newLinkedHashMap(int expectedSize) {
+        return new LinkedHashMap<>(capacity(expectedSize));
     }
 
     public static int capacity(int expectedSize) {

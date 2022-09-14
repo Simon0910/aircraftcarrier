@@ -23,7 +23,22 @@
         <!--阿里云仓库-->
         <repository>
             <id>aliyun</id>
-            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+        <!--spring-->
+        <repository>
+            <id>spring</id>
+            <url>https://maven.aliyun.com/repository/spring</url>
+        </repository>
+        <!--google-->
+        <repository>
+            <id>google</id>
+            <url>https://maven.aliyun.com/repository/google</url>
+        </repository>
+        <!--中央仓库-->
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 </project>

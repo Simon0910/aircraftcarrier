@@ -22,10 +22,13 @@ public class BeanUtil {
 
     /**
      * BeanCopier 缓存
+     * expireAfterAccess 在访问之后指定多少秒过期
+     * expireAfterWrite 在写入数据后指定多少秒过期
+     * expireAfter 通过重写Expire接口，指定过期时间
      */
     private static final Cache<String, BeanCopier> CACHE = Caffeine.newBuilder()
-            // 设置最后一次写入或访问后经过固定时间过期
-            .expireAfterWrite(60, TimeUnit.SECONDS)
+            // 在访问之后指定多少秒过期
+            .expireAfterAccess(60, TimeUnit.SECONDS)
             // 初始的缓存空间大小
             .initialCapacity(100)
             // 缓存的最大条数
@@ -254,13 +257,13 @@ public class BeanUtil {
     }
 
     /**
-     * copyAndParse
+     * convertListWithUnderline
      *
      * @param source source
      * @param target target
      * @return List<T>
      */
-    public static <S, T> List<T> copyAndParseList(List<S> source, Class<T> target) {
+    public static <S, T> List<T> convertListWithUnderline(List<S> source, Class<T> target) {
         if (source == null || source.isEmpty()) {
             return new ArrayList<>(0);
         }
@@ -282,13 +285,13 @@ public class BeanUtil {
 
 
     /**
-     * copyAndParse
+     * convertWithUnderline
      *
      * @param source source
      * @param target target
      * @return T
      */
-    public static <S, T> T copyAndParse(S source, Class<T> target) {
+    public static <S, T> T convertWithUnderline(S source, Class<T> target) {
         T dest;
         try {
             final BeanCopier copier = createCglibBeanCopier(source.getClass(), target);

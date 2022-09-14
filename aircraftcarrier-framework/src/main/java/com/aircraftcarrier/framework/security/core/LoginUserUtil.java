@@ -36,6 +36,15 @@ public class LoginUserUtil {
     }
 
     /**
+     * 获得当前用户的编号
+     *
+     * @return 用户编号
+     */
+    public static String getOperator() {
+        return Objects.requireNonNull(getLoginUserId()).toString();
+    }
+
+    /**
      * 获得当前用户的角色编号数组
      *
      * @return 角色编号数组

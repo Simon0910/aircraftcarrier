@@ -10,20 +10,24 @@ import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.Serializable;
@@ -149,5 +153,45 @@ public class TestController {
             testService.multiThread();
         }
         return SingleResponse.ok();
+    }
+
+    @ApiOperationSupport(order = 40)
+    @ApiOperation(value = "接受jsonString")
+    @PostMapping("/receiveJson")
+    public SingleResponse<String> receiveJsonStr(HttpServletRequest request) throws Exception {
+        System.out.println("in");
+        ServletInputStream in = request.getInputStream();
+
+        try {
+            byte[] bytes = in.readAllBytes();
+            String requestParams = new String(bytes, StandardCharsets.UTF_8);
+            System.out.println(requestParams);
+
+            JSONObject jsonObject = JSON.parseObject(requestParams);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return SingleResponse.ok("okk");
+    }
+
+    @ApiOperationSupport(order = 45)
+    @ApiOperation(value = "getAccessToken")
+    @PostMapping("/getAccessToken")
+    public SingleResponse<String> getAccessToken(@RequestHeader("Authorization") String auth,
+                                                 @RequestBody String body) throws Exception {
+        System.out.println("auth: " + auth);
+        System.out.println("body: " + JSON.toJSONString(body));
+        return SingleResponse.ok("okk");
+    }
+
+    @ApiOperationSupport(order = 45)
+    @ApiOperation(value = "通知消息")
+    @PostMapping("/notifyMessage")
+    public SingleResponse<String> notifyMessage(@RequestHeader("Authorization") String auth,
+                                                @RequestBody String messageBody) throws Exception {
+        System.out.println("auth: " + auth);
+        System.out.println("messageBody: " + JSON.toJSONString(messageBody));
+        return SingleResponse.ok("okk");
     }
 }

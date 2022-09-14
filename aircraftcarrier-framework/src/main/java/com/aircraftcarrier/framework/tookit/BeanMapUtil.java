@@ -16,8 +16,8 @@ import static java.util.stream.Collectors.toList;
 /**
  * @author lzp
  */
-public class ObjUtil {
-    private ObjUtil() {
+public class BeanMapUtil {
+    private BeanMapUtil() {
     }
 
     public static Map<String, Object> obj2Map(Object obj) {
@@ -79,7 +79,7 @@ public class ObjUtil {
         if (CollUtil.isEmpty(beans)) {
             return Collections.emptyList();
         }
-        return beans.stream().map(ObjUtil::obj2MapBySpring).collect(toList());
+        return beans.stream().map(BeanMapUtil::obj2MapBySpring).collect(toList());
     }
 
     /**

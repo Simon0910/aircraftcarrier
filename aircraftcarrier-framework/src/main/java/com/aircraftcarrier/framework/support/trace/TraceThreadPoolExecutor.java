@@ -1,7 +1,10 @@
 package com.aircraftcarrier.framework.support.trace;
 
+import com.aircraftcarrier.framework.tookit.StringPool;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import org.slf4j.MDC;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -13,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * TraceThreadPoolExecutor 重写原生线程池(含:传递MDC上下文)
  * 可以提交jdk原生的Runnable
  *
- * @author lzp
+ * @author liuzhipeng
  */
 public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
     public TraceThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
@@ -39,7 +42,13 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
         super.execute(() -> {
             if (contextMap != null) {
                 // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
+                String traceId = contextMap.get(TraceIdUtil.TRACE_ID);
+                contextMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.generatorTraceId(), StringPool.UNDERSCORE));
                 MDC.setContextMap(contextMap);
+            } else {
+                Map<String, String> newContextMap = new HashMap<>(16);
+                newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.generatorTraceId());
+                MDC.setContextMap(newContextMap);
             }
             try {
                 command.run();

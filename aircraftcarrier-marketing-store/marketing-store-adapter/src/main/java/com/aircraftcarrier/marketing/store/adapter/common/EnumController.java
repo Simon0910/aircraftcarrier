@@ -30,17 +30,17 @@ import java.util.Map;
 public class EnumController {
 
     @ApiOperationSupport(order = 10)
-    @ApiOperation("获取所有枚举")
-    @GetMapping("/getAllEnum")
-    public SingleResponse<Map<String, List<Map<String, Object>>>> getAllEnum() {
-        return SingleResponse.ok(EnumMappingContext.queryAllEnums());
+    @ApiOperation("获取枚举列表")
+    @GetMapping("/getEnumList")
+    public SingleResponse<Map<String, List<Map<String, Object>>>> getEnumList() {
+        return SingleResponse.ok(EnumMappingContext.getEnumList());
     }
 
 
     @ApiOperationSupport(order = 20)
     @ApiOperation("根据类名获取枚举")
-    @GetMapping("/getEnumsByName/{enumName}")
-    public MultiResponse<Map<String, Object>> getEnumsByName(@PathVariable("enumName") String enumName) {
-        return MultiResponse.ok(EnumMappingContext.queryEnumsByName(enumName));
+    @GetMapping("/getEnumByClassName/{className}")
+    public MultiResponse<Map<String, Object>> getEnumByClassName(@PathVariable("className") String className) {
+        return MultiResponse.ok(EnumMappingContext.getEnumByClassName(className));
     }
 }

@@ -2,8 +2,8 @@ package com.aircraftcarrier.marketing.store.app.common;
 
 import cn.hutool.core.util.ArrayUtil;
 import com.aircraftcarrier.framework.exception.SysException;
+import com.aircraftcarrier.framework.tookit.BeanMapUtil;
 import com.aircraftcarrier.framework.tookit.MapUtil;
-import com.aircraftcarrier.framework.tookit.ObjUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.aircraftcarrier.marketing.store.client.common.KeywordQry;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.CommonMapper;
@@ -22,9 +22,6 @@ import java.util.Map;
 @Component
 public class KeywordQryExe {
 
-    @Resource
-    private CommonMapper commonMapper;
-
     /**
      * 字段映射
      */
@@ -39,6 +36,9 @@ public class KeywordQryExe {
 
         TABLE_MAPPING.put("t_product", "product");
     }
+
+    @Resource
+    private CommonMapper commonMapper;
 
     public List<Map<String, Object>> execute(KeywordQry keywordQry) {
         // query table
@@ -81,7 +81,7 @@ public class KeywordQryExe {
             keywordQry.setLikeField(null);
         }
 
-        return commonMapper.keywordsQuery(ObjUtil.obj2Map(keywordQry));
+        return commonMapper.keywordsQuery(BeanMapUtil.obj2Map(keywordQry));
     }
 
 }

@@ -4,7 +4,7 @@ import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
-import com.aircraftcarrier.framework.tookit.ObjUtil;
+import com.aircraftcarrier.framework.tookit.BeanMapUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
@@ -143,11 +143,11 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void applyDiscount(Map<String, Object> params) {
-        Sale sale = ObjUtil.map2Obj(params, Sale.class);
+        Sale sale = BeanMapUtil.map2Obj(params, Sale.class);
         kieTemplate.execute(sale);
         log.info("执行规则后返回 sale: {}", JSON.toJSONString(sale));
 
-        Address address = ObjUtil.map2Obj(params, Address.class);
+        Address address = BeanMapUtil.map2Obj(params, Address.class);
         kieTemplate.execute(address);
         log.info("执行规则后返回 address: {}", JSON.toJSONString(address));
 
