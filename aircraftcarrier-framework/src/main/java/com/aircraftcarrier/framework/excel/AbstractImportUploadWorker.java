@@ -3,7 +3,6 @@ package com.aircraftcarrier.framework.excel;
 import com.aircraftcarrier.framework.excel.util.ExcelRow;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.tookit.MapUtil;
-import com.aircraftcarrier.framework.tookit.PredicateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -109,6 +108,11 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
         log.debug("doBatchInvoke - rowList - size: {}", rowList.size());
     }
 
+    @Override
+    protected void afterProcess(List<T> rowList) {
+        log.debug("afterProcess...");
+    }
+
     /**
      * do work
      */
@@ -123,6 +127,7 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
         log.debug("doCheck - after  - checkedList.size: {}", checkedList.size());
         // do invoke
         doInvoke(checkedList);
+        afterProcess(filterList);
         return batchResult;
     }
 
