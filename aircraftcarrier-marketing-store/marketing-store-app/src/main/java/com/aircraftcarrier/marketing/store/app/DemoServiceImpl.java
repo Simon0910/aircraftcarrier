@@ -9,7 +9,7 @@ import com.aircraftcarrier.marketing.store.app.demo.executor.excel.DemoExportExe
 import com.aircraftcarrier.marketing.store.app.demo.executor.query.DemoDetailQryCmdExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.query.DemoPageQryCmdExe;
 import com.aircraftcarrier.marketing.store.client.DemoService;
-import com.aircraftcarrier.marketing.store.client.demo.cmd.ApprovalDeleteCmd;
+import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
@@ -77,7 +77,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public boolean delete(ApprovalDeleteCmd deleteCmd) {
+    public boolean delete(DemoDeleteCmd deleteCmd) {
         return demoDeleteExe.execute(deleteCmd);
     }
 

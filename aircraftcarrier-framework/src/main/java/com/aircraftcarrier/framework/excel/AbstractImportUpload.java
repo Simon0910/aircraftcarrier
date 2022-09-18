@@ -4,7 +4,6 @@ import com.aircraftcarrier.framework.excel.util.ExcelRow;
 import com.aircraftcarrier.framework.model.BatchResult;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -93,10 +92,9 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
     List<T> doCheck(List<T> list) {
         List<T> allBatchCheckedList = new ArrayList<>(list.size());
         List<T> tempList = new ArrayList<>(batchCheckSize);
-        int i = 1;
-        for (Iterator<T> it = list.iterator(); it.hasNext(); i++) {
+        for (T value : list) {
             // step 1
-            T t = preCheck(it.next());
+            T t = preCheck(value);
             if (t == null) {
                 continue;
             }
@@ -132,9 +130,8 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
      */
     void doInvoke(List<T> list) {
         List<T> tempList = new ArrayList<>(batchInvokeSize);
-        int i = 1;
-        for (Iterator<T> it = list.iterator(); it.hasNext(); i++) {
-            tempList.add(it.next());
+        for (T t : list) {
+            tempList.add(t);
             if (batchInvokeSize == tempList.size()) {
                 doBatchInvoke(tempList);
                 tempList.clear();

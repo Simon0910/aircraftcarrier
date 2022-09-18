@@ -1,8 +1,8 @@
 package com.aircraftcarrier.marketing.store.client;
 
 import com.aircraftcarrier.framework.model.response.Page;
-import com.aircraftcarrier.marketing.store.client.demo.cmd.ApprovalDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
+import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImportExcel;
@@ -21,23 +21,23 @@ public interface DemoService {
      * pageList
      *
      * @param pageQryCmd pageQryCmd
-     * @return
+     * @return Page<DemoPageVo>
      */
     Page<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd);
 
     /**
      * add
      *
-     * @param cmd
-     * @return
+     * @param cmd cmd
+     * @return int
      */
     int add(DemoCmd cmd);
 
     /**
      * update
      *
-     * @param cmd
-     * @return
+     * @param cmd cmd
+     * @return int
      */
     int update(DemoCmd cmd);
 
@@ -45,7 +45,7 @@ public interface DemoService {
      * getById
      *
      * @param id id
-     * @return
+     * @return DemoVo
      */
     DemoVo getById(Serializable id);
 
@@ -53,7 +53,7 @@ public interface DemoService {
      * selectList
      *
      * @param detailQryCmd detailQryCmd
-     * @return
+     * @return List<DemoVo>
      */
     List<DemoVo> selectList(DemoDetailQryCmd detailQryCmd);
 
@@ -61,15 +61,15 @@ public interface DemoService {
      * delete
      *
      * @param deleteCmd deleteCmd
-     * @return
+     * @return boolean
      */
-    boolean delete(ApprovalDeleteCmd deleteCmd);
+    boolean delete(DemoDeleteCmd deleteCmd);
 
     /**
      * export
      *
      * @param pageQryCmd pageQryCmd
-     * @return
+     * @return List<DemoImportExcel>
      */
     List<DemoImportExcel> export(DemoPageQryCmd pageQryCmd);
 
