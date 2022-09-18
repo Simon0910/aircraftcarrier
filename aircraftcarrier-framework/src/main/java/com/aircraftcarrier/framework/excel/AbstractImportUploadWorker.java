@@ -2,11 +2,13 @@ package com.aircraftcarrier.framework.excel;
 
 import com.aircraftcarrier.framework.excel.util.ExcelRow;
 import com.aircraftcarrier.framework.model.BatchResult;
+import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.PredicateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +52,16 @@ public abstract class AbstractImportUploadWorker<T extends ExcelRow> extends Abs
      */
     @Override
     protected List<T> filter(List<T> rowList) {
-        return rowList.stream().filter(PredicateUtil.distinctByKey(T::genUniqueKey, rowList.size())).collect(Collectors.toList());
+        Map<String, Integer> seen = MapUtil.newHashMap(rowList.size());
+        return rowList.stream().filter(row -> {
+            Integer oldRowNo = seen.putIfAbsent(row.genUniqueKey(), row.getRowNo());
+            if (oldRowNo == null) {
+                return true;
+            }
+            batchResult.addErrorMsg(row.getRowNo(), "与第[" + oldRowNo + "]行数据重复");
+            return false;
+        }).collect(Collectors.toList());
+//        return rowList.stream().filter(PredicateUtil.distinctByKey(T::genUniqueKey, rowList.size())).collect(Collectors.toList());
     }
 
     /**

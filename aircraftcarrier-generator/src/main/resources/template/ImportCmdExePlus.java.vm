@@ -75,22 +75,8 @@ public class ${cfg.ImportCmdExePlus_n} {
     class ${cfg.Import_n}Upload extends AbstractImportUploadWorker<${cfg.Import_n}> {
 
         @Override
-        protected List<${cfg.Import_n}> filter(List<${cfg.Import_n}> rowList) {
-            Map<String, Integer> seen = MapUtil.newHashMap(rowList.size());
-            return rowList.stream().filter(row -> {
-                Integer oldRowNo = seen.putIfAbsent(row.genUniqueKey(), row.getRowNo());
-                if (oldRowNo == null) {
-                    return true;
-                }
-                batchResult.addErrorMsg(row.getRowNo(), "与第[" + oldRowNo + "]行数据重复");
-                return false;
-            }).collect(Collectors.toList());
-        }
-
-        @Override
         protected ${cfg.Import_n} preCheck(${cfg.Import_n} row) {
-            boolean b = checkNullField(row);
-            if (b) {
+            if (checkNullField(row)) {
                 return row;
             }
             return null;
