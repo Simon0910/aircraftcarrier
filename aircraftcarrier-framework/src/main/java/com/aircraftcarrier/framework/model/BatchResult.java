@@ -4,9 +4,8 @@ package com.aircraftcarrier.framework.model;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -86,6 +85,11 @@ public class BatchResult implements Serializable {
      * 最后错误行号
      */
     private Integer lastErrorRowNo = -1;
+
+    /**
+     * 导出excel并提示错误信息
+     */
+    private String downloadUrl;
 
     /**
      * BatchResult 构造
@@ -258,6 +262,15 @@ public class BatchResult implements Serializable {
     }
 
     /**
+     * 获取上传错误信息 用于 导出excel并提示错误信息
+     *
+     * @return TreeMap
+     */
+    public TreeMap<Integer, Map<String, Object>> uploadErrorRowTreeMap() {
+        return errorRowTreeMap;
+    }
+
+    /**
      * 总条数展示
      *
      * @return java.lang.Integer
@@ -287,12 +300,27 @@ public class BatchResult implements Serializable {
     /**
      * 错误明细
      */
-    public List<Map<String, Object>> getDetails() {
+    public Collection<Map<String, Object>> getErrorDetails() {
         if (!errorTypeMap.isEmpty()) {
-            return new ArrayList<>(errorTypeMap.values());
+            return errorTypeMap.values();
         }
-        return new ArrayList<>(errorRowTreeMap.values());
+        return errorRowTreeMap.values();
     }
 
+    /**
+     * 导出excel并提示错误信息
+     */
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+    /**
+     * 导出excel并提示错误信息
+     *
+     * @return downloadUrl
+     */
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
 
 }

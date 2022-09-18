@@ -17,8 +17,11 @@ import java.util.List;
 @Setter
 public class ClassModel {
 
-    List<PropertyModel> propertyList = new ArrayList<>(100);
     private String type;
+
     private String className;
+
     private String comment;
+
+    List<PropertyModel> propertyList = new ArrayList<>(100);
 }

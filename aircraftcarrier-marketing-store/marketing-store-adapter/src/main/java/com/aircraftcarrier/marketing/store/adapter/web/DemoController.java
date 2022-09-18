@@ -6,7 +6,7 @@ import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.client.DemoService;
-import com.aircraftcarrier.marketing.store.client.demo.cmd.ApprovalDeleteCmd;
+import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
@@ -101,7 +101,7 @@ public class DemoController {
     @ApiOperation("批量删除")
     @PostMapping("delete")
     public boolean delete(@RequestParam(value = "ids") List<Long> ids) {
-        return demoService.delete(new ApprovalDeleteCmd(ids));
+        return demoService.delete(new DemoDeleteCmd(ids));
     }
 
 
@@ -121,9 +121,7 @@ public class DemoController {
     @PostMapping("import")
     public SingleResponse<String> importExcel(@RequestParam("file") MultipartFile file) throws IOException {
         EasyExcelReadUtil.checkExcelFile(file);
-        EasyExcelReadUtil.lambdaReadBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (rowList, analysisContext) -> {
-            System.out.println(JSON.toJSONString(rowList));
-        });
+        EasyExcelReadUtil.lambdaReadBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (rowList, analysisContext) -> System.out.println(JSON.toJSONString(rowList)));
         //解析并保存到数据库
         return SingleResponse.ok();
     }

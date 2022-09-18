@@ -10,11 +10,11 @@ package ${clazz.packageName};
  */
 @Getter
 @Setter
-public class $!{clazz.className} implements Serializable{
-/**
- * serialVersionUID
- */
-private static final long serialVersionUID=1L;
+public class $!{clazz.className} implements Serializable {
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
 ## ----------  BEGIN 字段循环遍历  ----------
 #foreach($field in ${clazz.fields})
 

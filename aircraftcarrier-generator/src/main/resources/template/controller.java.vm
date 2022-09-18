@@ -98,7 +98,7 @@ public class ${table.controllerName} {
     @ApiOperation(value = "手工添加")
     @PostMapping(value = "/add${table.originEntityName}")
     public SingleResponse<Void> add${table.originEntityName}(@RequestBody @Valid ${cfg.AddCmd_n} addCmd,
-        HttpServletRequest request){
+                                                  HttpServletRequest request) {
         addCmd.initCreate(LoginUserUtil.getOperator());
         return ${serviceI}.add${table.originEntityName}(addCmd);
     }
@@ -118,7 +118,7 @@ public class ${table.controllerName} {
     @ApiOperation(value = "编辑保存")
     @PostMapping(value = "/editSave")
     public SingleResponse<Void> editSave(@RequestBody @Valid ${cfg.EditCmd_n} editCmd,
-        HttpServletRequest request){
+                                         HttpServletRequest request) {
         editCmd.initUpdate(LoginUserUtil.getOperator());
         return ${serviceI}.editSave(editCmd);
     }
@@ -129,63 +129,63 @@ public class ${table.controllerName} {
     @ApiOperation(value = "批量删除")
     @PostMapping(value = "/deleteBatch")
     public SingleResponse<Void> deleteBatch(@RequestBody @Valid ${cfg.DeleteCmd_n} deleteCmd,
-        HttpServletRequest request){
+                                            HttpServletRequest request) {
         deleteCmd.initUpdate(LoginUserUtil.getOperator());
         return ${serviceI}.delete(deleteCmd);
-        }
+    }
 
-/**
- * 导出
- */
-@ApiOperation(value = "导出", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-@PostMapping(value = "/exportExcel")
-public void exportExcel(@RequestBody ${cfg.ExportQry_n} exportQry,
-        HttpServletResponse response)throws Exception{
+    /**
+     * 导出
+     */
+    @ApiOperation(value = "导出", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PostMapping(value = "/exportExcel")
+    public void exportExcel(@RequestBody ${cfg.ExportQry_n} exportQry,
+                            HttpServletResponse response) throws Exception {
         // 查询下载集合
-    ${cfg.ExportCmd_n} exportCmd=new ${cfg.ExportCmd_n}(exportQry);
-        MultiResponse<${cfg.Export_n}> multiResponse= ${serviceI}.excelExport(exportCmd);
-        List<${cfg.Export_n}> list=(List<${cfg.Export_n}>)multiResponse.getData();
-        EasyExcelWriteUtil.exportExcel(response,"$!{table.comment}","$!{table.comment}",list, ${cfg.Export_n}.class);
-        }
+        ${cfg.ExportCmd_n} exportCmd = new ${cfg.ExportCmd_n}(exportQry);
+        MultiResponse<${cfg.Export_n}> multiResponse = ${serviceI}.excelExport(exportCmd);
+        List<${cfg.Export_n}> list = (List<${cfg.Export_n}>) multiResponse.getData();
+        EasyExcelWriteUtil.exportExcel(response, "$!{table.comment}", "$!{table.comment}", list, ${cfg.Export_n}.class);
+    }
 
 
-/**
- * 导出模板
- */
-@ApiOperation(value = "导出模板", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-@GetMapping("exportTemplate")
-public void exportTemplate(HttpServletResponse response)throws Exception{
-    ${cfg.Import_n} importExcel=new ${cfg.Import_n}();
-    #foreach($field in ${table.fields})
-        #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
-        #if("$!field.propertyType" == "String")
-                importExcel.set${sfN}("${field.propertyName}");
-        #elseif("$!field.propertyType" == "Integer")
-                importExcel.set${sfN}(1);
-        #elseif("$!field.propertyType" == "Long")
-                importExcel.set${sfN}(1L);
-        #elseif("$!field.propertyType" == "Date")
-                importExcel.set${sfN}(new Date());
-        #elseif("$!field.propertyType" == "LocalDateTime")
-                importExcel.set${sfN}(LocalDateTime.now());
-        #end
-    #end
-        List<${cfg.Import_n}> importExcels=Collections.singletonList(importExcel);
-        EasyExcelWriteUtil.exportExcel(response,"$!{table.comment}","$!{table.comment}",importExcels, ${cfg.Import_n}.class);
-        }
+    /**
+     * 导出模板
+     */
+    @ApiOperation(value = "导出模板", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping("exportTemplate")
+    public void exportTemplate(HttpServletResponse response) throws Exception {
+        ${cfg.Import_n} importExcel = new ${cfg.Import_n}();
+#foreach($field in ${table.fields})
+    #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
+#if("$!field.propertyType" == "String")
+        importExcel.set${sfN}("${field.propertyName}");
+#elseif("$!field.propertyType" == "Integer")
+        importExcel.set${sfN}(1);
+#elseif("$!field.propertyType" == "Long")
+        importExcel.set${sfN}(1L);
+#elseif("$!field.propertyType" == "Date")
+        importExcel.set${sfN}(new Date());
+#elseif("$!field.propertyType" == "LocalDateTime")
+        importExcel.set${sfN}(LocalDateTime.now());
+#end
+#end
+        List<${cfg.Import_n}> importExcels = Collections.singletonList(importExcel);
+        EasyExcelWriteUtil.exportExcel(response, "$!{table.comment}", "$!{table.comment}", importExcels, ${cfg.Import_n}.class);
+    }
 
 
-/**
- * 导入
- */
-@ApiImplicitParam(name = "file", dataType = "__File", value = "文件")
-@ApiOperation("导入")
-@PostMapping(value = "/importExcel")
-public SingleResponse<BatchResult> importExcel(@ApiParam(value = "上传文件", required = true)
-@RequestParam("file")
-@NotNull(message = "上传文件必传") MultipartFile file,
-        HttpServletRequest request){
-    ${cfg.ImportCmd_n} importCmd = new ${cfg.ImportCmd_n}();
+    /**
+     * 导入
+     */
+    @ApiImplicitParam(name = "file", dataType = "__File", value = "文件")
+    @ApiOperation("导入")
+    @PostMapping(value = "/importExcel")
+    public SingleResponse<BatchResult> importExcel(@ApiParam(value = "上传文件", required = true)
+                                                   @RequestParam("file")
+                                                   @NotNull(message = "上传文件必传") MultipartFile file,
+                                                   HttpServletRequest request) {
+        ${cfg.ImportCmd_n} importCmd = new ${cfg.ImportCmd_n}();
         importCmd.initCreate(LoginUserUtil.getOperator());
         importCmd.setFile(file);
         return ${serviceI}.excelImport(importCmd);

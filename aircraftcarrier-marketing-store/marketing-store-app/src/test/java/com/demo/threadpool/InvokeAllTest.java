@@ -1,7 +1,8 @@
 package com.demo.threadpool;
-
+ 
 import lombok.extern.slf4j.Slf4j;
-
+import org.junit.Test;
+ 
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -11,10 +12,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+ 
 @Slf4j
 public class InvokeAllTest {
-
+ 
     // https://bugs.openjdk.org/browse/JDK-8286463
     // DiscardPolicy may block invokeAll forever
 //    @Test
@@ -40,7 +41,7 @@ public class InvokeAllTest {
 //                new ThreadPoolExecutor.AbortPolicy()
 //                new ThreadPoolExecutor.CallerRunsPolicy()
         );
-
+ 
         // generate several jobs here
         final List<Callable<Integer>> tasks = IntStream.range(1, 10).mapToObj((i) -> new Callable<Integer>() {
             /**
