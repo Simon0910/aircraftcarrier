@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class TestController {
 
     private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(3, 3, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-
+    private ThreadLocal<String> threadLocal = new ThreadLocal<>();
     @Value("classpath:demo.json")
     private org.springframework.core.io.Resource demoResource;
 
@@ -193,5 +193,35 @@ public class TestController {
         System.out.println("auth: " + auth);
         System.out.println("messageBody: " + JSON.toJSONString(messageBody));
         return SingleResponse.ok("okk");
+    }
+
+    /**
+     * <a href="https://www.baeldung.com/java-memory-leaks">...</a>
+     */
+    @ApiOperationSupport(order = 46)
+    @ApiOperation(value = "threadLocal")
+    @GetMapping("/threadLocal")
+    public SingleResponse<String> threadLocal(String value) {
+        System.out.println("threadLocal");
+
+        threadPoolExecutor.execute(() -> {
+            threadLocal.set(value);
+            String s = threadLocal.get();
+            System.out.println(s);
+            Thread thread = Thread.currentThread();
+        });
+
+        return SingleResponse.ok("okk");
+    }
+
+    @ApiOperationSupport(order = 47)
+    @ApiOperation(value = "gc")
+    @GetMapping("/gc")
+    public SingleResponse<String> gc() {
+        System.out.println("gc");
+        threadLocal = null;
+        System.gc();
+        threadLocal = new ThreadLocal<>();
+        return SingleResponse.ok("gc");
     }
 }
