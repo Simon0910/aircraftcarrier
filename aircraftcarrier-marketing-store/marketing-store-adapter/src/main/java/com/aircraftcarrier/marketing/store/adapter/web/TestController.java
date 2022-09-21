@@ -146,7 +146,7 @@ public class TestController {
     }
 
     @ApiOperationSupport(order = 37)
-    @ApiOperation(value = "多线程测试")
+    @ApiOperation(value = "多线程测试invokeAll")
     @GetMapping("/multiThread")
     public SingleResponse<String> multiThread() {
         for (int i = 0; i < 1; i++) {

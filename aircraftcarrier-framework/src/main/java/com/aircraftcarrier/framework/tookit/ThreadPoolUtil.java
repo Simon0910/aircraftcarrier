@@ -52,16 +52,16 @@ public class ThreadPoolUtil {
     /**
      * executeAllVoid
      */
-    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks) {
-        List<Callable<Void>> callables = new ArrayList<>(batchTasks.size());
-        for (CallableVoid batchTask : batchTasks) {
+    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks)  {
+        List<Callable<String>> callables = new ArrayList<>(batchTasks.size());
+        for (CallableVoid task : batchTasks) {
             callables.add(() -> {
                 try {
-                    batchTask.call();
+                    task.call();
                 } catch (Exception e) {
                     throw new ThreadException(e);
                 }
-                return null;
+                return "Void";
             });
         }
         executeAll(pool, callables);
