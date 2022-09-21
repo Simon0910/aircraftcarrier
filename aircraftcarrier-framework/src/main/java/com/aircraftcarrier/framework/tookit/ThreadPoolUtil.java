@@ -52,7 +52,14 @@ public class ThreadPoolUtil {
     /**
      * executeAllVoid
      */
-    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks)  {
+    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks) {
+        executeAllVoid(pool, batchTasks, false);
+    }
+
+    /**
+     * executeAllVoid ignoreFail
+     */
+    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks, boolean ignoreFail) {
         List<Callable<String>> callables = new ArrayList<>(batchTasks.size());
         for (CallableVoid task : batchTasks) {
             callables.add(() -> {
@@ -64,48 +71,21 @@ public class ThreadPoolUtil {
                 return "Void";
             });
         }
-        executeAll(pool, callables);
+
+        executeAll(pool, callables, ignoreFail);
     }
 
     /**
      * executeAll
      */
     public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> batchTasks) {
-        // 异步执行
-        List<Future<T>> futures;
-        try {
-            futures = pool.invokeAll(batchTasks);
-            // 等待批量任务执行完成。。。
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("invokeAll - Interrupted error: ", e);
-            throw new ThreadException(e);
-        }
-
-        // 按list顺序获取
-        List<T> resultList = new ArrayList<>(futures.size());
-        for (Future<T> future : futures) {
-            try {
-                T result = future.get();
-                resultList.add(result);
-                log.info("get result: {}", JSON.toJSONString(result));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("get - Interrupted error: ", e);
-                throw new ThreadException(e);
-            } catch (ExecutionException e) {
-                log.error("get - Execution error: ", e);
-                throw new ThreadException(e);
-            }
-        }
-        return resultList;
+        return executeAll(pool, batchTasks, false);
     }
-
 
     /**
      * executeAll Ignore Fail
      */
-    public static <T> List<T> executeAllIgnoreFail(ThreadPoolExecutor pool, List<Callable<T>> batchTasks) {
+    public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> batchTasks, boolean ignoreFail) {
         // 异步执行
         List<Future<T>> futures;
         try {
@@ -127,8 +107,14 @@ public class ThreadPoolUtil {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.error("get - Interrupted error: ", e);
+                if (!ignoreFail) {
+                    throw new ThreadException(e);
+                }
             } catch (ExecutionException e) {
                 log.error("get - Execution error: ", e);
+                if (!ignoreFail) {
+                    throw new ThreadException(e);
+                }
             }
         }
         return resultList;
