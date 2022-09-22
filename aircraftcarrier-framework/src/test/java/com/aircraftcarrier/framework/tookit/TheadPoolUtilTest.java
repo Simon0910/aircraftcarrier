@@ -23,7 +23,7 @@ public class TheadPoolUtilTest {
      * 可根据批量消费消息个数设置
      */
     private static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
-            ThreadPoolUtil.CORE_POOL_SIZE,
+            2,
             ThreadPoolUtil.MAX_POOL_SIZE,
             ThreadPoolUtil.KEEP_ALIVE_TIME,
             TimeUnit.SECONDS,
@@ -39,12 +39,13 @@ public class TheadPoolUtilTest {
         list.add("order01");
         list.add("order02");
         list.add("order03");
+        list.add("order04");
 
         List<CallableVoid> tasks = new ArrayList<>();
         for (String msg : list) {
             tasks.add(() -> doSomething(msg));
         }
-        ThreadPoolUtil.executeAllVoid(THREAD_POOL_EXECUTOR, tasks);
+        ThreadPoolUtil.executeAllVoid(THREAD_POOL_EXECUTOR, tasks, true);
     }
 
     private void doSomething(String msg) throws RuntimeException {
