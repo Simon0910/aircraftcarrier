@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TestServiceImpl implements TestService {
     private static final int THREAD_NUM = 100;
     private final CyclicBarrier barrier = new CyclicBarrier(THREAD_NUM);
-    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(THREAD_NUM, THREAD_NUM, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, THREAD_NUM, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
     @Resource
     UpdateInventoryExe updateInventoryExe;
     @Resource
@@ -164,6 +164,7 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void deductionInventory(Serializable goodsNo) {
+        long start = System.currentTimeMillis();
         final CountDownLatch latch = new CountDownLatch(THREAD_NUM);
         final AtomicInteger success = new AtomicInteger();
         final AtomicInteger fail = new AtomicInteger();
@@ -189,7 +190,6 @@ public class TestServiceImpl implements TestService {
         }
 
         try {
-            long start = System.currentTimeMillis();
             latch.await();
             long end = System.currentTimeMillis();
             log.info("耗时：" + (end - start));
