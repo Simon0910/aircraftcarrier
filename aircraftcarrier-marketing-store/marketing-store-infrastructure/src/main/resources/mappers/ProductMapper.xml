@@ -33,6 +33,15 @@
           AND version = #{version}
     </update>
 
+    <!-- 更新库存2 -->
+    <update id="updateInventoryDirect">
+        UPDATE product
+        SET inventory = inventory + #{appendInventory}
+        WHERE id = #{id}
+          AND deleted = 0
+          AND inventory + #{appendInventory} >= 0
+    </update>
+
     <!-- 分页查询 -->
     <select id="listPage"
             resultType="com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo">

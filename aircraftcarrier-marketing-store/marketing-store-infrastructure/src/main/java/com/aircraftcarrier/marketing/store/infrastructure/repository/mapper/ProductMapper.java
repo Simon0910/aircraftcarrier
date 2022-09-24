@@ -45,4 +45,13 @@ public interface ProductMapper extends MybatisBaseMapper<ProductDo> {
      * @return int
      */
     int updateInventory(@Param("id") Long id, @Param("version") Long version, @Param("newInventory") Integer newInventory);
+
+    /**
+     * 更新库存
+     *
+     * @param id              主键
+     * @param appendInventory 追加数
+     * @return int
+     */
+    int updateInventoryDirect(@Param("id") Long id, @Param("appendInventory") Integer appendInventory);
 }
