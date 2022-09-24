@@ -1,11 +1,13 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
+import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.BeanMapUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
+import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
@@ -165,38 +167,28 @@ public class TestServiceImpl implements TestService {
     @Override
     public void deductionInventory(Serializable goodsNo) {
         long start = System.currentTimeMillis();
-        final CountDownLatch latch = new CountDownLatch(THREAD_NUM);
         final AtomicInteger success = new AtomicInteger();
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        for (int i = 0; i < THREAD_NUM; i++) {
-            threadPool.execute(() -> {
-                try {
-
-                    SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
-                    if (response.success()) {
-                        log.info("扣减库存 成功");
-                        success.incrementAndGet();
-                    } else {
-                        log.info("扣减库存 失败 〒_〒");
-                        fail.incrementAndGet();
-                    }
-
-                } finally {
-                    latch.countDown();
+        int num = 1000;
+        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+            asyncBatchTasks.add(() -> {
+                SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
+                if (response.success()) {
+                    log.info("扣减库存 成功");
+                    success.incrementAndGet();
+                } else {
+                    log.info("扣减库存 失败 〒_〒");
+                    fail.incrementAndGet();
                 }
             });
         }
 
-        try {
-            latch.await();
-            long end = System.currentTimeMillis();
-            log.info("耗时：" + (end - start));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            Thread.currentThread().interrupt();
-        }
+        ThreadPoolUtil.executeAllVoid(threadPool, asyncBatchTasks);
+        long end = System.currentTimeMillis();
+        log.info("耗时：" + (end - start));
 
         log.info("success: " + success);
         log.info("fail: " + fail);

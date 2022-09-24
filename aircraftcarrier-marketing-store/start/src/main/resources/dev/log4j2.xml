@@ -56,12 +56,12 @@
 
     <!-- Mixed sync/async -->
     <Loggers>
-        <logger name="druid.sql" level="debug"/>
-        <logger name="druid.sql.DataSource" level="debug"/>
-        <logger name="druid.sql.Connection" level="debug"/>
-        <logger name="druid.sql.Statement" level="debug"/>
-        <logger name="druid.sql.ResultSet" level="debug"/>
-        <AsyncRoot level="debug" includeLocation="true">
+        <logger name="druid.sql" level="info"/>
+        <logger name="druid.sql.DataSource" level="info"/>
+        <logger name="druid.sql.Connection" level="info"/>
+        <logger name="druid.sql.Statement" level="info"/>
+        <logger name="druid.sql.ResultSet" level="info"/>
+        <AsyncRoot level="info" includeLocation="info">
             <AppenderRef ref="console"/>
             <AppenderRef ref="infoFile"/>
             <AppenderRef ref="errorFile"/>

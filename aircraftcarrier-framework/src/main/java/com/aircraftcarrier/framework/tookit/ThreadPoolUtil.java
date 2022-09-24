@@ -52,16 +52,16 @@ public class ThreadPoolUtil {
     /**
      * executeAllVoid
      */
-    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks) {
-        executeAllVoid(pool, batchTasks, false);
+    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> asyncBatchTasks) {
+        executeAllVoid(pool, asyncBatchTasks, false);
     }
 
     /**
      * executeAllVoid ignoreFail
      */
-    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> batchTasks, boolean ignoreFail) {
-        List<Callable<String>> callables = new ArrayList<>(batchTasks.size());
-        for (CallableVoid task : batchTasks) {
+    public static void executeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> asyncBatchTasks, boolean ignoreFail) {
+        List<Callable<String>> callables = new ArrayList<>(asyncBatchTasks.size());
+        for (CallableVoid task : asyncBatchTasks) {
             callables.add(() -> {
                 try {
                     task.call();
@@ -78,18 +78,18 @@ public class ThreadPoolUtil {
     /**
      * executeAll
      */
-    public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> batchTasks) {
-        return executeAll(pool, batchTasks, false);
+    public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> asyncBatchTasks) {
+        return executeAll(pool, asyncBatchTasks, false);
     }
 
     /**
      * executeAll Ignore Fail
      */
-    public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> batchTasks, boolean ignoreFail) {
+    public static <T> List<T> executeAll(ThreadPoolExecutor pool, List<Callable<T>> asyncBatchTasks, boolean ignoreFail) {
         // 异步执行
         List<Future<T>> futures;
         try {
-            futures = pool.invokeAll(batchTasks);
+            futures = pool.invokeAll(asyncBatchTasks);
             // 等待批量任务执行完成。。。
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -103,7 +103,7 @@ public class ThreadPoolUtil {
             try {
                 T result = future.get();
                 resultList.add(result);
-                log.info("get result: {}", JSON.toJSONString(result));
+                log.debug("get result: {}", JSON.toJSONString(result));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.error("get - Interrupted error: ", e);
