@@ -45,9 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 public class TestServiceImpl implements TestService {
-    private static final int THREAD_NUM = 100;
-    private final CyclicBarrier barrier = new CyclicBarrier(THREAD_NUM);
-    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, THREAD_NUM, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
+    private static final int TASK_NUM = 100;
+    private final CyclicBarrier barrier = new CyclicBarrier(TASK_NUM);
+    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, 20, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
     @Resource
     UpdateInventoryExe updateInventoryExe;
     @Resource
@@ -99,14 +99,14 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public String testLockKey(Serializable id) {
-        CountDownLatch latch = new CountDownLatch(THREAD_NUM);
+        CountDownLatch latch = new CountDownLatch(TASK_NUM);
 
         RequestLimitUtil limitUtil = RequestLimitUtil.getInstance();
-        for (int i = 0; i < THREAD_NUM; i++) {
+        for (int i = 0; i < TASK_NUM; i++) {
             String finalI = String.valueOf(id);
             threadPool.execute(() -> {
                 try {
-                    barrier.await();
+//                    barrier.await();
 
                     String name = Thread.currentThread().getName();
                     boolean require = limitUtil.require(finalI, 3);
@@ -119,7 +119,8 @@ public class TestServiceImpl implements TestService {
                         log.info("sum noo: " + finalI + "_" + name);
                     }
 
-                } catch (InterruptedException | BrokenBarrierException e) {
+//                } catch (InterruptedException | BrokenBarrierException e) {
+                } catch (InterruptedException e) {
                     log.warn("Interrupted!", e);
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();

@@ -179,7 +179,7 @@ public class TestController {
     @ApiOperation(value = "getAccessToken")
     @PostMapping("/getAccessToken")
     public SingleResponse<String> getAccessToken(@RequestHeader("Authorization") String auth,
-                                                 @RequestBody String body) throws Exception {
+                                                 @RequestBody String body) {
         System.out.println("auth: " + auth);
         System.out.println("body: " + JSON.toJSONString(body));
         return SingleResponse.ok("okk");
@@ -189,7 +189,7 @@ public class TestController {
     @ApiOperation(value = "通知消息")
     @PostMapping("/notifyMessage")
     public SingleResponse<String> notifyMessage(@RequestHeader("Authorization") String auth,
-                                                @RequestBody String messageBody) throws Exception {
+                                                @RequestBody String messageBody) {
         System.out.println("auth: " + auth);
         System.out.println("messageBody: " + JSON.toJSONString(messageBody));
         return SingleResponse.ok("okk");
@@ -230,7 +230,9 @@ public class TestController {
     @GetMapping("/decr")
     public SingleResponse<String> decr(String key) {
         System.out.println("decr");
-        testService.decrBy(key);
+        for (int i = 0; i < 2; i++) {
+            testService.decrBy(key);
+        }
         return SingleResponse.ok("decr");
     }
 }

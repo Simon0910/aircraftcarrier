@@ -68,6 +68,14 @@ public class ThreadPoolUtil {
     private ThreadPoolUtil() {
     }
 
+
+    /**
+     * executeVoid
+     */
+    public static void executeVoid(CallableVoid callableVoid) {
+        executeAllVoid(DEFAULT_THREAD_POOL, List.of(callableVoid));
+    }
+
     /**
      * executeAllVoid
      */
@@ -92,6 +100,14 @@ public class ThreadPoolUtil {
         }
 
         executeAll(pool, callables, ignoreFail);
+    }
+
+    /**
+     * execute
+     */
+    public static <T> T execute(Callable<T> callable) {
+        List<T> list = executeAll(DEFAULT_THREAD_POOL, List.of(callable));
+        return list.get(0);
     }
 
     /**
@@ -139,10 +155,4 @@ public class ThreadPoolUtil {
         return resultList;
     }
 
-    /**
-     * executeVoid
-     */
-    public static void executeVoid(CallableVoid callableVoid) {
-        executeAllVoid(DEFAULT_THREAD_POOL, List.of(callableVoid));
-    }
 }
