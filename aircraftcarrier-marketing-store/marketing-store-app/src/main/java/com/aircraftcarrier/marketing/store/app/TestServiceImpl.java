@@ -171,7 +171,7 @@ public class TestServiceImpl implements TestService {
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        int num = 1000;
+        int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             asyncBatchTasks.add(() -> {
@@ -242,6 +242,30 @@ public class TestServiceImpl implements TestService {
         }
 
         log.info("multiThread end");
+    }
+
+    @Override
+    public void decrBy(String key) {
+        long start = System.currentTimeMillis();
+        final AtomicInteger success = new AtomicInteger();
+        final AtomicInteger fail = new AtomicInteger();
+
+        // 模拟多人抢购商品
+        int num = 1000;
+        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+            asyncBatchTasks.add(() -> {
+                long l = JedisUtil.decrBy(key, 3);
+                System.out.println(l);
+            });
+        }
+
+        ThreadPoolUtil.executeAllVoid(threadPool, asyncBatchTasks);
+        long end = System.currentTimeMillis();
+        log.info("耗时：" + (end - start));
+
+        log.info("success: " + success);
+        log.info("fail: " + fail);
     }
 }
 

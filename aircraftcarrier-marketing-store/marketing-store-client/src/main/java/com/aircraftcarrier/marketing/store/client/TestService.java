@@ -52,4 +52,9 @@ public interface TestService {
      * 多线程测试
      */
     void multiThread();
+
+    /**
+     * redis decrBy
+     */
+    void decrBy(String key);
 }

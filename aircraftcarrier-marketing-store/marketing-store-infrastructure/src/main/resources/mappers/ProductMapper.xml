@@ -36,7 +36,8 @@
     <!-- 更新库存2 -->
     <update id="updateInventoryDirect">
         UPDATE product
-        SET inventory = inventory + #{appendInventory}
+        SET inventory = inventory + #{appendInventory},
+            version   = version + 1
         WHERE id = #{id}
           AND deleted = 0
           AND inventory + #{appendInventory} >= 0

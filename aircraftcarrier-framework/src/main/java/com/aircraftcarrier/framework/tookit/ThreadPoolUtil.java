@@ -2,15 +2,19 @@ package com.aircraftcarrier.framework.tookit;
 
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.ThreadException;
+import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 并发执行工具
@@ -41,6 +45,21 @@ public class ThreadPoolUtil {
      * 线程空闲时间
      */
     public static final int KEEP_ALIVE_TIME = 60;
+
+    /**
+     * 默认
+     */
+    private static final TraceThreadPoolExecutor DEFAULT_THREAD_POOL = new TraceThreadPoolExecutor(
+            // 核心
+            1,
+            // 最大
+            MAX_POOL_SIZE,
+            // keepAliveTime
+            6000,
+            // TimeUnit
+            TimeUnit.SECONDS,
+            // Queue
+            new LinkedBlockingQueue<>(50000));
 
 
     /**
@@ -120,5 +139,10 @@ public class ThreadPoolUtil {
         return resultList;
     }
 
-
+    /**
+     * executeVoid
+     */
+    public static void executeVoid(CallableVoid callableVoid) {
+        executeAllVoid(DEFAULT_THREAD_POOL, List.of(callableVoid));
+    }
 }

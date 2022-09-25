@@ -224,4 +224,13 @@ public class TestController {
         threadLocal = new ThreadLocal<>();
         return SingleResponse.ok("gc");
     }
+
+    @ApiOperationSupport(order = 48)
+    @ApiOperation(value = "分布式自减decr")
+    @GetMapping("/decr")
+    public SingleResponse<String> decr(String key) {
+        System.out.println("decr");
+        testService.decrBy(key);
+        return SingleResponse.ok("decr");
+    }
 }
