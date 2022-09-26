@@ -11,6 +11,7 @@ import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
+import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.domain.drools.KieTemplate;
 import com.aircraftcarrier.marketing.store.domain.drools.KieUtils;
@@ -29,7 +30,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -45,9 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 public class TestServiceImpl implements TestService {
-    private static final int THREAD_NUM = 100;
-    private final CyclicBarrier barrier = new CyclicBarrier(THREAD_NUM);
-    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, THREAD_NUM, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
+    private static final int TASK_NUM = 100;
+    private final CyclicBarrier barrier = new CyclicBarrier(TASK_NUM);
+    private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, 20, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
     @Resource
     UpdateInventoryExe updateInventoryExe;
     @Resource
@@ -99,14 +99,14 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public String testLockKey(Serializable id) {
-        CountDownLatch latch = new CountDownLatch(THREAD_NUM);
+        CountDownLatch latch = new CountDownLatch(TASK_NUM);
 
         RequestLimitUtil limitUtil = RequestLimitUtil.getInstance();
-        for (int i = 0; i < THREAD_NUM; i++) {
+        for (int i = 0; i < TASK_NUM; i++) {
             String finalI = String.valueOf(id);
             threadPool.execute(() -> {
                 try {
-                    barrier.await();
+//                    barrier.await();
 
                     String name = Thread.currentThread().getName();
                     boolean require = limitUtil.require(finalI, 3);
@@ -119,7 +119,8 @@ public class TestServiceImpl implements TestService {
                         log.info("sum noo: " + finalI + "_" + name);
                     }
 
-                } catch (InterruptedException | BrokenBarrierException e) {
+//                } catch (InterruptedException | BrokenBarrierException e) {
+                } catch (InterruptedException e) {
                     log.warn("Interrupted!", e);
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
@@ -171,11 +172,17 @@ public class TestServiceImpl implements TestService {
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        int num = 1000;
+        int num = 5000;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
+            int finalI = i;
             asyncBatchTasks.add(() -> {
-                SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
+                InventoryRequest inventoryRequest = new InventoryRequest();
+                inventoryRequest.setGoodsNo((String) goodsNo);
+                inventoryRequest.setUserId(String.valueOf(finalI));
+                inventoryRequest.setOrderId(String.valueOf(finalI));
+                inventoryRequest.setCount(1);
+                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
                 if (response.success()) {
                     log.info("扣减库存 成功");
                     success.incrementAndGet();
@@ -186,7 +193,7 @@ public class TestServiceImpl implements TestService {
             });
         }
 
-        ThreadPoolUtil.executeAllVoid(threadPool, asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 
@@ -242,6 +249,30 @@ public class TestServiceImpl implements TestService {
         }
 
         log.info("multiThread end");
+    }
+
+    @Override
+    public void decrBy(String key) {
+        long start = System.currentTimeMillis();
+        final AtomicInteger success = new AtomicInteger();
+        final AtomicInteger fail = new AtomicInteger();
+
+        // 模拟多人抢购商品
+        int num = 1000;
+        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+            asyncBatchTasks.add(() -> {
+                long l = JedisUtil.decrBy(key, 3);
+                System.out.println(l);
+            });
+        }
+
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+        long end = System.currentTimeMillis();
+        log.info("耗时：" + (end - start));
+
+        log.info("success: " + success);
+        log.info("fail: " + fail);
     }
 }
 

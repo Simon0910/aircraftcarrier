@@ -2,6 +2,7 @@ package com.aircraftcarrier.marketing.store.domain.redis;
 
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -25,6 +26,10 @@ public class JedisUtil implements ApplicationContextAware {
 
     public static String get(final String key) {
         return jedisCluster.get(key);
+    }
+
+    public static long decrBy(final String key, final long decrement) {
+        return jedisCluster.decrBy(key, decrement);
     }
 
     @Override

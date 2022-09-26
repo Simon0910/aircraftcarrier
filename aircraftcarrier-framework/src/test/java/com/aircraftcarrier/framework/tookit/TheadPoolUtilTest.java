@@ -23,7 +23,7 @@ public class TheadPoolUtilTest {
      * 可根据批量消费消息个数设置
      */
     private static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
-            2,
+            ThreadPoolUtil.CORE_POOL_SIZE,
             ThreadPoolUtil.MAX_POOL_SIZE,
             ThreadPoolUtil.KEEP_ALIVE_TIME,
             TimeUnit.SECONDS,
@@ -45,7 +45,7 @@ public class TheadPoolUtilTest {
         for (String msg : list) {
             tasks.add(() -> doSomething(msg));
         }
-        ThreadPoolUtil.executeAllVoid(THREAD_POOL_EXECUTOR, tasks, true);
+        ThreadPoolUtil.invokeAllVoid(THREAD_POOL_EXECUTOR, tasks, true);
     }
 
     private void doSomething(String msg) throws RuntimeException {

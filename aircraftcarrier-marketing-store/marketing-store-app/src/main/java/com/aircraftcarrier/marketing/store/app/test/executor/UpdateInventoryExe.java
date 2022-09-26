@@ -1,17 +1,22 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
-import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.LockKeyUtil;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.ProductMapper;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
+import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
+import com.aircraftcarrier.marketing.store.domain.gateway.ProductGateway;
+import com.aircraftcarrier.marketing.store.infrastructure.gateway.ProductGatewayImpl;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 并发扣库存
@@ -44,141 +49,190 @@ import java.util.List;
 @Component
 public class UpdateInventoryExe {
 
+    /**
+     * 2 threads
+     */
+    private static final ThreadPoolExecutor THREAD_POOL_OFFER = ThreadPoolUtil.newDefaultThreadPool("offer");
+
+    /**
+     * 2 threads
+     */
+    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(2, "merge");
+
+    /**
+     * REQUEST_QUEUE
+     */
+    private static final LinkedBlockingQueue<RequestPromise> REQUEST_QUEUE = new LinkedBlockingQueue<>(50000);
+
+    /**
+     * ProductGateway
+     */
     @Resource
-    private ProductMapper productMapper;
-
-    public SingleResponse<Void> deductionInventory(Serializable goodsNo) {
-        return deductionInventory(goodsNo, -1);
-    }
-
-    public SingleResponse<Void> deductionInventory(Serializable goodsNo, Integer deductionNum) {
-        if (deductionNum >= 0) {
-            throw new SysException("deductionNum must be less than 0");
-        }
-        return updateInventory(goodsNo, deductionNum);
-    }
-
-    public SingleResponse<Void> updateInventory(Serializable goodsNo, Integer appendInventory) {
-        List<ProductDo> list = new LambdaQueryChainWrapper<>(productMapper)
-                .eq(ProductDo::getGoodsNo, goodsNo)
-                .list();
-        if (list.isEmpty()) {
-            log.error("商品不存在");
-            return SingleResponse.error("商品不存在");
-        }
-        if (list.size() != 1) {
-            // 暴漏数据异常，此问题需要从源头解决！！！
-            throw new SysException("Duplicate keys result in objects that cannot be mapped");
-        }
-
-        ProductDo productDo = list.get(0);
-
-        return updateInventory(productDo.getId(), productDo.getVersion(), productDo.getInventory(), appendInventory);
-//        return updateInventory(productDo.getId(), productDo.getInventory(), appendInventory);
-    }
+    ProductGateway productGateway;
 
     /**
-     * 更新库存1
-     * 与用户侧 与 运营侧无关，底层基础设施通用方法
-     * 本地单机测试：
-     * 1000 人抢 1000个库存 5041ms （LambdaQueryChainWrapper查询耗时 + update耗时）
-     * 1000 人抢 0个库存 384ms （LambdaQueryChainWrapper查询耗时）
-     *
-     * @param id              数据主键 （非业务主键）
-     * @param version         数据更新版本号
-     * @param originInventory 原始库存
-     * @param appendInventory 追加扣减库存（正负代表加减库存）
-     * @return SingleResponse
+     * init
      */
-    private SingleResponse<Void> updateInventory(Long id, Long version, Integer originInventory, Integer appendInventory) {
-        if (appendInventory == 0) {
-            // 避免无效递增版本号，无需不发送MQ库存变更通知，若更新所有字段和数据库相同避免死循环
-            log.warn("库存无变化");
-            return SingleResponse.error("库存无变化");
-        }
+    @PostConstruct
+    private void init() {
+        Object lock = new Object();
+        // list
+        List<RequestPromise> batchList = new ArrayList<>(50000);
 
-        int newInventory = originInventory + appendInventory;
-        if (newInventory < 0) {
-            log.error("库存不足");
-            return SingleResponse.error("库存不足");
-        }
-
-        int updatedNum = productMapper.updateInventory(id, version, newInventory);
-        if (updatedNum < 1) {
-            LockKeyUtil.lock(id.toString());
-            try {
-                ProductDo productDo = productMapper.selectById(id);
-                if (productDo == null) {
-                    log.error("商品不存在...");
-                    return SingleResponse.error("商品不存在...");
+        // takeThread 获取用户请求
+        THREAD_POOL.execute(() -> {
+            int i = 0;
+            while (true) {
+                try {
+                    // take
+                    final RequestPromise requestPromise = REQUEST_QUEUE.take();
+                    //  add
+                    synchronized (lock) {
+                        batchList.add(requestPromise);
+                    }
+                } catch (Exception e) {
+                    log.error("takeThread error: ", e);
                 }
-                if ((productDo.getInventory() + appendInventory) < 0) {
-                    log.error("库存不足...");
-                    return SingleResponse.error("库存不足...");
-                }
-                log.info("retry..." + id);
-                updateInventory(id, productDo.getVersion(), productDo.getInventory(), appendInventory);
-            } finally {
-                LockKeyUtil.unlock(id.toString());
             }
-        }
+        });
 
-        return SingleResponse.ok();
+        // mergeThread 合并用户请求
+        THREAD_POOL.execute(() -> {
+            while (true) {
+                try {
+                    if (batchList.size() > 0) {
+                        synchronized (lock) {
+                            log.info("merge size: {}", batchList.size());
+
+                            // 模拟扣库存
+                            TimeUnit.MILLISECONDS.sleep(100);
+//                            SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
+//                            if (!response.success()) {
+//                                // 拆分用户请求， 退化为for循环执行
+//                            }
+
+                            for (RequestPromise requestPromise : batchList) {
+                                requestPromise.setResult(new Result(true, "ok"));
+                                synchronized (requestPromise) {
+                                    requestPromise.notify();
+                                }
+                            }
+                            batchList.clear();
+                        }
+                        log.debug("wait add...");
+                        TimeUnit.MILLISECONDS.sleep(200);
+                    } else {
+                        log.debug("wait merge...");
+                        TimeUnit.MILLISECONDS.sleep(1000);
+                    }
+                } catch (Exception e) {
+                    log.error("mergeThread error: ", e);
+                }
+            }
+        });
     }
 
     /**
-     * 更新库存2
-     * 本地单机测试：
-     * 1000 人抢 1000个库存 1280ms （LambdaQueryChainWrapper查询耗时 + update耗时）
-     * 1000 人抢 0个库存 338ms（LambdaQueryChainWrapper查询耗时）
-     * 更新库存2 比 更新库存1 快5倍 why？
-     * 原因：
-     * 方法1, 有5次应用内依次执行成功，大量请求获取行锁后执行失败后重返回到应用内排队串行执行重试， 995人应用内排队串行执行抢成功，
-     * 注：为什么要返回应用内排队呢？version版本号变化了，所有要获取新的版本号重新执行（版本号乐观锁不适用于大量争抢例如秒杀的场景，适用于后端运营管理系统同时操作一个页面）
-     * 方法2, 全部仅仅在mysql层行锁上排队串行执行，返回到应用内排队0人
+     * deductionInventory
+     *
      * <p>
-     * 当增加到 10000 人抢 10000 个库存 方法2也不行了，
-     * 原因：因为大量的请求导致 mysql的io 飙升！
-     * <p>
-     * 优化：500毫秒内的用户请求（可能很多上万个请求）合并处理（为了快速完成）， 做mysql批量处理（批量扣库存失败了怎么办？）
+     * 优化：200毫秒内的用户请求（可能很多上万个请求）合并处理（为了快速完成）， 做mysql批量处理（批量扣库存失败了怎么办？）
      * 参考思路：https://www.bilibili.com/video/BV1g34y1h71Y/?spm_id_from=333.788&vd_source=5ae6c4b2dbcbc1516cef3f31fbe2abb2
-     *
-     * @param id              数据主键 （非业务主键）
-     * @param originInventory 原始库存
-     * @param appendInventory 追加扣减库存（正负代表加减库存）
-     * @return SingleResponse
+     * <p>
+     * 另辟蹊径思考：
+     * 1. 当同时过来100万个请求抢1万个商品，第一个请求先查库存放内存里，再根据商品创建一个atomic计数器
+     * 2. 那么2台机器，每台机器极端情况下可以保证最多只有1万个请求，总共2万个请求
+     * 3. 2万个请求怎么只拿到1万个请求呢？ 自增自减？
+     * 4. 1万个请求扣减redis库存，insert到mysql流水（保证仅有1万个记录就成功了，后续就可以异步任务处理了）
+     * 这样整个过程是不是就保证避免超卖且很快完成了？
+     * 思考：能不能每1000条批量batchInsert？ 批量超卖怎么办？（也有可能前9批成功，最后一批超卖了）
+     * 失败后，退化为for循环串行执行
      */
-    private SingleResponse<Void> updateInventory(Long id, Integer originInventory, Integer appendInventory) {
-        if (appendInventory == 0) {
-            // 避免无效递增版本号，无需不发送MQ库存变更通知，若更新所有字段和数据库相同避免死循环
-            log.warn("库存无变化");
-            return SingleResponse.error("库存无变化");
+    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) {
+        Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
+        if (stock != null) {
+            log.error("库存不足了哦");
+            return SingleResponse.error("库存不足了哦");
         }
 
-        int newInventory = originInventory + appendInventory;
-        if (newInventory < 0) {
-            log.error("库存不足");
-            return SingleResponse.error("库存不足");
-        }
+//        SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
 
-        int updatedNum = productMapper.updateInventoryDirect(id, appendInventory);
-        if (updatedNum < 1) {
-            // 当库存真的不足 才会走到这里
-            // synchronized防止mysql的IO飙升
-            synchronized (id.toString().intern()) {
-                ProductDo productDo = productMapper.selectById(id);
-                if (productDo == null) {
-                    log.error("商品不存在...");
-                    return SingleResponse.error("商品不存在...");
-                }
-                if ((productDo.getInventory() + appendInventory) < 0) {
-                    log.error("库存不足...");
-                    return SingleResponse.error("库存不足...");
-                }
-                log.error("ERROR - id：{}，originInventory：{}， appendInventory：{} ", id, productDo.getInventory(), appendInventory);
+        //  优化：可以为200毫秒内的用户请求合并处理的结果，deductionNum需要扣除的总库存
+        // user -> 订单 -> 商品 -> 扣减数量
+        // step01：insert流水记录。。。
+        // step02：扣库存
+        Future<Result> future = ThreadPoolUtil.submit(THREAD_POOL_OFFER, () -> doDeductionInventory(inventoryRequest));
+
+        Result result;
+        try {
+            result = future.get(500, TimeUnit.MILLISECONDS);
+            System.out.println(Thread.currentThread().getName() + ":客户端请求响应:" + result);
+            if (result == null) {
+                return SingleResponse.error("没等到结果");
             }
+        } catch (Exception e) {
+            log.error("get Exception: ", e);
+            return SingleResponse.error("get Exception");
         }
+
+        if (!result.isSuccess()) {
+            // 超时，发送请求回滚
+            System.out.println(result.getMsg() + "发起回滚操作");
+            return SingleResponse.error("发起回滚操作");
+        }
+
         return SingleResponse.ok();
     }
 
+    /**
+     * 用户库存扣减
+     *
+     * @param inventoryRequest inventoryRequest
+     * @return Result
+     */
+    public Result doDeductionInventory(InventoryRequest inventoryRequest) throws InterruptedException {
+        RequestPromise requestPromise = new RequestPromise(inventoryRequest);
+        boolean enqueueSuccess = REQUEST_QUEUE.offer(requestPromise, 100, TimeUnit.MILLISECONDS);
+        if (!enqueueSuccess) {
+            return new Result(false, "系统繁忙");
+        }
+
+        // 可以采用页面异步获取结果，比较靠谱一点
+//        synchronized (requestPromise) {
+//            try {
+//                requestPromise.wait(500);
+//                if (requestPromise.getResult() == null) {
+//                    return new Result(false, "等待超时");
+//                }
+//            } catch (InterruptedException e) {
+//                return new Result(false, "被中断");
+//            }
+//        }
+        return requestPromise.getResult();
+    }
+}
+
+@Data
+class RequestPromise {
+    private InventoryRequest inventoryRequest;
+    private Result result;
+
+    public RequestPromise(InventoryRequest inventoryRequest) {
+        this.inventoryRequest = inventoryRequest;
+    }
+}
+
+@Data
+class Result {
+    private Boolean success;
+    private String msg;
+
+    public Result(boolean success, String msg) {
+        this.success = success;
+        this.msg = msg;
+    }
+
+    public boolean isSuccess() {
+        return Boolean.TRUE.equals(success);
+    }
 }

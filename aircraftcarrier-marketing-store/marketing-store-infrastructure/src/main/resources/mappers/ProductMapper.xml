@@ -22,21 +22,22 @@
 
     </sql>
 
-    <!-- 更新库存 -->
-    <update id="updateInventory">
+    <!-- 更新库存 By Version -->
+    <update id="updateInventoryByVersion">
         UPDATE product
-        SET inventory = #{newInventory},
+        SET inventory = inventory + #{appendInventory},
             version   = version + 1
         WHERE id = #{id}
           AND deleted = 0
-          AND #{newInventory} >= 0
+          AND inventory + #{appendInventory} >= 0
           AND version = #{version}
     </update>
 
     <!-- 更新库存2 -->
     <update id="updateInventoryDirect">
         UPDATE product
-        SET inventory = inventory + #{appendInventory}
+        SET inventory = inventory + #{appendInventory},
+            version   = version + 1
         WHERE id = #{id}
           AND deleted = 0
           AND inventory + #{appendInventory} >= 0
