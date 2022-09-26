@@ -256,14 +256,29 @@ public class TestServiceImpl implements TestService {
         long start = System.currentTimeMillis();
         final AtomicInteger success = new AtomicInteger();
         final AtomicInteger fail = new AtomicInteger();
+        final AtomicInteger oversold = new AtomicInteger();
 
         // 模拟多人抢购商品
-        int num = 1000;
+        int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             asyncBatchTasks.add(() -> {
-                long l = JedisUtil.decrBy(key, 3);
-                System.out.println(l);
+                String inventory = JedisUtil.get(key);
+                if (Integer.parseInt(inventory) > 0) {
+                    long stockNum = JedisUtil.decrBy(key, 3);
+                    if (stockNum < 0) {
+                        // 扣库存超卖
+//                        System.out.println(stockNum);
+                        oversold.incrementAndGet();
+                    } else {
+                        // 扣库存成功, 可以后续请求
+                        // batchInsert成功后, 后台任务处理后续相关事务
+                        success.incrementAndGet();
+                    }
+                } else {
+                    // 没有库存了
+                    fail.incrementAndGet();
+                }
             });
         }
 
@@ -272,6 +287,7 @@ public class TestServiceImpl implements TestService {
         log.info("耗时：" + (end - start));
 
         log.info("success: " + success);
+        log.info("oversold: " + oversold);
         log.info("fail: " + fail);
     }
 }
