@@ -22,7 +22,7 @@ public class DemoAddExe {
 
     public int execute(DemoCmd cmd) {
         DemoAdd demoAdd = cmd.getDemoAdd();
-        DemoDo configDO = BeanUtil.convert(demoAdd, DemoDo.class);
-        return demoMapper.insert(configDO);
+        DemoDo demoDo = BeanUtil.convert(demoAdd, DemoDo.class);
+        return demoMapper.insert(demoDo);
     }
 }

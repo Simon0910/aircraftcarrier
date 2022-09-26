@@ -55,6 +55,24 @@ public interface TestService {
 
     /**
      * redis decrBy
+     *
+     * @param goodsNo 商品编号
      */
-    void decrBy(String key);
+    void decrBy(String goodsNo);
+
+    /**
+     * 递归事务测试
+     *
+     * @param str str
+     * @param i   i
+     */
+    void recursionTransactional(String str, int i);
+
+    /**
+     * 递归事务测试2
+     *
+     * @param str str
+     * @param i   i
+     */
+    void recursionTransactional2(String str, int i);
 }

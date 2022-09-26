@@ -2,6 +2,7 @@ package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
+import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
@@ -9,10 +10,12 @@ import com.aircraftcarrier.framework.tookit.BeanMapUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
+import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe2;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
+import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.aircraftcarrier.marketing.store.domain.drools.KieTemplate;
 import com.aircraftcarrier.marketing.store.domain.drools.KieUtils;
 import com.aircraftcarrier.marketing.store.domain.event.AccountEvent;
@@ -20,10 +23,14 @@ import com.aircraftcarrier.marketing.store.domain.model.test.Address;
 import com.aircraftcarrier.marketing.store.domain.model.test.Sale;
 import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
 import com.aircraftcarrier.marketing.store.infrastructure.config.reload.ReloadDroolsRules;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mybatisplus.DemoMybatisPlus;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
@@ -58,6 +65,12 @@ public class TestServiceImpl implements TestService {
     private KieTemplate kieTemplate;
     @Resource
     private ReloadDroolsRules reloadDroolsRules;
+    @Resource
+    DemoMapper demoMapper;
+    @Resource
+    DemoMybatisPlus demoMybatisPlus;
+    @Resource
+    TransactionalExe2 transactionalExe2;
 
     @Override
     public void testTransactional() {
@@ -252,7 +265,7 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
-    public void decrBy(String key) {
+    public void decrBy(String goodsNo) {
         long start = System.currentTimeMillis();
         final AtomicInteger success = new AtomicInteger();
         final AtomicInteger fail = new AtomicInteger();
@@ -263,9 +276,9 @@ public class TestServiceImpl implements TestService {
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             asyncBatchTasks.add(() -> {
-                String inventory = JedisUtil.get(key);
+                String inventory = JedisUtil.get(goodsNo);
                 if (Integer.parseInt(inventory) > 0) {
-                    long stockNum = JedisUtil.decrBy(key, 3);
+                    long stockNum = JedisUtil.decrBy(goodsNo, 3);
                     if (stockNum < 0) {
                         // 扣库存超卖
 //                        System.out.println(stockNum);
@@ -289,6 +302,37 @@ public class TestServiceImpl implements TestService {
         log.info("success: " + success);
         log.info("oversold: " + oversold);
         log.info("fail: " + fail);
+    }
+
+//    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void recursionTransactional(String str, int i) {
+        DemoDo demoDo = new DemoDo();
+        demoDo.setBizNo(str + i);
+        demoDo.setDescription("222");
+        demoDo.setSellerNo("sellerNo");
+        demoDo.setSellerName("sellerName");
+        demoDo.setDataType(DataTypeEnum.GENERAL);
+        if (i > 0) {
+            i--;
+            recursionTransactional(str, i);
+        }
+//        if (i == 2) {
+//            throw new BizException("222");
+//        }
+        demoMapper.insert(demoDo);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void recursionTransactional2(String str, int i) {
+        transactionalExe2.recursionTransactional2(str, i);
+
+//        if (i == 3) {
+//            throw new BizException("222");
+//        }
+
     }
 }
 

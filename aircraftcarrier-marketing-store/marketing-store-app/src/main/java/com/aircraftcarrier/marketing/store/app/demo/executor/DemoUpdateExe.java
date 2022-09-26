@@ -22,7 +22,7 @@ public class DemoUpdateExe {
 
     public int execute(DemoCmd cmd) {
         DemoUpdate demoUpdate = cmd.getDemoUpdate();
-        DemoDo configDO = BeanUtil.convert(demoUpdate, DemoDo.class);
-        return demoMapper.updateById(configDO);
+        DemoDo demoDo = BeanUtil.convert(demoUpdate, DemoDo.class);
+        return demoMapper.updateById(demoDo);
     }
 }
