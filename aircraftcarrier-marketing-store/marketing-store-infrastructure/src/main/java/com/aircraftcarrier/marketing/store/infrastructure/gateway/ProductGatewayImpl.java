@@ -88,8 +88,12 @@ public class ProductGatewayImpl implements ProductGateway {
             }
         }
 //        ProductDo productDo = getProductDoFromLocalCache(String.valueOf(goodsNo));
+//        // updateInventoryByVersion 主要使用 getProductDoFromLocalCache 缓存的主键,
+//        // 和缓存的其他数据(缓存10秒的库存有点作用判断库存不足，缓存10秒的版本号可能会导致第一个请求也要重试，但是本来99%的都要重试，增加第一个请求重试的代价远小于获取主键的收益更大)关系不大, 不影响程序执行的正确性
 //        return updateInventoryByVersion(productDo, productDo.getVersion(), productDo.getInventory(), appendInventory);
         ProductDo productDo = getProductDoFromLocalCache(String.valueOf(goodsNo));
+        // updateInventory 主要使用 getProductDoFromLocalCache 缓存的主键,
+        // 和缓存的其他数据(缓存10秒的库存有点作用判断库存不足，缓存10秒的版本号没有一点关系)关系不大, 不影响程序执行的正确性
         return updateInventory(productDo, productDo.getInventory(), appendInventory);
     }
 
@@ -114,6 +118,11 @@ public class ProductGatewayImpl implements ProductGateway {
         return productDo;
     }
 
+    /**
+     * 获取 (主键, 缓存10秒的库存，缓存10秒的版本号)
+     * <p>
+     * 库存和版本号 和数据库不是强一致性, 有可能更新缓存后，数据库立马又变化了
+     */
     private ProductDo getProductDoFromLocalCache(Serializable goodsNo) {
         ProductDo cacheProduct = STOCK_CACHE.getIfPresent(goodsNo);
         if (cacheProduct == null) {
@@ -131,10 +140,11 @@ public class ProductGatewayImpl implements ProductGateway {
     }
 
     /**
-     * 更新缓存 库存 和 版本号
+     * 更新缓存 缓存10秒的库存，缓存10秒的版本号
+     * <p>
+     * 库存和版本号 和数据库不是强一致性, 有可能更新缓存后，数据库立马又变化了
      */
     private void updateProductCache(ProductDo productDo) {
-        // 库存和版本号 不是强一致性，但是不影响程序执行的正确性
         STOCK_CACHE.put(String.valueOf(productDo.getGoodsNo()), productDo);
     }
 
