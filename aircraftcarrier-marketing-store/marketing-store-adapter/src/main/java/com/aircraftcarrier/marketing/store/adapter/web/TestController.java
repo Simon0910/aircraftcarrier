@@ -235,4 +235,26 @@ public class TestController {
         }
         return SingleResponse.ok("decr");
     }
+
+    @ApiOperationSupport(order = 49)
+    @ApiOperation(value = "递归事务测试")
+    @GetMapping("/recursionTransactional")
+    public SingleResponse<String> recursionTransactional(String str) {
+        System.out.println("recursion Transactional");
+        for (int i = 0; i < 2; i++) {
+            testService.recursionTransactional(str, 3);
+        }
+        return SingleResponse.ok("recursion Transactional");
+    }
+
+    @ApiOperationSupport(order = 50)
+    @ApiOperation(value = "递归事务测试2")
+    @GetMapping("/recursionTransactional2")
+    public SingleResponse<String> recursionTransactional2(String str) {
+        System.out.println("recursion Transactional");
+        for (int i = 0; i < 2; i++) {
+            testService.recursionTransactional2(str, 3);
+        }
+        return SingleResponse.ok("recursion Transactional");
+    }
 }

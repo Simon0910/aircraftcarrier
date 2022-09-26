@@ -84,13 +84,13 @@ public class TransactionalExe {
     @Transactional(rollbackFor = Exception.class)
     public void execute() {
         // 1
-        DemoDo configDO = new DemoDo();
-        configDO.setBizNo("222");
-        configDO.setDescription("222");
-        configDO.setSellerNo("sellerNo");
-        configDO.setSellerName("sellerName");
-        configDO.setDataType(DataTypeEnum.GENERAL);
-        demoMapper.insert(configDO);
+        DemoDo demoDo = new DemoDo();
+        demoDo.setBizNo("222");
+        demoDo.setDescription("222");
+        demoDo.setSellerNo("sellerNo");
+        demoDo.setSellerName("sellerName");
+        demoDo.setDataType(DataTypeEnum.GENERAL);
+        demoMapper.insert(demoDo);
         System.out.println("first");
 
         // 2
@@ -112,13 +112,13 @@ public class TransactionalExe {
 
     //    @Transactional(rollbackFor = Exception.class)
     public void execute3(String name) {
-        DemoDo configDO = new DemoDo();
-        configDO.setBizNo(name);
-        configDO.setDescription(name);
-        configDO.setSellerNo("sellerNo");
-        configDO.setSellerName("sellerName");
-        configDO.setDataType(DataTypeEnum.GENERAL);
-        demoMapper.insert(configDO);
+        DemoDo demoDo = new DemoDo();
+        demoDo.setBizNo(name);
+        demoDo.setDescription(name);
+        demoDo.setSellerNo("sellerNo");
+        demoDo.setSellerName("sellerName");
+        demoDo.setDataType(DataTypeEnum.GENERAL);
+        demoMapper.insert(demoDo);
         if (true) {
             throw new RuntimeException("execute3 error : #############################################");
         }

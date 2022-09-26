@@ -1,8 +1,8 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
-import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
+import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,15 +40,30 @@ public class TransactionalExe2 {
 //    @Transactional(rollbackFor = Exception.class)
     // 全部失败, 加入的事务, 即便外面捕获后, 当前事务全部失败
     public void execute2(String name) {
-        DemoDo configDO = new DemoDo();
-        configDO.setBizNo(name);
-        configDO.setDescription(name);
-        configDO.setSellerNo("sellerNo");
-        configDO.setSellerName("sellerName");
-        configDO.setDataType(DataTypeEnum.GENERAL);
-        demoMapper.insert(configDO);
+        DemoDo demoDo = new DemoDo();
+        demoDo.setBizNo(name);
+        demoDo.setDescription(name);
+        demoDo.setSellerNo("sellerNo");
+        demoDo.setSellerName("sellerName");
+        demoDo.setDataType(DataTypeEnum.GENERAL);
+        demoMapper.insert(demoDo);
         if (true) {
 //            throw new RuntimeException("execute2 error : #############################################");
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void recursionTransactional2(String str, int i) {
+        DemoDo demoDo = new DemoDo();
+        demoDo.setBizNo(str + i);
+        demoDo.setDescription("222");
+        demoDo.setSellerNo("sellerNo");
+        demoDo.setSellerName("sellerName");
+        demoDo.setDataType(DataTypeEnum.GENERAL);
+        if (i > 0) {
+            i--;
+            recursionTransactional2(str, i);
+        }
+        demoMapper.insert(demoDo);
     }
 }
