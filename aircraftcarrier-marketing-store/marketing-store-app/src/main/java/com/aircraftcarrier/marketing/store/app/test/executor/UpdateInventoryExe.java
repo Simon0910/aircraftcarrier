@@ -79,7 +79,7 @@ public class UpdateInventoryExe {
         // list
         List<RequestPromise> batchList = new ArrayList<>(50000);
 
-        // takeThread
+        // takeThread 获取用户请求
         THREAD_POOL.execute(() -> {
             int i = 0;
             while (true) {
@@ -96,7 +96,7 @@ public class UpdateInventoryExe {
             }
         });
 
-        // mergeThread
+        // mergeThread 合并用户请求
         THREAD_POOL.execute(() -> {
             while (true) {
                 try {
@@ -106,7 +106,7 @@ public class UpdateInventoryExe {
 
                             // 模拟扣库存
                             TimeUnit.MILLISECONDS.sleep(100);
-//                            SingleResponse<Void> response = productGateway.deductionInventory("NX2020", batchList.size());
+//                            SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
 //                            if (!response.success()) {
 //                                // 拆分用户请求， 退化为for循环执行
 //                            }
@@ -154,6 +154,9 @@ public class UpdateInventoryExe {
             log.error("库存不足了哦");
             return SingleResponse.error("库存不足了哦");
         }
+
+//        SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
+
         //  优化：可以为200毫秒内的用户请求合并处理的结果，deductionNum需要扣除的总库存
         // user -> 订单 -> 商品 -> 扣减数量
         // step01：insert流水记录。。。
@@ -177,6 +180,7 @@ public class UpdateInventoryExe {
             System.out.println(result.getMsg() + "发起回滚操作");
             return SingleResponse.error("发起回滚操作");
         }
+
         return SingleResponse.ok();
     }
 

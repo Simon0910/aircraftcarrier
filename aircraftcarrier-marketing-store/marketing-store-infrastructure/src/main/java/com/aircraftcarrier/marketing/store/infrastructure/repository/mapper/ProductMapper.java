@@ -37,14 +37,14 @@ public interface ProductMapper extends MybatisBaseMapper<ProductDo> {
     List<ProductDo> excelExport(Query exportQry);
 
     /**
-     * 更新库存
+     * 更新库存 By Version
      *
-     * @param id           主键
-     * @param version      版本号
-     * @param newInventory 新库存
+     * @param id              主键
+     * @param version         版本号
+     * @param appendInventory 追加数
      * @return int
      */
-    int updateInventory(@Param("id") Long id, @Param("version") Long version, @Param("newInventory") Integer newInventory);
+    int updateInventoryByVersion(@Param("id") Long id, @Param("version") Long version, @Param("appendInventory") Integer appendInventory);
 
     /**
      * 更新库存

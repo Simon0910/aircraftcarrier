@@ -39,6 +39,20 @@ public class ProductGatewayImpl implements ProductGateway {
             // 缓存的最大条数
             .maximumSize(32).build();
 
+    /**
+     * 商品缓存 (集群使用redis)
+     * expireAfterAccess 在访问之后指定多少秒过期
+     * expireAfterWrite 在写入数据后指定多少秒过期
+     * expireAfter 通过重写Expire接口，指定过期时间
+     */
+    public static final Cache<String, ProductDo> STOCK_CACHE = Caffeine.newBuilder()
+            // 在写入数据后指定多少秒过期
+            .expireAfterWrite(10, TimeUnit.SECONDS)
+            // 初始的缓存空间大小
+            .initialCapacity(16)
+            // 缓存的最大条数
+            .maximumSize(32).build();
+
     @Resource
     private ProductMapper productMapper;
 
@@ -73,8 +87,9 @@ public class ProductGatewayImpl implements ProductGateway {
                 return SingleResponse.error("库存不足了哦");
             }
         }
-        ProductDo productDo = getProductDo(String.valueOf(goodsNo));
-//        return updateInventory(productDo, productDo.getVersion(), productDo.getInventory(), appendInventory);
+//        ProductDo productDo = getProductDoFromLocalCache(String.valueOf(goodsNo));
+//        return updateInventoryByVersion(productDo, productDo.getVersion(), productDo.getInventory(), appendInventory);
+        ProductDo productDo = getProductDoFromLocalCache(String.valueOf(goodsNo));
         return updateInventory(productDo, productDo.getInventory(), appendInventory);
     }
 
@@ -99,8 +114,28 @@ public class ProductGatewayImpl implements ProductGateway {
         return productDo;
     }
 
+    private ProductDo getProductDoFromLocalCache(Serializable goodsNo) {
+        ProductDo cacheProduct = STOCK_CACHE.getIfPresent(goodsNo);
+        if (cacheProduct == null) {
+            cacheProduct = getProductDo(goodsNo);
+            STOCK_CACHE.put(String.valueOf(goodsNo), cacheProduct);
+        }
+        return cacheProduct;
+    }
+
+    /**
+     * 标记无库存
+     */
     private void markNoStock(Serializable goodsNo) {
         ZERO_STOCK_CACHE.put(String.valueOf(goodsNo), 0);
+    }
+
+    /**
+     * 更新缓存 库存 和 版本号
+     */
+    private void updateProductCache(ProductDo productDo) {
+        // 库存和版本号 不是强一致性，但是不影响程序执行的正确性
+        STOCK_CACHE.put(String.valueOf(productDo.getGoodsNo()), productDo);
     }
 
     /**
@@ -116,7 +151,7 @@ public class ProductGatewayImpl implements ProductGateway {
      * @param appendInventory 追加扣减库存（正负代表加减库存）
      * @return SingleResponse
      */
-    private SingleResponse<Void> updateInventory(ProductDo productDo, Long version, Integer originInventory, Integer appendInventory) {
+    private SingleResponse<Void> updateInventoryByVersion(ProductDo productDo, Long version, Integer originInventory, Integer appendInventory) {
         if (appendInventory == 0) {
             // 避免无效递增版本号，无需不发送MQ库存变更通知，若更新所有字段和数据库相同避免死循环
             log.warn("库存无变化");
@@ -138,7 +173,7 @@ public class ProductGatewayImpl implements ProductGateway {
         }
 
         Long id = productDo.getId();
-        int updatedNum = productMapper.updateInventory(id, version, newInventory);
+        int updatedNum = productMapper.updateInventoryByVersion(id, version, appendInventory);
         if (updatedNum < 1) {
             // 同一条记录当版本变化 才会走到这里
             LockKeyUtil.lock(id.toString());
@@ -152,7 +187,7 @@ public class ProductGatewayImpl implements ProductGateway {
                     }
                 }
 
-                // 库存版本变化了，需要查询实时库存
+                // 版本变化了，需要查询实时库存
                 ProductDo newProductDo = productMapper.selectById(id);
                 if (newProductDo == null) {
                     log.error("商品不存在...");
@@ -166,13 +201,14 @@ public class ProductGatewayImpl implements ProductGateway {
                     return SingleResponse.error("库存不足...");
                 }
                 log.info("retry..." + id);
-                updateInventory(newProductDo, newProductDo.getVersion(), newProductDo.getInventory(), appendInventory);
+                updateInventoryByVersion(newProductDo, newProductDo.getVersion(), newProductDo.getInventory(), appendInventory);
 
             } finally {
                 LockKeyUtil.unlock(id.toString());
             }
         }
 
+        updateProductCache(productDo);
         return SingleResponse.ok();
     }
 
@@ -245,7 +281,7 @@ public class ProductGatewayImpl implements ProductGateway {
                     }
                 }
 
-                // 又添加库存才会走到这里，实时查询库存
+                // 又添加库存才会走到这里，需要查询实时库存
                 ProductDo newProductDo = productMapper.selectById(id);
                 if (newProductDo == null) {
                     log.error("商品不存在...");
@@ -263,6 +299,7 @@ public class ProductGatewayImpl implements ProductGateway {
             }
         }
 
+        updateProductCache(productDo);
         return SingleResponse.ok();
     }
 }
