@@ -1,11 +1,10 @@
 package com.demo.threadpool;
 
+import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import org.junit.Test;
 
 import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 类注释内容
@@ -16,9 +15,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadPoolTest {
 
-    private static final ThreadPoolExecutor POOL = new ThreadPoolExecutor(0, 1, 0L, TimeUnit.MILLISECONDS,
-            // 只需要一个线程去刷新，多余的请求丢弃忽略
-            new SynchronousQueue<>(), new ThreadPoolExecutor.DiscardPolicy());
+    /**
+     * 只需要一个线程去刷新，多余的请求丢弃忽略
+     */
+    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicyRecycle(1, "accessToken");
 
     @Test
     public void synchronousQueueTest() throws InterruptedException {
@@ -28,7 +28,7 @@ public class ThreadPoolTest {
         Executors.newScheduledThreadPool(1);
 
         for (int i = 0; i < 100; i++) {
-            POOL.execute(() -> {
+            THREAD_POOL.execute(() -> {
                 try {
                     System.out.println("start....");
                     Thread.sleep(5000);
@@ -43,7 +43,7 @@ public class ThreadPoolTest {
         Thread.sleep(8000);
 
         for (int i = 0; i < 100; i++) {
-            POOL.execute(() -> {
+            THREAD_POOL.execute(() -> {
                 try {
                     System.out.println("start2....");
                     Thread.sleep(2000);

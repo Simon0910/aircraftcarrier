@@ -36,6 +36,11 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     @Override
+    public void allowCoreThreadTimeOut(boolean value) {
+        super.allowCoreThreadTimeOut(value);
+    }
+
+    @Override
     public void execute(Runnable command) {
         // 提交者的本地变量
         Map<String, String> contextMap = MDC.getCopyOfContextMap();

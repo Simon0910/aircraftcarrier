@@ -5,10 +5,12 @@ import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author lzp
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @ApiModel(value = "DemoDetailQry")
 public class DemoDetailQry extends Query {

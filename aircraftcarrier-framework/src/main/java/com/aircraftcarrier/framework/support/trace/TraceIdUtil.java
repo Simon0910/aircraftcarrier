@@ -74,7 +74,7 @@ public class TraceIdUtil {
 
     public static String generatorTraceId() {
         String traceId = UUID.randomUUID().toString().replace("-", "");
-        log.info("generator traceId: 【{}】", traceId);
+        log.debug("generator traceId: 【{}】", traceId);
         return traceId;
     }
 }

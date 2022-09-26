@@ -4,10 +4,12 @@ import com.aircraftcarrier.framework.model.request.AbstractRequest;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author lzp
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @ApiModel(value = "DemoUpdate")
 public class DemoUpdate extends AbstractRequest {

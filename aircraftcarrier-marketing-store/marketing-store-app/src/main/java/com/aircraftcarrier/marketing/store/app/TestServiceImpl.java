@@ -11,6 +11,7 @@ import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
 import com.aircraftcarrier.marketing.store.client.TestService;
+import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.domain.drools.KieTemplate;
 import com.aircraftcarrier.marketing.store.domain.drools.KieUtils;
@@ -171,11 +172,17 @@ public class TestServiceImpl implements TestService {
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        int num = 500;
+        int num = 5000;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
+            int finalI = i;
             asyncBatchTasks.add(() -> {
-                SingleResponse<Void> response = updateInventoryExe.deductionInventory(goodsNo);
+                InventoryRequest inventoryRequest = new InventoryRequest();
+                inventoryRequest.setGoodsNo((String) goodsNo);
+                inventoryRequest.setUserId(String.valueOf(finalI));
+                inventoryRequest.setOrderId(String.valueOf(finalI));
+                inventoryRequest.setCount(1);
+                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
                 if (response.success()) {
                     log.info("扣减库存 成功");
                     success.incrementAndGet();
@@ -186,7 +193,7 @@ public class TestServiceImpl implements TestService {
             });
         }
 
-        ThreadPoolUtil.executeAllVoid(threadPool, asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 
@@ -260,7 +267,7 @@ public class TestServiceImpl implements TestService {
             });
         }
 
-        ThreadPoolUtil.executeAllVoid(threadPool, asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 

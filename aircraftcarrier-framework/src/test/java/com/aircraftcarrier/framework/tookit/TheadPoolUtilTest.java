@@ -45,7 +45,7 @@ public class TheadPoolUtilTest {
         for (String msg : list) {
             tasks.add(() -> doSomething(msg));
         }
-        ThreadPoolUtil.executeAllVoid(THREAD_POOL_EXECUTOR, tasks, true);
+        ThreadPoolUtil.invokeAllVoid(THREAD_POOL_EXECUTOR, tasks, true);
     }
 
     private void doSomething(String msg) throws RuntimeException {
