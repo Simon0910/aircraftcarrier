@@ -31,8 +31,12 @@ spring:
           config:
             multi-statement-allow: true
   redis:
-    host: 82.157.100.48
-#    password: 1qaz!QAZ
+    cluster:
+      nodes:
+        - 82.157.100.48:6381
+        - 82.157.100.48:6382
+        - 82.157.100.48:6383
+    password: 123123
 
 knife4j:
   production: false # 是否开启屏蔽文档资源

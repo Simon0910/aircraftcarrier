@@ -2,7 +2,6 @@ package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
-import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
@@ -333,6 +332,34 @@ public class TestServiceImpl implements TestService {
 //            throw new BizException("222");
 //        }
 
+    }
+
+    @Override
+    public void reentrantLock(String key) {
+        try {
+            System.out.println("第一次加锁");
+            LockUtil.lock(key);
+            TimeUnit.SECONDS.sleep(2);
+            reentrantLock2(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("1解锁");
+            LockUtil.unLock();
+        }
+    }
+
+    private void reentrantLock2(String key) {
+        try {
+            System.out.println("第二次加锁");
+            LockUtil.lock(key);
+            TimeUnit.SECONDS.sleep(2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("2解锁");
+            LockUtil.unLock();
+        }
     }
 }
 

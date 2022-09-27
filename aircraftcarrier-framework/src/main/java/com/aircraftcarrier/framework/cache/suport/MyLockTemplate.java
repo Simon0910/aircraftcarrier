@@ -35,7 +35,7 @@ public class MyLockTemplate extends LockTemplate {
     @Override
     public LockInfo lock(String key, long expire, long acquireTimeout, Class<? extends LockExecutor> executor) {
         expire = expire == 0 ? properties.getExpire() : expire;
-        acquireTimeout = acquireTimeout == 0 ? properties.getAcquireTimeout() : acquireTimeout;
+        acquireTimeout = acquireTimeout <= 0 ? properties.getAcquireTimeout() : acquireTimeout;
         long retryInterval = properties.getRetryInterval();
         // 防止重试时间大于超时时间
         if (retryInterval >= acquireTimeout) {
