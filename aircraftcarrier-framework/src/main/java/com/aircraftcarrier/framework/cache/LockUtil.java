@@ -43,18 +43,7 @@ public class LockUtil {
     }
 
     public static void lock(Serializable key, long expire, long acquireTimeout) {
-        LockInfo lockInfo = THREAD_LOCAL.get();
-        if (lockInfo != null) {
-            // 可重入
-            lockInfo.setAcquireCount(lockInfo.getAcquireCount() + 1);
-            return;
-        }
-        LockInfo lock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
-        if (null == lock) {
-            throw new FrameworkException("系统繁忙,请稍后重试");
-        }
-        lock.setAcquireCount(1);
-        THREAD_LOCAL.set(lock);
+        doLock(key, expire, acquireTimeout, false);
     }
 
     public static Boolean tryLock() {
@@ -70,6 +59,10 @@ public class LockUtil {
     }
 
     public static Boolean tryLock(Serializable key, long expire, long acquireTimeout) {
+        return doLock(key, expire, acquireTimeout, true);
+    }
+
+    private static boolean doLock(Serializable key, long expire, long acquireTimeout, boolean isTry) {
         LockInfo lockInfo = THREAD_LOCAL.get();
         if (lockInfo != null) {
             // 可重入
@@ -77,8 +70,12 @@ public class LockUtil {
         }
         LockInfo lock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
         if (null == lock) {
-            return false;
+            if (isTry) {
+                return false;
+            }
+            throw new FrameworkException("系统繁忙,请稍后重试");
         }
+        lock.setAcquireCount(1);
         THREAD_LOCAL.set(lock);
         return true;
     }
