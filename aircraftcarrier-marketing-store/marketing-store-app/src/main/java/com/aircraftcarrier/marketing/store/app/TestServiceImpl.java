@@ -12,6 +12,7 @@ import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe2;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
+import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe2;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
@@ -58,6 +59,8 @@ public class TestServiceImpl implements TestService {
     private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, 20, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
     @Resource
     UpdateInventoryExe updateInventoryExe;
+    @Resource
+    UpdateInventoryExe2 updateInventoryExe2;
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
@@ -199,6 +202,7 @@ public class TestServiceImpl implements TestService {
                 inventoryRequest.setOrderId(String.valueOf(finalI));
                 inventoryRequest.setCount(1);
                 SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+//                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
                 if (response.success()) {
                     log.info("扣减库存 成功");
                     success.incrementAndGet();

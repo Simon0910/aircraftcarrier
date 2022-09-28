@@ -81,7 +81,6 @@ public class UpdateInventoryExe {
 
         // takeThread 获取用户请求
         THREAD_POOL.execute(() -> {
-            int i = 0;
             while (true) {
                 try {
                     // take
@@ -105,18 +104,25 @@ public class UpdateInventoryExe {
                             log.info("merge size: {}", batchList.size());
 
                             // 模拟扣库存
-                            TimeUnit.MILLISECONDS.sleep(100);
-//                            SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
-//                            if (!response.success()) {
-//                                // 拆分用户请求， 退化为for循环执行
+//                            try {
+//                                TimeUnit.MILLISECONDS.sleep(100);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
 //                            }
-
-                            for (RequestPromise requestPromise : batchList) {
-                                requestPromise.setResult(new Result(true, "ok"));
-                                synchronized (requestPromise) {
-                                    requestPromise.notify();
+                            String goodsNo = batchList.get(0).getInventoryRequest().getGoodsNo();
+                            int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
+                            SingleResponse<Void> response = productGateway.deductionInventory(goodsNo, totalDeductionNum);
+                            if (response.success()) {
+                                for (RequestPromise requestPromise : batchList) {
+                                    requestPromise.setResult(new Result(true, "ok"));
+                                    synchronized (requestPromise) {
+                                        requestPromise.notify();
+                                    }
                                 }
+                            } else {
+                                // 拆分用户请求， 退化为for循环执行
                             }
+
                             batchList.clear();
                         }
                         log.debug("wait add...");
@@ -138,6 +144,7 @@ public class UpdateInventoryExe {
      * <p>
      * 优化：200毫秒内的用户请求（可能很多上万个请求）合并处理（为了快速完成）， 做mysql批量处理（批量扣库存失败了怎么办？）
      * 参考思路：https://www.bilibili.com/video/BV1g34y1h71Y/?spm_id_from=333.788&vd_source=5ae6c4b2dbcbc1516cef3f31fbe2abb2
+     * https://github.com/JiHaiChannel/demo
      * <p>
      * 另辟蹊径思考：
      * 1. 当同时过来100万个请求抢1万个商品，第一个请求先查库存放内存里，再根据商品创建一个atomic计数器
@@ -190,7 +197,7 @@ public class UpdateInventoryExe {
      * @param inventoryRequest inventoryRequest
      * @return Result
      */
-    public Result doDeductionInventory(InventoryRequest inventoryRequest) throws InterruptedException {
+    private Result doDeductionInventory(InventoryRequest inventoryRequest) throws InterruptedException {
         RequestPromise requestPromise = new RequestPromise(inventoryRequest);
         boolean enqueueSuccess = REQUEST_QUEUE.offer(requestPromise, 100, TimeUnit.MILLISECONDS);
         if (!enqueueSuccess) {
