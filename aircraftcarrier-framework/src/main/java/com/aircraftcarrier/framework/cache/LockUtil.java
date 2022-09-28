@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author lzp
@@ -30,20 +31,29 @@ public class LockUtil {
     private LockUtil() {
     }
 
-    public static void lock() {
+    public static void lock() throws TimeoutException {
         lock(DEFAULT_KEY, EXPIRE, -1);
     }
 
-    public static void lock(Serializable key) {
+    public static void lock(Serializable key) throws TimeoutException {
         lock(key, EXPIRE, -1);
     }
 
-    public static void lock(Serializable key, long expire) {
+    public static void lock(Serializable key, long expire) throws TimeoutException {
         lock(key, expire, -1);
     }
 
-    public static void lock(Serializable key, long expire, long acquireTimeout) {
-        doLock(key, expire, acquireTimeout, false);
+    public static void lockTimeout(Serializable key, long acquireTimeout) throws TimeoutException {
+        lock(key, EXPIRE, acquireTimeout);
+    }
+
+    public static void lock(Serializable key, long expire, long acquireTimeout) throws TimeoutException {
+        try {
+            doLock(key, expire, acquireTimeout, false);
+        } catch (FrameworkException e) {
+            throw new TimeoutException(e.getMessage());
+        }
+
     }
 
     public static Boolean tryLock() {
@@ -56,6 +66,10 @@ public class LockUtil {
 
     public static Boolean tryLock(Serializable key, long expire) {
         return tryLock(key, expire, -1);
+    }
+
+    public static Boolean tryLockTimeout(Serializable key, long acquireTimeout) {
+        return tryLock(key, EXPIRE, acquireTimeout);
     }
 
     public static Boolean tryLock(Serializable key, long expire, long acquireTimeout) {

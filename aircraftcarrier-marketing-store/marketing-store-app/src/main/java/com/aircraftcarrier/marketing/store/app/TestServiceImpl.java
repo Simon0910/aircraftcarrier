@@ -6,6 +6,7 @@ import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.BeanMapUtil;
+import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
@@ -43,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -89,8 +91,8 @@ public class TestServiceImpl implements TestService {
         String value = JedisUtil.get((String) id);
         log.info("JedisUtil: " + value);
 
-        LockUtil.lock(id);
         try {
+            LockUtil.lock(id);
 
             int s = 0;
             do {
@@ -102,6 +104,8 @@ public class TestServiceImpl implements TestService {
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
+        } catch (TimeoutException e) {
+            log.error(e.getMessage());
         } finally {
             LockUtil.unLock();
         }
@@ -336,26 +340,40 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
-        try {
-            System.out.println("第一次加锁");
-            LockUtil.lock(key);
-            TimeUnit.SECONDS.sleep(2);
-            reentrantLock2(key);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            System.out.println("1解锁");
-            LockUtil.unLock();
+        int num = 500;
+        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+            asyncBatchTasks.add(() -> {
+
+                try {
+                    System.out.println("第一次加锁");
+                    LockUtil.lockTimeout(key, 30);
+                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
+                    reentrantLock2(key);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
+                    log.error(e.getMessage());
+                } finally {
+                    System.out.println("1解锁");
+                    LockUtil.unLock();
+                }
+
+            });
         }
+
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
     }
 
     private void reentrantLock2(String key) {
         try {
             System.out.println("第二次加锁");
             LockUtil.lock(key);
-            TimeUnit.SECONDS.sleep(2);
-        } catch (Exception e) {
+            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
+        } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (TimeoutException e) {
+            log.error(e.getMessage());
         } finally {
             System.out.println("2解锁");
             LockUtil.unLock();
