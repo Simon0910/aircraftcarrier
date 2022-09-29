@@ -257,4 +257,13 @@ public class TestController {
         }
         return SingleResponse.ok("recursion Transactional");
     }
+
+    @ApiOperationSupport(order = 51)
+    @ApiOperation(value = "可重入锁")
+    @GetMapping("/reentrantLock")
+    public SingleResponse<String> reentrantLock(String key) {
+        System.out.println("reentrantLock");
+        testService.reentrantLock(key);
+        return SingleResponse.ok("reentrantLock");
+    }
 }

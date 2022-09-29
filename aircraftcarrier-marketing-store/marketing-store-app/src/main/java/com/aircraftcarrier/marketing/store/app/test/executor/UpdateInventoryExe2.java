@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +50,13 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-public class UpdateInventoryExe {
+public class UpdateInventoryExe2 {
+
+    /**
+     * 2 threads
+     */
+    private static final ThreadPoolExecutor THREAD_POOL_OFFER = ThreadPoolUtil.newDefaultThreadPool("offer");
+
     /**
      * 2 threads
      */
@@ -57,7 +65,7 @@ public class UpdateInventoryExe {
     /**
      * REQUEST_QUEUE
      */
-    private static final LinkedBlockingQueue<RequestPromise> REQUEST_QUEUE = new LinkedBlockingQueue<>(50000);
+    private static final LinkedBlockingQueue<PromiseRequest> REQUEST_QUEUE = new LinkedBlockingQueue<>(50000);
 
     /**
      * ProductGateway
@@ -67,22 +75,87 @@ public class UpdateInventoryExe {
 
     /**
      * init
+     * https://developer.aliyun.com/article/856163
+     * https://github.com/trunks2008/RequestMerge
      */
     @PostConstruct
-    private void init() {
+    private void init1() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+
+            int size = REQUEST_QUEUE.size();
+            if (size == 0) {
+                log.debug("wait add...");
+                try {
+                    TimeUnit.MILLISECONDS.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }
+                return;
+            }
+
+            List<PromiseRequest> requests = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                PromiseRequest request = REQUEST_QUEUE.poll();
+                requests.add(request);
+            }
+            System.out.println("批量处理了" + size + "条请求");
+
+            Integer totalDeductionNum = 0;
+            for (PromiseRequest request : requests) {
+                totalDeductionNum += request.getInventoryRequest().getCount();
+            }
+
+//            // 模拟扣库存
+//            try {
+//                TimeUnit.MILLISECONDS.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            //返回请求
+//            for (PromiseRequest request : requests) {
+//                request.future.complete(SingleResponse.ok());
+//            }
+
+            SingleResponse<Void> response = productGateway.deductionInventory(requests.get(0).getInventoryRequest().getGoodsNo(), totalDeductionNum);
+            if (response.success()) {
+                //返回请求
+                for (PromiseRequest request : requests) {
+                    request.future.completeAsync(() -> response);
+                }
+            } else {
+                // 退化为 二分法 ==》 再到for循环 继续扣减
+                for (PromiseRequest request : requests) {
+                    request.future.completeAsync(() -> response);
+                }
+            }
+
+            // 等待 offer
+            try {
+                TimeUnit.MILLISECONDS.sleep(1);
+            } catch (InterruptedException ignored) {
+            }
+        }, 0, 1, TimeUnit.MILLISECONDS);
+    }
+
+
+    /**
+     * init
+     */
+//    @PostConstruct
+    private void init2() {
         Object lock = new Object();
         // list
-        List<RequestPromise> batchList = new ArrayList<>(50000);
+        List<PromiseRequest> batchList = new ArrayList<>(50000);
 
         // takeThread 获取用户请求
         THREAD_POOL.execute(() -> {
             while (true) {
                 try {
                     // take
-                    final RequestPromise requestPromise = REQUEST_QUEUE.take();
+                    final PromiseRequest request = REQUEST_QUEUE.take();
                     //  add
                     synchronized (lock) {
-                        batchList.add(requestPromise);
+                        batchList.add(request);
                     }
                 } catch (Exception e) {
                     log.error("takeThread error: ", e);
@@ -97,24 +170,29 @@ public class UpdateInventoryExe {
                     if (batchList.size() > 0) {
                         synchronized (lock) {
                             log.info("merge size: {}", batchList.size());
-
-                            // 模拟扣库存
+//                            // 模拟扣库存
 //                            try {
-//                                TimeUnit.MILLISECONDS.sleep(10);
+//                                TimeUnit.MILLISECONDS.sleep(100);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
+//                            //返回请求
+//                            for (PromiseRequest request : batchList) {
+//                                request.future.complete(SingleResponse.ok());
+//                            }
+
                             String goodsNo = batchList.get(0).getInventoryRequest().getGoodsNo();
                             int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
                             SingleResponse<Void> response = productGateway.deductionInventory(goodsNo, totalDeductionNum);
                             if (response.success()) {
-                                for (RequestPromise requestPromise : batchList) {
-                                    requestPromise.getFuture().completeAsync(() -> response);
+                                //返回请求
+                                for (PromiseRequest request : batchList) {
+                                    request.future.completeAsync(() -> response);
                                 }
                             } else {
-                                // 拆分用户请求， 二分法 ==》 再到for循环 继续扣减
-                                for (RequestPromise requestPromise : batchList) {
-                                    requestPromise.getFuture().completeAsync(() -> SingleResponse.error("批量扣失败了"));
+                                // 退化为 二分法 ==》 再到for循环 继续扣减
+                                for (PromiseRequest request : batchList) {
+                                    request.future.completeAsync(() -> response);
                                 }
                             }
 
@@ -133,22 +211,9 @@ public class UpdateInventoryExe {
         });
     }
 
+
     /**
      * deductionInventory
-     *
-     * <p>
-     * 优化：200毫秒内的用户请求（可能很多上万个请求）合并处理（为了快速完成）， 做mysql批量处理（批量扣库存失败了怎么办？）
-     * 参考思路：https://www.bilibili.com/video/BV1g34y1h71Y/?spm_id_from=333.788&vd_source=5ae6c4b2dbcbc1516cef3f31fbe2abb2
-     * https://github.com/JiHaiChannel/demo
-     * <p>
-     * 另辟蹊径思考：
-     * 1. 当同时过来100万个请求抢1万个商品，第一个请求先查库存放内存里，再根据商品创建一个atomic计数器
-     * 2. 那么2台机器，每台机器极端情况下可以保证最多只有1万个请求，总共2万个请求
-     * 3. 2万个请求怎么只拿到1万个请求呢？ 自增自减？
-     * 4. 1万个请求扣减redis库存，insert到mysql流水（保证仅有1万个记录就成功了，后续就可以异步任务处理了）
-     * 这样整个过程是不是就保证避免超卖且很快完成了？
-     * 思考：能不能每1000条批量batchInsert？ 批量超卖怎么办？（也有可能前9批成功，最后一批超卖了）
-     * 失败后，退化为for循环串行执行
      */
     public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) throws InterruptedException, ExecutionException {
         Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
@@ -157,30 +222,28 @@ public class UpdateInventoryExe {
             return SingleResponse.error("库存不足了哦");
         }
 
-//        SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
-
-        //  优化：可以为200毫秒内的用户请求合并处理的结果，deductionNum需要扣除的总库存
-        // user -> 订单 -> 商品 -> 扣减数量
-        // step01：insert流水记录。。。
-        // step02：扣库存
-        RequestPromise request = new RequestPromise(inventoryRequest);
+        PromiseRequest request = new PromiseRequest();
+        request.setInventoryRequest(inventoryRequest);
         CompletableFuture<SingleResponse<Void>> future = new CompletableFuture<>();
         request.setFuture(future);
 
-        REQUEST_QUEUE.put(request);
+        boolean enqueueSuccess = REQUEST_QUEUE.offer(request, 100, TimeUnit.MILLISECONDS);
+        if (!enqueueSuccess) {
+            return SingleResponse.error("系统繁忙");
+        }
 
         return future.get();
-//        // 如果不获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
+        // 如果不同步获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
 //        return SingleResponse.error("get 〒_〒");
     }
-}
 
-@Data
-class RequestPromise {
-    private InventoryRequest inventoryRequest;
-    private CompletableFuture<SingleResponse<Void>> future;
 
-    public RequestPromise(InventoryRequest inventoryRequest) {
-        this.inventoryRequest = inventoryRequest;
+    /**
+     * 封装请求
+     */
+    @Data
+    class PromiseRequest {
+        InventoryRequest inventoryRequest;
+        CompletableFuture<SingleResponse<Void>> future;
     }
 }

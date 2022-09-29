@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.cache;
 
+import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
 import com.aircraftcarrier.framework.exception.FrameworkException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.baomidou.lock.LockInfo;
@@ -7,6 +8,10 @@ import com.baomidou.lock.LockTemplate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author lzp
@@ -18,34 +23,39 @@ public class LockUtil {
      */
     private static final long EXPIRE = 30;
     private static final String DEFAULT_KEY = "block";
-    private static final LockTemplate LOCK_TEMPLATE;
-    private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
+    private static final MyLockTemplate LOCK_TEMPLATE;
+    private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
 
     static {
-        LOCK_TEMPLATE = ApplicationContextUtil.getBean(LockTemplate.class);
+        LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
     }
 
     private LockUtil() {
     }
 
-    public static void lock() {
+    public static void lock() throws TimeoutException {
         lock(DEFAULT_KEY, EXPIRE, -1);
     }
 
-    public static void lock(Serializable key) {
+    public static void lock(Serializable key) throws TimeoutException {
         lock(key, EXPIRE, -1);
     }
 
-    public static void lock(Serializable key, long expire) {
+    public static void lock(Serializable key, long expire) throws TimeoutException {
         lock(key, expire, -1);
     }
 
-    public static void lock(Serializable key, long expire, long acquireTimeout) {
-        LockInfo lock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
-        if (null == lock) {
-            throw new FrameworkException("系统繁忙,请稍后重试");
+    public static void lockTimeout(Serializable key, long acquireTimeout) throws TimeoutException {
+        lock(key, EXPIRE, acquireTimeout);
+    }
+
+    public static void lock(Serializable key, long expire, long acquireTimeout) throws TimeoutException {
+        try {
+            doLock(key, expire, acquireTimeout, false);
+        } catch (FrameworkException e) {
+            throw new TimeoutException(e.getMessage());
         }
-        THREAD_LOCAL.set(lock);
+
     }
 
     public static Boolean tryLock() {
@@ -60,28 +70,99 @@ public class LockUtil {
         return tryLock(key, expire, -1);
     }
 
+    public static Boolean tryLockTimeout(Serializable key, long acquireTimeout) {
+        return tryLock(key, EXPIRE, acquireTimeout);
+    }
+
     public static Boolean tryLock(Serializable key, long expire, long acquireTimeout) {
-        LockInfo lock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
-        if (null == lock) {
-            return false;
+        return doLock(key, expire, acquireTimeout, true);
+    }
+
+    private static boolean doLock(Serializable key, long expire, long acquireTimeout, boolean isTry) {
+        String lockKey = String.valueOf(key);
+        Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
+        LockInfo lockInfo;
+        if (lockInfoMap != null && (lockInfo = lockInfoMap.get(lockKey)) != null) {
+            // 可重入
+            lockInfo.setAcquireCount(lockInfo.getAcquireCount() + 1);
+            return true;
         }
-        THREAD_LOCAL.set(lock);
+
+        // 新锁
+        LockInfo newLock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
+        if (null == newLock) {
+            if (isTry) {
+                return false;
+            }
+            throw new FrameworkException("系统繁忙,请稍后重试");
+        }
+        newLock.setAcquireCount(1);
+
+        if (lockInfoMap != null) {
+            // 当前线程新锁
+            lockInfoMap.put(lockKey, newLock);
+            return true;
+        }
+
+        // 当前线程第一个锁
+        lockInfoMap = new HashMap<>(16);
+        lockInfoMap.put(lockKey, newLock);
+        THREAD_LOCAL.set(lockInfoMap);
         return true;
     }
 
     public static void unLock() {
-        LockInfo lockInfo = THREAD_LOCAL.get();
-        THREAD_LOCAL.remove();
-        if (lockInfo == null) {
+        unLock(DEFAULT_KEY);
+    }
+
+    public static void unLock(Serializable key) {
+        String lockKey = String.valueOf(key);
+        Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
+        if (lockInfoMap == null || lockInfoMap.isEmpty()) {
+            THREAD_LOCAL.remove();
+            return;
+        }
+        LockInfo lockInfo;
+        if ((lockInfo = lockInfoMap.get(lockKey)) == null) {
             return;
         }
 
+        int acquireCount = lockInfo.getAcquireCount();
+        if (acquireCount > 1) {
+            // 解锁次数还没有完成，还需要继续解锁
+            lockInfo.setAcquireCount(--acquireCount);
+            return;
+        }
+
+        // 最后一次解锁
+        lockInfoMap.remove(lockKey);
+        if (lockInfoMap.isEmpty()) {
+            THREAD_LOCAL.remove();
+        }
+
+        // 先执行一次，失败重试3次
+        if (!doUnLock(lockInfo, 3)) {
+            throw new FrameworkException("释放锁异常");
+        }
+    }
+
+    private static boolean doUnLock(LockInfo lockInfo, int retry) {
         try {
-            //释放锁
+            // 释放锁
             LOCK_TEMPLATE.releaseLock(lockInfo);
+            return true;
         } catch (Exception e) {
-            log.error("释放锁异常");
-            e.printStackTrace();
+            try {
+                TimeUnit.MILLISECONDS.sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
+
+            if (retry > 0) {
+                retry--;
+                return doUnLock(lockInfo, retry);
+            } else {
+                return false;
+            }
         }
     }
 }

@@ -2,16 +2,18 @@ package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
-import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.BeanMapUtil;
+import com.aircraftcarrier.framework.tookit.LockKeyUtil;
+import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe2;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
+import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe2;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
@@ -44,6 +46,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -57,6 +60,8 @@ public class TestServiceImpl implements TestService {
     private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, 20, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
     @Resource
     UpdateInventoryExe updateInventoryExe;
+    @Resource
+    UpdateInventoryExe2 updateInventoryExe2;
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
@@ -90,8 +95,8 @@ public class TestServiceImpl implements TestService {
         String value = JedisUtil.get((String) id);
         log.info("JedisUtil: " + value);
 
-        LockUtil.lock(id);
         try {
+            LockUtil.lock(id);
 
             int s = 0;
             do {
@@ -103,8 +108,10 @@ public class TestServiceImpl implements TestService {
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
+        } catch (TimeoutException e) {
+            log.error(e.getMessage());
         } finally {
-            LockUtil.unLock();
+            LockUtil.unLock(id);
         }
         log.info("success");
         return "success";
@@ -196,6 +203,7 @@ public class TestServiceImpl implements TestService {
                 inventoryRequest.setOrderId(String.valueOf(finalI));
                 inventoryRequest.setCount(1);
                 SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+//                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
                 if (response.success()) {
                     log.info("扣减库存 成功");
                     success.incrementAndGet();
@@ -333,6 +341,66 @@ public class TestServiceImpl implements TestService {
 //            throw new BizException("222");
 //        }
 
+    }
+
+    @Override
+    public void reentrantLock(String key) {
+        int num = 500;
+        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+            asyncBatchTasks.add(() -> {
+
+                try {
+                    System.out.println("第一次加锁");
+//                    LockUtil.lockTimeout(key, 30);
+//                    LockUtil.lockTimeout(key + "2", 30);
+                    LockKeyUtil.lock();
+                    LockKeyUtil.lock(key + "2");
+//                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
+                    reentrantLock2(key);
+                }
+//                catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                catch (TimeoutException e) {
+//                    log.error(e.getMessage());
+//                }
+                finally {
+                    System.out.println("1解锁");
+//                    LockUtil.unLock(key + "2");
+//                    LockUtil.unLock(key);
+                    LockKeyUtil.unlock(key + "2");
+                    LockKeyUtil.unlock();
+                }
+
+            });
+        }
+
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+    }
+
+    private void reentrantLock2(String key) {
+        try {
+            System.out.println("第二次加锁");
+//            LockUtil.lock(key);
+//            LockUtil.lock(key + "2");
+            LockKeyUtil.lock();
+            LockKeyUtil.lock(key + "2");
+//            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
+        }
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        catch (TimeoutException e) {
+//            log.error(e.getMessage());
+//        }
+        finally {
+            System.out.println("2解锁");
+//            LockUtil.unLock(key + "2");
+//            LockUtil.unLock(key);
+            LockKeyUtil.unlock(key + "2");
+            LockKeyUtil.unlock();
+        }
     }
 }
 

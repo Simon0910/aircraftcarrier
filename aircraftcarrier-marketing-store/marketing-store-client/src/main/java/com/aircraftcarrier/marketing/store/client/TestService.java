@@ -75,4 +75,11 @@ public interface TestService {
      * @param i   i
      */
     void recursionTransactional2(String str, int i);
+
+    /**
+     * 可重入锁
+     *
+     * @param key key
+     */
+    void reentrantLock(String key);
 }
