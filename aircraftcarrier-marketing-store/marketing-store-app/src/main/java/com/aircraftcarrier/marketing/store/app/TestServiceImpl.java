@@ -110,7 +110,7 @@ public class TestServiceImpl implements TestService {
         } catch (TimeoutException e) {
             log.error(e.getMessage());
         } finally {
-            LockUtil.unLock();
+            LockUtil.unLock(id);
         }
         log.info("success");
         return "success";
@@ -352,6 +352,7 @@ public class TestServiceImpl implements TestService {
                 try {
                     System.out.println("第一次加锁");
                     LockUtil.lockTimeout(key, 30);
+                    LockUtil.lockTimeout(key + "2", 30);
                     TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
                     reentrantLock2(key);
                 } catch (InterruptedException e) {
@@ -360,7 +361,8 @@ public class TestServiceImpl implements TestService {
                     log.error(e.getMessage());
                 } finally {
                     System.out.println("1解锁");
-                    LockUtil.unLock();
+                    LockUtil.unLock(key + "2");
+                    LockUtil.unLock(key);
                 }
 
             });
@@ -373,6 +375,7 @@ public class TestServiceImpl implements TestService {
         try {
             System.out.println("第二次加锁");
             LockUtil.lock(key);
+            LockUtil.lock(key + "2");
             TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -380,7 +383,8 @@ public class TestServiceImpl implements TestService {
             log.error(e.getMessage());
         } finally {
             System.out.println("2解锁");
-            LockUtil.unLock();
+            LockUtil.unLock(key + "2");
+            LockUtil.unLock(key);
         }
     }
 }

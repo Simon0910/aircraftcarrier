@@ -8,6 +8,8 @@ import com.baomidou.lock.LockTemplate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -22,7 +24,7 @@ public class LockUtil {
     private static final long EXPIRE = 30;
     private static final String DEFAULT_KEY = "block";
     private static final MyLockTemplate LOCK_TEMPLATE;
-    private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
 
     static {
         LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
@@ -77,27 +79,51 @@ public class LockUtil {
     }
 
     private static boolean doLock(Serializable key, long expire, long acquireTimeout, boolean isTry) {
-        LockInfo lockInfo = THREAD_LOCAL.get();
-        if (lockInfo != null) {
+        String lockKey = String.valueOf(key);
+        Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
+        LockInfo lockInfo;
+        if (lockInfoMap != null && (lockInfo = lockInfoMap.get(lockKey)) != null) {
             // 可重入
+            lockInfo.setAcquireCount(lockInfo.getAcquireCount() + 1);
             return true;
         }
-        LockInfo lock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
-        if (null == lock) {
+
+        // 新锁
+        LockInfo newLock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
+        if (null == newLock) {
             if (isTry) {
                 return false;
             }
             throw new FrameworkException("系统繁忙,请稍后重试");
         }
-        lock.setAcquireCount(1);
-        THREAD_LOCAL.set(lock);
+        newLock.setAcquireCount(1);
+
+        if (lockInfoMap != null) {
+            // 当前线程新锁
+            lockInfoMap.put(lockKey, newLock);
+            return true;
+        }
+
+        // 当前线程第一个锁
+        lockInfoMap = new HashMap<>(16);
+        lockInfoMap.put(lockKey, newLock);
+        THREAD_LOCAL.set(lockInfoMap);
         return true;
     }
 
     public static void unLock() {
-        LockInfo lockInfo = THREAD_LOCAL.get();
-        if (lockInfo == null) {
+        unLock(DEFAULT_KEY);
+    }
+
+    public static void unLock(Serializable key) {
+        String lockKey = String.valueOf(key);
+        Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
+        if (lockInfoMap == null || lockInfoMap.isEmpty()) {
             THREAD_LOCAL.remove();
+            return;
+        }
+        LockInfo lockInfo;
+        if ((lockInfo = lockInfoMap.get(lockKey)) == null) {
             return;
         }
 
@@ -109,7 +135,10 @@ public class LockUtil {
         }
 
         // 最后一次解锁
-        THREAD_LOCAL.remove();
+        lockInfoMap.remove(lockKey);
+        if (lockInfoMap.isEmpty()) {
+            THREAD_LOCAL.remove();
+        }
 
         // 先执行一次，失败重试3次
         if (!doUnLock(lockInfo, 3)) {
