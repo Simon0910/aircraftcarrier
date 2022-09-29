@@ -6,6 +6,7 @@ import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.BeanMapUtil;
+import com.aircraftcarrier.framework.tookit.LockKeyUtil;
 import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
@@ -351,18 +352,25 @@ public class TestServiceImpl implements TestService {
 
                 try {
                     System.out.println("第一次加锁");
-                    LockUtil.lockTimeout(key, 30);
-                    LockUtil.lockTimeout(key + "2", 30);
-                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
+//                    LockUtil.lockTimeout(key, 30);
+//                    LockUtil.lockTimeout(key + "2", 30);
+                    LockKeyUtil.lock();
+                    LockKeyUtil.lock(key + "2");
+//                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
                     reentrantLock2(key);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    log.error(e.getMessage());
-                } finally {
+                }
+//                catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                catch (TimeoutException e) {
+//                    log.error(e.getMessage());
+//                }
+                finally {
                     System.out.println("1解锁");
-                    LockUtil.unLock(key + "2");
-                    LockUtil.unLock(key);
+//                    LockUtil.unLock(key + "2");
+//                    LockUtil.unLock(key);
+                    LockKeyUtil.unlock(key + "2");
+                    LockKeyUtil.unlock();
                 }
 
             });
@@ -374,17 +382,24 @@ public class TestServiceImpl implements TestService {
     private void reentrantLock2(String key) {
         try {
             System.out.println("第二次加锁");
-            LockUtil.lock(key);
-            LockUtil.lock(key + "2");
-            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            log.error(e.getMessage());
-        } finally {
+//            LockUtil.lock(key);
+//            LockUtil.lock(key + "2");
+            LockKeyUtil.lock();
+            LockKeyUtil.lock(key + "2");
+//            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
+        }
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        catch (TimeoutException e) {
+//            log.error(e.getMessage());
+//        }
+        finally {
             System.out.println("2解锁");
-            LockUtil.unLock(key + "2");
-            LockUtil.unLock(key);
+//            LockUtil.unLock(key + "2");
+//            LockUtil.unLock(key);
+            LockKeyUtil.unlock(key + "2");
+            LockKeyUtil.unlock();
         }
     }
 }
