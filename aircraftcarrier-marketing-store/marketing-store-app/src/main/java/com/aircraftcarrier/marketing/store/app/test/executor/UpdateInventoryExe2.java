@@ -78,7 +78,7 @@ public class UpdateInventoryExe2 {
      * https://developer.aliyun.com/article/856163
      * https://github.com/trunks2008/RequestMerge
      */
-//    @PostConstruct
+    @PostConstruct
     private void init1() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -87,7 +87,7 @@ public class UpdateInventoryExe2 {
             if (size == 0) {
                 log.debug("wait add...");
                 try {
-                    TimeUnit.MILLISECONDS.sleep(200);
+                    TimeUnit.MILLISECONDS.sleep(1000);
                 } catch (InterruptedException ignored) {
                 }
                 return;
@@ -105,37 +105,43 @@ public class UpdateInventoryExe2 {
                 totalDeductionNum += request.getInventoryRequest().getCount();
             }
 
-            // 模拟扣库存
-            try {
-                TimeUnit.MILLISECONDS.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //返回请求
-            for (PromiseRequest request : requests) {
-                request.future.complete(SingleResponse.ok());
+//            // 模拟扣库存
+//            try {
+//                TimeUnit.MILLISECONDS.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            //返回请求
+//            for (PromiseRequest request : requests) {
+//                request.future.complete(SingleResponse.ok());
+//            }
+
+            SingleResponse<Void> response = productGateway.deductionInventory(requests.get(0).getInventoryRequest().getGoodsNo(), totalDeductionNum);
+            if (response.success()) {
+                //返回请求
+                for (PromiseRequest request : requests) {
+                    request.future.completeAsync(() -> response);
+                }
+            } else {
+                // 退化为 二分法 ==》 再到for循环 继续扣减
+                for (PromiseRequest request : requests) {
+                    request.future.completeAsync(() -> response);
+                }
             }
 
-//            SingleResponse<Void> response = productGateway.deductionInventory(requests.get(0).getInventoryRequest().getGoodsNo(), totalDeductionNum);
-//            if (response.success()) {
-//                //返回请求
-//                for (PromiseRequest request : requests) {
-//                    request.future.complete(response);
-//                }
-//            } else {
-//                // 退化为 二分法 ==》 再到for循环 继续扣减
-//                for (PromiseRequest request : requests) {
-//                    request.future.complete(response);
-//                }
-//            }
-        }, 0, 10, TimeUnit.MILLISECONDS);
+            // 等待 offer
+            try {
+                TimeUnit.MILLISECONDS.sleep(1);
+            } catch (InterruptedException ignored) {
+            }
+        }, 0, 1, TimeUnit.MILLISECONDS);
     }
 
 
     /**
      * init
      */
-    @PostConstruct
+//    @PostConstruct
     private void init2() {
         Object lock = new Object();
         // list
@@ -164,36 +170,36 @@ public class UpdateInventoryExe2 {
                     if (batchList.size() > 0) {
                         synchronized (lock) {
                             log.info("merge size: {}", batchList.size());
-                            // 模拟扣库存
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            //返回请求
-                            for (PromiseRequest request : batchList) {
-                                request.future.complete(SingleResponse.ok());
-                            }
-
-//                            String goodsNo = batchList.get(0).getInventoryRequest().getGoodsNo();
-//                            int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
-//                            SingleResponse<Void> response = productGateway.deductionInventory(goodsNo, totalDeductionNum);
-//                            if (response.success()) {
-//                                //返回请求
-//                                for (PromiseRequest request : batchList) {
-//                                    request.future.complete(response);
-//                                }
-//                            } else {
-//                                //返回请求
-//                                for (PromiseRequest request : batchList) {
-//                                    request.future.complete(response);
-//                                }
+//                            // 模拟扣库存
+//                            try {
+//                                TimeUnit.MILLISECONDS.sleep(100);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
 //                            }
+//                            //返回请求
+//                            for (PromiseRequest request : batchList) {
+//                                request.future.complete(SingleResponse.ok());
+//                            }
+
+                            String goodsNo = batchList.get(0).getInventoryRequest().getGoodsNo();
+                            int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
+                            SingleResponse<Void> response = productGateway.deductionInventory(goodsNo, totalDeductionNum);
+                            if (response.success()) {
+                                //返回请求
+                                for (PromiseRequest request : batchList) {
+                                    request.future.completeAsync(() -> response);
+                                }
+                            } else {
+                                // 退化为 二分法 ==》 再到for循环 继续扣减
+                                for (PromiseRequest request : batchList) {
+                                    request.future.completeAsync(() -> response);
+                                }
+                            }
 
                             batchList.clear();
                         }
                         log.debug("wait add...");
-                        TimeUnit.MILLISECONDS.sleep(200);
+                        TimeUnit.MILLISECONDS.sleep(1);
                     } else {
                         log.debug("wait merge...");
                         TimeUnit.MILLISECONDS.sleep(1000);
@@ -209,7 +215,7 @@ public class UpdateInventoryExe2 {
     /**
      * deductionInventory
      */
-    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) throws InterruptedException {
+    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) throws InterruptedException, ExecutionException {
         Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
         if (stock != null) {
             log.error("库存不足了哦");
@@ -226,13 +232,9 @@ public class UpdateInventoryExe2 {
             return SingleResponse.error("系统繁忙");
         }
 
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        return SingleResponse.error("get 〒_〒");
+        return future.get();
+        // 如果不同步获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
+//        return SingleResponse.error("get 〒_〒");
     }
 
 

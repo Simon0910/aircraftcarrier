@@ -13,7 +13,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -48,12 +49,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class UpdateInventoryExe {
-
-    /**
-     * 2 threads
-     */
-    private static final ThreadPoolExecutor THREAD_POOL_OFFER = ThreadPoolUtil.newDefaultThreadPool("offer");
-
     /**
      * 2 threads
      */
@@ -105,7 +100,7 @@ public class UpdateInventoryExe {
 
                             // 模拟扣库存
 //                            try {
-//                                TimeUnit.MILLISECONDS.sleep(100);
+//                                TimeUnit.MILLISECONDS.sleep(10);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
@@ -114,19 +109,19 @@ public class UpdateInventoryExe {
                             SingleResponse<Void> response = productGateway.deductionInventory(goodsNo, totalDeductionNum);
                             if (response.success()) {
                                 for (RequestPromise requestPromise : batchList) {
-                                    requestPromise.setResult(new Result(true, "ok"));
-                                    synchronized (requestPromise) {
-                                        requestPromise.notify();
-                                    }
+                                    requestPromise.getFuture().completeAsync(() -> response);
                                 }
                             } else {
-                                // 拆分用户请求， 退化为for循环执行
+                                // 拆分用户请求， 二分法 ==》 再到for循环 继续扣减
+                                for (RequestPromise requestPromise : batchList) {
+                                    requestPromise.getFuture().completeAsync(() -> SingleResponse.error("批量扣失败了"));
+                                }
                             }
 
                             batchList.clear();
                         }
                         log.debug("wait add...");
-                        TimeUnit.MILLISECONDS.sleep(200);
+                        TimeUnit.MILLISECONDS.sleep(1);
                     } else {
                         log.debug("wait merge...");
                         TimeUnit.MILLISECONDS.sleep(1000);
@@ -155,7 +150,7 @@ public class UpdateInventoryExe {
      * 思考：能不能每1000条批量batchInsert？ 批量超卖怎么办？（也有可能前9批成功，最后一批超卖了）
      * 失败后，退化为for循环串行执行
      */
-    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) {
+    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) throws InterruptedException, ExecutionException {
         Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
         if (stock != null) {
             log.error("库存不足了哦");
@@ -168,78 +163,24 @@ public class UpdateInventoryExe {
         // user -> 订单 -> 商品 -> 扣减数量
         // step01：insert流水记录。。。
         // step02：扣库存
-        Future<Result> future = ThreadPoolUtil.submit(THREAD_POOL_OFFER, () -> doDeductionInventory(inventoryRequest));
+        RequestPromise request = new RequestPromise(inventoryRequest);
+        CompletableFuture<SingleResponse<Void>> future = new CompletableFuture<>();
+        request.setFuture(future);
 
-        Result result;
-        try {
-            result = future.get(500, TimeUnit.MILLISECONDS);
-            System.out.println(Thread.currentThread().getName() + ":客户端请求响应:" + result);
-            if (result == null) {
-                return SingleResponse.error("没等到结果");
-            }
-        } catch (Exception e) {
-            log.error("get Exception: ", e);
-            return SingleResponse.error("get Exception");
-        }
+        REQUEST_QUEUE.put(request);
 
-        if (!result.isSuccess()) {
-            // 超时，发送请求回滚
-            System.out.println(result.getMsg() + "发起回滚操作");
-            return SingleResponse.error("发起回滚操作");
-        }
-
-        return SingleResponse.ok();
-    }
-
-    /**
-     * 用户库存扣减
-     *
-     * @param inventoryRequest inventoryRequest
-     * @return Result
-     */
-    private Result doDeductionInventory(InventoryRequest inventoryRequest) throws InterruptedException {
-        RequestPromise requestPromise = new RequestPromise(inventoryRequest);
-        boolean enqueueSuccess = REQUEST_QUEUE.offer(requestPromise, 100, TimeUnit.MILLISECONDS);
-        if (!enqueueSuccess) {
-            return new Result(false, "系统繁忙");
-        }
-
-        // 可以采用页面异步获取结果，比较靠谱一点
-//        synchronized (requestPromise) {
-//            try {
-//                requestPromise.wait(500);
-//                if (requestPromise.getResult() == null) {
-//                    return new Result(false, "等待超时");
-//                }
-//            } catch (InterruptedException e) {
-//                return new Result(false, "被中断");
-//            }
-//        }
-        return requestPromise.getResult();
+        return future.get();
+//        // 如果不获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
+//        return SingleResponse.error("get 〒_〒");
     }
 }
 
 @Data
 class RequestPromise {
     private InventoryRequest inventoryRequest;
-    private Result result;
+    private CompletableFuture<SingleResponse<Void>> future;
 
     public RequestPromise(InventoryRequest inventoryRequest) {
         this.inventoryRequest = inventoryRequest;
-    }
-}
-
-@Data
-class Result {
-    private Boolean success;
-    private String msg;
-
-    public Result(boolean success, String msg) {
-        this.success = success;
-        this.msg = msg;
-    }
-
-    public boolean isSuccess() {
-        return Boolean.TRUE.equals(success);
     }
 }
