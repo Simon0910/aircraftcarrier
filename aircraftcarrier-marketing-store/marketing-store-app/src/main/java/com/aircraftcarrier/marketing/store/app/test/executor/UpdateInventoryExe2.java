@@ -50,11 +50,15 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class UpdateInventoryExe2 {
+    /**
+     * threads
+     */
+    private static final int N_THREADS = 2;
 
     /**
-     * 2 threads
+     * Pool
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(1, "merge");
+    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(N_THREADS, "merge");
 
     /**
      * 批量处理 可配置
@@ -79,7 +83,10 @@ public class UpdateInventoryExe2 {
 
     @PostConstruct
     private void init() {
-        init1();
+//        init1();
+        for (int i = 0; i < N_THREADS; i++) {
+            init2();
+        }
     }
 
     /**
@@ -88,7 +95,7 @@ public class UpdateInventoryExe2 {
      * https://github.com/trunks2008/RequestMerge
      */
     private void init1() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             List<PromiseRequest> batchList = new ArrayList<>(batchSize);
             // empty wait put...
@@ -120,6 +127,9 @@ public class UpdateInventoryExe2 {
             try {
                 for (int i = 0; i < size; i++) {
                     PromiseRequest request = REQUEST_QUEUE.poll();
+                    if (request == null) {
+                        break;
+                    }
                     batchList.add(request);
                 }
                 System.out.println("批量处理了" + batchList.size() + "条请求");
@@ -183,7 +193,7 @@ public class UpdateInventoryExe2 {
                         firstRequest = REQUEST_QUEUE.take();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        return;
+                        continue;
                     }
                     batchList.add(firstRequest);
                     size = REQUEST_QUEUE.size();
@@ -203,9 +213,15 @@ public class UpdateInventoryExe2 {
                 try {
                     for (int i = 0; i < size; i++) {
                         PromiseRequest request = REQUEST_QUEUE.poll();
+                        if (request == null) {
+                            break;
+                        }
                         batchList.add(request);
                     }
                     log.info("merge size: {}", batchList.size());
+                    if (batchList.isEmpty()) {
+                        continue;
+                    }
 
 //                    // 模拟扣库存
 //                    try {
