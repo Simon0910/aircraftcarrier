@@ -139,7 +139,8 @@ public class TestController {
     @ApiOperation(value = "并发扣库存防止超卖")
     @GetMapping("/deductionInventory")
     public SingleResponse<String> deductionInventory(@RequestParam Serializable goodsNo) {
-        for (int i = 0; i < 2; i++) {
+        // jmeter 模拟测试
+        for (int i = 0; i < 1; i++) {
             testService.deductionInventory(goodsNo);
         }
         return SingleResponse.ok();
