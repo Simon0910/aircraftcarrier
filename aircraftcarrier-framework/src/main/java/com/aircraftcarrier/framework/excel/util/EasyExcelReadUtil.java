@@ -1,6 +1,8 @@
 package com.aircraftcarrier.framework.excel.util;
 
 import com.aircraftcarrier.framework.exception.BizException;
+import com.aircraftcarrier.framework.exception.ErrorCode;
+import com.aircraftcarrier.framework.exception.ToolException;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.EasyExcelFactory;
@@ -12,7 +14,6 @@ import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -101,11 +102,17 @@ public class EasyExcelReadUtil {
         return analysisContext.readRowHolder().getRowIndex() + 1;
     }
 
-    public static boolean allFieldIsNull(ExcelRow o) throws IllegalAccessException {
+    public static boolean allFieldIsNull(ExcelRow o) {
         for (Field field : o.getClass().getDeclaredFields()) {
             ReflectionUtils.makeAccessible(field);
 
-            Object object = field.get(o);
+            Object object;
+            try {
+                object = field.get(o);
+            } catch (IllegalAccessException e) {
+                log.error("field.get(o) error: ", e);
+                throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, "field.get(o) error");
+            }
             if (object instanceof CharSequence) {
                 if (!org.springframework.util.ObjectUtils.isEmpty(object)) {
                     return false;
@@ -123,7 +130,6 @@ public class EasyExcelReadUtil {
         return new AnalysisEventListener<T>() {
             boolean isEmpty = true;
 
-            @SneakyThrows
             @Override
             public void invoke(T row, AnalysisContext analysisContext) {
                 if (EasyExcelReadUtil.allFieldIsNull(row)) {
@@ -169,7 +175,6 @@ public class EasyExcelReadUtil {
                 }
             }
 
-            @SneakyThrows
             @Override
             public void invoke(T row, AnalysisContext analysisContext) {
                 if (EasyExcelReadUtil.allFieldIsNull(row)) {
@@ -211,7 +216,6 @@ public class EasyExcelReadUtil {
                 }
             }
 
-            @SneakyThrows
             @Override
             public void invoke(T row, AnalysisContext analysisContext) {
                 if (EasyExcelReadUtil.allFieldIsNull(row)) {

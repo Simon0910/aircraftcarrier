@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
     <name>Aircraft Carrier Parent</name>
     <properties>
-        <maven.compiler.level>11</maven.compiler.level>
+        <maven.compiler.level>19</maven.compiler.level>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <project.build.encoding>UTF-8</project.build.encoding>
         <lombok.version>1.18.24</lombok.version>
