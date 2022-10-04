@@ -7,7 +7,6 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.BeanMapUtil;
 import com.aircraftcarrier.framework.tookit.LockKeyUtil;
-import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
@@ -192,36 +191,56 @@ public class TestServiceImpl implements TestService {
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        int num = 5000;
+        int num = 1;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             int finalI = i;
-            asyncBatchTasks.add(() -> {
-                InventoryRequest inventoryRequest = new InventoryRequest();
-                inventoryRequest.setGoodsNo((String) goodsNo);
-                inventoryRequest.setUserId(String.valueOf(finalI));
-                inventoryRequest.setOrderId(String.valueOf(finalI));
-                inventoryRequest.setCount(1);
-                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+//            asyncBatchTasks.add(() -> {
+////                try {
+////                    // 间隔
+////                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1000,1500));
+////                } catch (InterruptedException ignored) {
+////                }
+//
+//                InventoryRequest inventoryRequest = new InventoryRequest();
+//                inventoryRequest.setGoodsNo((String) goodsNo);
+//                inventoryRequest.setUserId(String.valueOf(finalI));
+//                inventoryRequest.setOrderId(String.valueOf(finalI));
+//                inventoryRequest.setCount(1);
+////                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
 //                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
-                if (response.success()) {
-                    log.info("扣减库存 成功");
-                    success.incrementAndGet();
-                } else {
-                    log.info("扣减库存 失败 〒_〒");
-                    fail.incrementAndGet();
-                }
-            });
-        }
+//                if (response.success()) {
+//                    log.info("扣减库存 成功");
+//                    success.incrementAndGet();
+//                } else {
+//                    log.info("扣减库存 失败 〒_〒");
+//                    fail.incrementAndGet();
+//                }
+//            });
+//            ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
 
-        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+            InventoryRequest inventoryRequest = new InventoryRequest();
+            inventoryRequest.setGoodsNo((String) goodsNo);
+            inventoryRequest.setUserId(String.valueOf(finalI));
+            inventoryRequest.setOrderId(String.valueOf(finalI));
+            inventoryRequest.setCount(1);
+//            SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+            SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
+            if (response.success()) {
+                log.info("扣减库存 成功");
+                success.incrementAndGet();
+            } else {
+                log.info("扣减库存 失败 〒_〒");
+                fail.incrementAndGet();
+            }
+        }
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 
         log.info("success: " + success);
         log.info("fail: " + fail);
-
     }
+
 
     @Override
     public void multiThread() {

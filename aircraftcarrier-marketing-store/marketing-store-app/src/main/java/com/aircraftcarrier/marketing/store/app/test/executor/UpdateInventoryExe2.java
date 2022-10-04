@@ -14,7 +14,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,12 +54,17 @@ public class UpdateInventoryExe2 {
     /**
      * 2 threads
      */
-    private static final ThreadPoolExecutor THREAD_POOL_OFFER = ThreadPoolUtil.newDefaultThreadPool("offer");
+    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(1, "merge");
 
     /**
-     * 2 threads
+     * 批量处理 可配置
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(2, "merge");
+    private final int batchSize = 500;
+
+    /**
+     * waitTimeout 可配置
+     */
+    private final long waitTimeout = 20;
 
     /**
      * REQUEST_QUEUE
@@ -73,66 +77,90 @@ public class UpdateInventoryExe2 {
     @Resource
     ProductGateway productGateway;
 
+    @PostConstruct
+    private void init() {
+        init1();
+    }
+
     /**
      * init
      * https://developer.aliyun.com/article/856163
      * https://github.com/trunks2008/RequestMerge
      */
-    @PostConstruct
     private void init1() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-
+            List<PromiseRequest> batchList = new ArrayList<>(batchSize);
+            // empty wait put...
             int size = REQUEST_QUEUE.size();
-            if (size == 0) {
-                log.debug("wait add...");
+            if (size < 1) {
+                log.debug("wait put...");
+                PromiseRequest firstRequest;
                 try {
+                    firstRequest = REQUEST_QUEUE.take();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                batchList.add(firstRequest);
+                size = REQUEST_QUEUE.size();
+            }
+
+            // 批量太少，等待200毫秒超时(参考Kafka)
+            if (size + batchList.size() < batchSize) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(waitTimeout);
+                } catch (InterruptedException ignored) {
+                }
+                size = REQUEST_QUEUE.size();
+            }
+            size = Math.min(size, batchList.size() > 0 ? batchSize - 1 : batchSize);
+
+            // 处理逻辑
+            try {
+                for (int i = 0; i < size; i++) {
+                    PromiseRequest request = REQUEST_QUEUE.poll();
+                    batchList.add(request);
+                }
+                System.out.println("批量处理了" + batchList.size() + "条请求");
+
+                Integer totalDeductionNum = 0;
+                for (PromiseRequest request : batchList) {
+                    totalDeductionNum += request.getInventoryRequest().getCount();
+                }
+
+//                // 模拟扣库存
+//                try {
+//                    TimeUnit.MILLISECONDS.sleep(100);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                //返回请求
+//                for (PromiseRequest request : batchList) {
+//                    request.future.completeAsync(SingleResponse.ok());
+//                }
+
+                SingleResponse<Void> batchResponse = productGateway.deductionInventory(batchList.get(0).getInventoryRequest().getGoodsNo(), totalDeductionNum);
+                if (batchResponse.success()) {
+                    //返回请求
+                    for (PromiseRequest request : batchList) {
+                        request.future.completeAsync(() -> batchResponse);
+                    }
+                } else {
+                    // 退化为 二分法 ==》 再到for循环 继续扣减
+                    log.info("for size: {}", batchList.size());
+                    for (PromiseRequest request : batchList) {
+                        SingleResponse<Void> perResponse = productGateway.deductionInventory(batchList.get(0).getInventoryRequest().getGoodsNo(), request.getInventoryRequest().getCount());
+                        request.future.completeAsync(() -> perResponse);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("mergeThread error: ", e);
+                try {
+                    // 死循环避免cpu飙升，发送告警
                     TimeUnit.MILLISECONDS.sleep(1000);
                 } catch (InterruptedException ignored) {
                 }
-                return;
-            }
-
-            List<PromiseRequest> requests = new ArrayList<>(size);
-            for (int i = 0; i < size; i++) {
-                PromiseRequest request = REQUEST_QUEUE.poll();
-                requests.add(request);
-            }
-            System.out.println("批量处理了" + size + "条请求");
-
-            Integer totalDeductionNum = 0;
-            for (PromiseRequest request : requests) {
-                totalDeductionNum += request.getInventoryRequest().getCount();
-            }
-
-//            // 模拟扣库存
-//            try {
-//                TimeUnit.MILLISECONDS.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            //返回请求
-//            for (PromiseRequest request : requests) {
-//                request.future.complete(SingleResponse.ok());
-//            }
-
-            SingleResponse<Void> response = productGateway.deductionInventory(requests.get(0).getInventoryRequest().getGoodsNo(), totalDeductionNum);
-            if (response.success()) {
-                //返回请求
-                for (PromiseRequest request : requests) {
-                    request.future.completeAsync(() -> response);
-                }
-            } else {
-                // 退化为 二分法 ==》 再到for循环 继续扣减
-                for (PromiseRequest request : requests) {
-                    request.future.completeAsync(() -> response);
-                }
-            }
-
-            // 等待 offer
-            try {
-                TimeUnit.MILLISECONDS.sleep(1);
-            } catch (InterruptedException ignored) {
             }
         }, 0, 1, TimeUnit.MILLISECONDS);
     }
@@ -141,73 +169,82 @@ public class UpdateInventoryExe2 {
     /**
      * init
      */
-//    @PostConstruct
     private void init2() {
-        Object lock = new Object();
-        // list
-        List<PromiseRequest> batchList = new ArrayList<>(50000);
-
-        // takeThread 获取用户请求
-        THREAD_POOL.execute(() -> {
-            while (true) {
-                try {
-                    // take
-                    final PromiseRequest request = REQUEST_QUEUE.take();
-                    //  add
-                    synchronized (lock) {
-                        batchList.add(request);
-                    }
-                } catch (Exception e) {
-                    log.error("takeThread error: ", e);
-                }
-            }
-        });
-
         // mergeThread 合并用户请求
         THREAD_POOL.execute(() -> {
             while (true) {
-                try {
-                    if (batchList.size() > 0) {
-                        synchronized (lock) {
-                            log.info("merge size: {}", batchList.size());
-//                            // 模拟扣库存
-//                            try {
-//                                TimeUnit.MILLISECONDS.sleep(100);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                            //返回请求
-//                            for (PromiseRequest request : batchList) {
-//                                request.future.complete(SingleResponse.ok());
-//                            }
-
-                            String goodsNo = batchList.get(0).getInventoryRequest().getGoodsNo();
-                            int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
-                            SingleResponse<Void> response = productGateway.deductionInventory(goodsNo, totalDeductionNum);
-                            if (response.success()) {
-                                //返回请求
-                                for (PromiseRequest request : batchList) {
-                                    request.future.completeAsync(() -> response);
-                                }
-                            } else {
-                                // 退化为 二分法 ==》 再到for循环 继续扣减
-                                for (PromiseRequest request : batchList) {
-                                    request.future.completeAsync(() -> response);
-                                }
-                            }
-
-                            batchList.clear();
-                        }
-                        log.debug("wait add...");
-                        TimeUnit.MILLISECONDS.sleep(1);
-                    } else {
-                        log.debug("wait merge...");
-                        TimeUnit.MILLISECONDS.sleep(1000);
+                List<PromiseRequest> batchList = new ArrayList<>(batchSize);
+                // empty wait put...
+                int size = REQUEST_QUEUE.size();
+                if (size < 1) {
+                    log.debug("wait put...");
+                    PromiseRequest firstRequest;
+                    try {
+                        firstRequest = REQUEST_QUEUE.take();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        return;
                     }
+                    batchList.add(firstRequest);
+                    size = REQUEST_QUEUE.size();
+                }
+
+                // 批量太少，等待200毫秒超时(参考Kafka)
+                if (size + batchList.size() < batchSize) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(waitTimeout);
+                    } catch (InterruptedException ignored) {
+                    }
+                    size = REQUEST_QUEUE.size();
+                }
+                size = Math.min(size, batchList.size() > 0 ? batchSize - 1 : batchSize);
+
+                // 处理逻辑
+                try {
+                    for (int i = 0; i < size; i++) {
+                        PromiseRequest request = REQUEST_QUEUE.poll();
+                        batchList.add(request);
+                    }
+                    log.info("merge size: {}", batchList.size());
+
+//                    // 模拟扣库存
+//                    try {
+//                        TimeUnit.MILLISECONDS.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    //返回请求
+//                    for (PromiseRequest request : batchList) {
+//                        request.future.completeAsync(SingleResponse.ok());
+//                    }
+
+                    String goodsNo = batchList.get(0).getInventoryRequest().getGoodsNo();
+                    int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
+                    SingleResponse<Void> batchResponse = productGateway.deductionInventory(goodsNo, totalDeductionNum);
+                    if (batchResponse.success()) {
+                        //返回请求
+                        for (PromiseRequest request : batchList) {
+                            request.future.completeAsync(() -> batchResponse);
+                        }
+                    } else {
+                        // 退化为 二分法 ==》 再到for循环 继续扣减
+                        log.info("for size: {}", batchList.size());
+                        for (PromiseRequest request : batchList) {
+                            SingleResponse<Void> perResponse = productGateway.deductionInventory(goodsNo, request.getInventoryRequest().getCount());
+                            request.future.completeAsync(() -> perResponse);
+                        }
+                    }
+
                 } catch (Exception e) {
                     log.error("mergeThread error: ", e);
+                    try {
+                        // 死循环避免cpu飙升，发送告警
+                        TimeUnit.MILLISECONDS.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
+
         });
     }
 
@@ -215,25 +252,40 @@ public class UpdateInventoryExe2 {
     /**
      * deductionInventory
      */
-    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) throws InterruptedException, ExecutionException {
+    public SingleResponse<Void> deductionInventory(InventoryRequest inventoryRequest) {
         Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
         if (stock != null) {
             log.error("库存不足了哦");
             return SingleResponse.error("库存不足了哦");
         }
 
+//        return productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
+
         PromiseRequest request = new PromiseRequest();
         request.setInventoryRequest(inventoryRequest);
         CompletableFuture<SingleResponse<Void>> future = new CompletableFuture<>();
         request.setFuture(future);
 
-        boolean enqueueSuccess = REQUEST_QUEUE.offer(request, 100, TimeUnit.MILLISECONDS);
-        if (!enqueueSuccess) {
+        try {
+            boolean enqueueSuccess = REQUEST_QUEUE.offer(request, 100, TimeUnit.MILLISECONDS);
+            if (!enqueueSuccess) {
+                log.error("系统繁忙");
+                return SingleResponse.error("系统繁忙");
+            }
+        } catch (InterruptedException e) {
+            log.error("系统繁忙", e);
             return SingleResponse.error("系统繁忙");
         }
 
-        return future.get();
-        // 如果不同步获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
+        try {
+            return future.get();
+        } catch (Exception e) {
+            // 库存是否回滚
+            log.error("系统异常", e);
+            return SingleResponse.error("系统繁忙");
+        }
+
+//        // 如果不同步获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
 //        return SingleResponse.error("get 〒_〒");
     }
 
