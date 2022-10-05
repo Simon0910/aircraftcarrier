@@ -166,6 +166,12 @@ public class UpdateInventoryExe2 {
                 }
             } catch (Exception e) {
                 log.error("mergeThread error: ", e);
+
+                //返回请求
+                for (PromiseRequest request : batchList) {
+                    request.future.completeAsync(() -> SingleResponse.error("处理异常"));
+                }
+
                 try {
                     // 死循环避免cpu飙升，发送告警
                     TimeUnit.MILLISECONDS.sleep(1000);
@@ -253,11 +259,19 @@ public class UpdateInventoryExe2 {
 
                 } catch (Exception e) {
                     log.error("mergeThread error: ", e);
+
+                    //返回请求
+                    for (PromiseRequest request : batchList) {
+                        request.future.completeAsync(() -> SingleResponse.error("处理异常"));
+                    }
+
                     try {
                         // 死循环避免cpu飙升，发送告警
                         TimeUnit.MILLISECONDS.sleep(1000);
                     } catch (InterruptedException ignored) {
                     }
+
+
                 }
             }
 
