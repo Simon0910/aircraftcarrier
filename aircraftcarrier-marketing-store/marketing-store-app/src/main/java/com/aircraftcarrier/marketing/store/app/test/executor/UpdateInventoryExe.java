@@ -137,8 +137,9 @@ public class UpdateInventoryExe {
                             needSignal = false;
                         }
                     } catch (InterruptedException ignored) {
+                    } finally {
+                        takeLock.unlock();
                     }
-                    takeLock.unlock();
                     log.info("wake up...");
                 }
 
@@ -256,7 +257,7 @@ public class UpdateInventoryExe {
     }
 
     @Data
-    class RequestPromise {
+    static class RequestPromise {
         private InventoryRequest inventoryRequest;
         private CompletableFuture<SingleResponse<Void>> future;
 

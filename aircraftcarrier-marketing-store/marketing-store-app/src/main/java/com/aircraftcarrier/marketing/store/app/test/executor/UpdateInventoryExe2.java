@@ -324,7 +324,7 @@ public class UpdateInventoryExe2 {
      * 封装请求
      */
     @Data
-    class PromiseRequest {
+    static class PromiseRequest {
         InventoryRequest inventoryRequest;
         CompletableFuture<SingleResponse<Void>> future;
     }
