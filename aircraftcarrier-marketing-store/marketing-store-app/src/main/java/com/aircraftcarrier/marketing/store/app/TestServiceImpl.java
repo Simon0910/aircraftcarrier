@@ -207,8 +207,8 @@ public class TestServiceImpl implements TestService {
 //                inventoryRequest.setUserId(String.valueOf(finalI));
 //                inventoryRequest.setOrderId(String.valueOf(finalI));
 //                inventoryRequest.setCount(1);
-////                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
-//                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
+//                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+////                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
 //                if (response.success()) {
 //                    log.info("扣减库存 成功");
 //                    success.incrementAndGet();
@@ -231,9 +231,10 @@ public class TestServiceImpl implements TestService {
                 log.info("扣减库存 失败 〒_〒");
                 fail.incrementAndGet();
             }
+
         }
 
-//        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 

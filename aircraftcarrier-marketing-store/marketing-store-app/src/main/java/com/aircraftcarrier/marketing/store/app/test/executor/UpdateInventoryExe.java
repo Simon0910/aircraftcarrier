@@ -133,7 +133,9 @@ public class UpdateInventoryExe {
                             needSignal = true;
                             notEmpty.await();
                         }
-                        needSignal = false;
+                        if (needSignal) {
+                            needSignal = false;
+                        }
                     } catch (InterruptedException ignored) {
                     }
                     takeLock.unlock();
