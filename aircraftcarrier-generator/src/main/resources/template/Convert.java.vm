@@ -9,4 +9,19 @@ package ${cfg.Convert_p};
  */
 public class ${cfg.Convert_n} {
 
+    private ${cfg.Convert_n}() {
+    }
+
+    /**
+     * 举个栗子
+     * convertDifference
+     *
+     * @param source source
+     * @param target target
+     * @return target
+     */
+    public static <S, T> T convertDifference(S source, T target) {
+        // source.setSss(target.getTtt))
+        return target;
+    }
 }
