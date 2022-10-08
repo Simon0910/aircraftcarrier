@@ -392,7 +392,7 @@ public class GeneratorStart {
                 // ==============================Cmd End===========================================
 
                 // ==============================Exe Start===========================================
-                , new FileOutConfig(templatePath + "Convert.java.vm", parentPath + appGroupConvert, "Convert", "Convert") {
+                , new FileOutConfig(templatePath + "Convert.java.vm", parentPath + appGroupConvert, "Convert", "ToXxxConvert") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称

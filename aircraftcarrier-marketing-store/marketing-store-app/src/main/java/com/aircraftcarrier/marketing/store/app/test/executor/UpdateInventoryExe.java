@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 并发扣库存
@@ -48,15 +50,33 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class UpdateInventoryExe {
+
     /**
-     * 2 threads
+     * capacity
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(2, "merge");
+    private static final int CAPACITY = 50000;
 
     /**
      * REQUEST_QUEUE
      */
-    private static final LinkedBlockingQueue<RequestPromise> REQUEST_QUEUE = new LinkedBlockingQueue<>(50000);
+    private static final LinkedBlockingQueue<RequestPromise> REQUEST_QUEUE = new LinkedBlockingQueue<>(CAPACITY);
+
+    /**
+     * 2 threads
+     */
+    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(2, "merge");
+    /**
+     * 批量处理 可配置
+     */
+    private final int batchSize = 500;
+    /**
+     * waitTimeout 可配置
+     */
+    private final long waitTimeout = 20;
+    /**
+     * needSignal
+     */
+    private volatile boolean needSignal = true;
 
     /**
      * ProductGateway
@@ -69,19 +89,31 @@ public class UpdateInventoryExe {
      */
     @PostConstruct
     private void init() {
+        final ReentrantLock takeLock = new ReentrantLock();
+        final Condition notEmpty = takeLock.newCondition();
+
         Object lock = new Object();
         // list
-        List<RequestPromise> batchList = new ArrayList<>(50000);
+        List<RequestPromise> batchList = new ArrayList<>(CAPACITY);
 
         // takeThread 获取用户请求
         THREAD_POOL.execute(() -> {
             while (true) {
                 try {
                     // take
-                    final RequestPromise requestPromise = REQUEST_QUEUE.take();
+                    RequestPromise requestPromise = REQUEST_QUEUE.take();
                     //  add
                     synchronized (lock) {
                         batchList.add(requestPromise);
+                    }
+                    // signal
+                    if (needSignal) {
+                        takeLock.lock();
+                        try {
+                            notEmpty.signal();
+                        } finally {
+                            takeLock.unlock();
+                        }
                     }
                 } catch (Exception e) {
                     log.error("takeThread error: ", e);
@@ -93,18 +125,34 @@ public class UpdateInventoryExe {
         THREAD_POOL.execute(() -> {
             while (true) {
                 // wait put...
-                int size = batchList.size();
-                if (size < 1) {
-                    log.debug("wait put...");
+                if (batchList.size() < 1) {
+                    log.info("wait put...");
+                    takeLock.lock();
                     try {
-                        TimeUnit.MILLISECONDS.sleep(500);
+                        while (batchList.size() < 1) {
+                            needSignal = true;
+                            notEmpty.await();
+                            needSignal = false;
+                            log.info("wake up...");
+                        }
                     } catch (InterruptedException ignored) {
+                    } finally {
+                        takeLock.unlock();
                     }
-                    continue;
+                    log.info("go on...");
                 }
 
-                try {
-                    synchronized (lock) {
+                // 批量太少，等待200毫秒超时(参考Kafka)
+                if (batchList.size() < batchSize) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(waitTimeout);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+
+                // 处理逻辑
+                synchronized (lock) {
+                    try {
                         log.info("merge size: {}", batchList.size());
 
 //                        // 模拟扣库存
@@ -135,23 +183,30 @@ public class UpdateInventoryExe {
                             }
                         }
 
+                    } catch (Throwable e) {
+                        log.error("mergeThread error: ", e);
+
+                        //返回请求
+                        for (RequestPromise request : batchList) {
+                            request.getFuture().completeAsync(() -> SingleResponse.error("处理异常"));
+                        }
+
+                        try {
+                            // 死循环避免cpu飙升，发送告警
+                            TimeUnit.MILLISECONDS.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                        }
+                    } finally {
                         batchList.clear();
-                    }
-                } catch (Exception e) {
-                    log.error("mergeThread error: ", e);
-                    try {
-                        // 死循环避免cpu飙升，发送告警
-                        TimeUnit.MILLISECONDS.sleep(1000);
-                    } catch (InterruptedException ignored) {
                     }
                 }
 
+                // wait add..，避免wait put...
                 try {
-                    // 释放锁，等待add
-                    log.debug("wait add...");
                     TimeUnit.MILLISECONDS.sleep(1);
                 } catch (InterruptedException ignored) {
                 }
+
             }
         });
     }
@@ -200,20 +255,21 @@ public class UpdateInventoryExe {
         try {
             return future.get();
         } catch (Exception e) {
+            // 库存是否回滚
             log.error("系统异常", e);
             return SingleResponse.error("系统繁忙");
         }
 //        // 如果不获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
 //        return SingleResponse.error("get 〒_〒");
     }
-}
 
-@Data
-class RequestPromise {
-    private InventoryRequest inventoryRequest;
-    private CompletableFuture<SingleResponse<Void>> future;
+    @Data
+    static class RequestPromise {
+        private InventoryRequest inventoryRequest;
+        private CompletableFuture<SingleResponse<Void>> future;
 
-    public RequestPromise(InventoryRequest inventoryRequest) {
-        this.inventoryRequest = inventoryRequest;
+        public RequestPromise(InventoryRequest inventoryRequest) {
+            this.inventoryRequest = inventoryRequest;
+        }
     }
 }

@@ -73,15 +73,10 @@ public class ProductGatewayImpl implements ProductGateway {
 
     @Override
     public SingleResponse<Void> deductionInventory(Serializable goodsNo, Integer deductionNum) {
-        try {
-            if (deductionNum < 1) {
-                throw new SysException("deductionNum must be more than 0");
-            }
-            return updateInventory(goodsNo, -deductionNum);
-        } catch (Throwable t) {
-            log.error("扣库存系统异常：", t);
-            return SingleResponse.error("扣库存系统异常");
+        if (deductionNum < 1) {
+            throw new SysException("deductionNum must be more than 0");
         }
+        return updateInventory(goodsNo, -deductionNum);
     }
 
     private SingleResponse<Void> updateInventory(Serializable goodsNo, Integer appendInventory) {

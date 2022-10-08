@@ -2,13 +2,14 @@ package com.aircraftcarrier.framework.data;
 
 import cn.hutool.core.util.PageUtil;
 import com.aircraftcarrier.framework.data.core.MybatisBaseMapper;
+import com.aircraftcarrier.framework.exception.ErrorCode;
+import com.aircraftcarrier.framework.exception.ToolException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.BoundSqlInterceptor;
 import com.github.pagehelper.ISelect;
 import com.github.pagehelper.PageSerializable;
 import com.github.pagehelper.page.PageMethod;
 import com.github.pagehelper.util.MetaObjectUtil;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
@@ -254,11 +255,16 @@ public class MybatisBatchUtil {
             this.id = id;
         }
 
-        @SneakyThrows
         @Override
         public BoundSql boundSql(Type type, BoundSql boundSql, CacheKey cacheKey, Chain chain) {
             if (type == Type.PAGE_SQL) {
-                String sql = handleSql(boundSql);
+                String sql;
+                try {
+                    sql = handleSql(boundSql);
+                } catch (JSQLParserException e) {
+                    log.error("handleSql(boundSql) error: ", e);
+                    throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, "handleSql(boundSql) error");
+                }
                 MetaObject metaObject = MetaObjectUtil.forObject(boundSql);
                 metaObject.setValue("sql", sql);
             }
