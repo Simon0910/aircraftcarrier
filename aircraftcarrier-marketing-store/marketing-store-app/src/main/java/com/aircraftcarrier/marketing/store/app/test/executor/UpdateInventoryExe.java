@@ -151,8 +151,9 @@ public class UpdateInventoryExe {
                     }
                 }
 
-                try {
-                    synchronized (lock) {
+                // 处理逻辑
+                synchronized (lock) {
+                    try {
                         log.info("merge size: {}", batchList.size());
 
 //                        // 模拟扣库存
@@ -183,20 +184,21 @@ public class UpdateInventoryExe {
                             }
                         }
 
+                    } catch (Throwable e) {
+                        log.error("mergeThread error: ", e);
+
+                        //返回请求
+                        for (RequestPromise request : batchList) {
+                            request.getFuture().completeAsync(() -> SingleResponse.error("处理异常"));
+                        }
+
+                        try {
+                            // 死循环避免cpu飙升，发送告警
+                            TimeUnit.MILLISECONDS.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                        }
+                    } finally {
                         batchList.clear();
-                    }
-                } catch (Exception e) {
-                    log.error("mergeThread error: ", e);
-
-                    //返回请求
-                    for (RequestPromise request : batchList) {
-                        request.getFuture().completeAsync(() -> SingleResponse.error("处理异常"));
-                    }
-
-                    try {
-                        // 死循环避免cpu飙升，发送告警
-                        TimeUnit.MILLISECONDS.sleep(1000);
-                    } catch (InterruptedException ignored) {
                     }
                 }
 
