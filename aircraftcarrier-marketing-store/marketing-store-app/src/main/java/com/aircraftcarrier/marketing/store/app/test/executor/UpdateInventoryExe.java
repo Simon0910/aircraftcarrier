@@ -105,14 +105,14 @@ public class UpdateInventoryExe {
                     //  add
                     synchronized (lock) {
                         batchList.add(requestPromise);
-
-                        if (needSignal) {
-                            takeLock.lock();
-                            try {
-                                notEmpty.signal();
-                            } finally {
-                                takeLock.unlock();
-                            }
+                    }
+                    // signal
+                    if (needSignal) {
+                        takeLock.lock();
+                        try {
+                            notEmpty.signal();
+                        } finally {
+                            takeLock.unlock();
                         }
                     }
                 } catch (Exception e) {
@@ -132,15 +132,14 @@ public class UpdateInventoryExe {
                         while (batchList.size() < 1) {
                             needSignal = true;
                             notEmpty.await();
-                        }
-                        if (needSignal) {
                             needSignal = false;
+                            log.info("wake up...");
                         }
                     } catch (InterruptedException ignored) {
                     } finally {
                         takeLock.unlock();
                     }
-                    log.info("wake up...");
+                    log.info("go on...");
                 }
 
                 // 批量太少，等待200毫秒超时(参考Kafka)
@@ -200,6 +199,12 @@ public class UpdateInventoryExe {
                     } finally {
                         batchList.clear();
                     }
+                }
+
+                // wait add..，避免wait put...
+                try {
+                    TimeUnit.MILLISECONDS.sleep(1);
+                } catch (InterruptedException ignored) {
                 }
 
             }

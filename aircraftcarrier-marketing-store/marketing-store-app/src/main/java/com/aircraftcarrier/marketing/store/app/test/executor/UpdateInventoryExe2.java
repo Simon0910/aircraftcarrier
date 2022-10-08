@@ -164,7 +164,7 @@ public class UpdateInventoryExe2 {
                         request.future.completeAsync(() -> perResponse);
                     }
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("mergeThread error: ", e);
 
                 //返回请求
@@ -257,7 +257,7 @@ public class UpdateInventoryExe2 {
                         }
                     }
 
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     log.error("mergeThread error: ", e);
 
                     //返回请求
