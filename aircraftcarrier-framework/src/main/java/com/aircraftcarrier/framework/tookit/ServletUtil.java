@@ -33,7 +33,7 @@ public class ServletUtil {
      */
     @Deprecated
     public static void writeJSON(HttpServletResponse response, Object object) {
-        String content = JsonUtil.obj2Json(object);
+        String content = JsonUtil.toJson(object);
         cn.hutool.extra.servlet.ServletUtil.write(response, content, MediaType.APPLICATION_JSON_VALUE);
     }
 

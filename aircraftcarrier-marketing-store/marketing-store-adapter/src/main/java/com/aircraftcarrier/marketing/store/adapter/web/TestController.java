@@ -76,12 +76,12 @@ public class TestController {
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {
         LoginUser loginUser = LoginUserUtil.getLoginUser();
-        log.info("LoginUser：{}", JsonUtil.obj2Json(loginUser));
+        log.info("LoginUser：{}", JsonUtil.toJson(loginUser));
 
         new Thread(new MdcRunnableDecorator(() -> {
             log.info("1-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
-            log.info("1-LoginUser：{}", JsonUtil.obj2Json(loginUser1));
+            log.info("1-LoginUser：{}", JsonUtil.toJson(loginUser1));
         })).start();
 
         testService.publishEvent();
@@ -89,7 +89,7 @@ public class TestController {
         threadPoolExecutor.execute(() -> {
             log.info("2-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
-            log.info("2-LoginUser：{}", JsonUtil.obj2Json(loginUser2));
+            log.info("2-LoginUser：{}", JsonUtil.toJson(loginUser2));
         });
 
         return SingleResponse.ok(null);

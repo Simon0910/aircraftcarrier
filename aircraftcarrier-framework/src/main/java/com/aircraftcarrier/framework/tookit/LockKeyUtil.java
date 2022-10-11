@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -21,12 +22,17 @@ public class LockKeyUtil {
 
     private static final Map<String, LockWrapper> LOCKS = MapUtil.newConcurrentHashMap(1024);
 
+    @NotNull
+    private static LockWrapper getLockWrapper(String key) {
+        return LOCKS.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
+    }
+
     public static void lock() {
         lock(DEFAULT_KEY);
     }
 
     public static void lock(String key) {
-        LockWrapper lockWrapper = LOCKS.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
+        LockWrapper lockWrapper = getLockWrapper(key);
         lockWrapper.lock.lock();
         lockWrapper.addThreadInQueue();
     }
@@ -36,7 +42,7 @@ public class LockKeyUtil {
     }
 
     public static boolean tryLock(String key) {
-        LockWrapper lockWrapper = LOCKS.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
+        LockWrapper lockWrapper = getLockWrapper(key);
         boolean b = lockWrapper.lock.tryLock();
         if (b) {
             lockWrapper.addThreadInQueue();
@@ -49,7 +55,7 @@ public class LockKeyUtil {
     }
 
     public static boolean tryLock(String key, long timeout, TimeUnit unit) throws InterruptedException {
-        LockWrapper lockWrapper = LOCKS.compute(key, (k, v) -> v == null ? new LockWrapper() : v);
+        LockWrapper lockWrapper = getLockWrapper(key);
         boolean b = lockWrapper.lock.tryLock(timeout, unit);
         if (b) {
             lockWrapper.addThreadInQueue();
