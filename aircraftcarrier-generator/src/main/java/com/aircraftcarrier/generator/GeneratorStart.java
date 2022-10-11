@@ -32,14 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author lzp
  */
 public class GeneratorStart {
+
+    private static String projectName = "marketing-store";
     private static String parent = "com.aircraftcarrier.marketing.store";
     private static final String entityPackage = "infrastructure.repository.dataobject";
-    private static final String commonProjectName = "marketing-store-common";
-    private static final String appProjectName = "marketing-store-app";
-    private static final String clientProjectName = "marketing-store-client";
-    private static final String controllerProjectName = "marketing-store-adapter";
-    private static final String domainProjectName = "marketing-store-domain";
-    private static final String infrastructureProjectName = "marketing-store-infrastructure";
     private static final String entitySupperClassName = "com.aircraftcarrier.framework.data.BaseDO";
     private static final String controllerSupperClassName = "";
     private static final String serviceSupperClassName = "";
@@ -68,10 +64,40 @@ public class GeneratorStart {
         GeneratorStart.outputDir = outputDir;
     }
 
+    public GeneratorStart projectName(String projectName) {
+        GeneratorStart.projectName = projectName;
+        return this;
+    }
+
     public GeneratorStart parent(String parent) {
         GeneratorStart.parent = parent;
         return this;
     }
+    
+    private static String getProjectModuleName(String moduleName) {
+        return projectName + "-" + moduleName;
+    }
+
+    private static String getProjectCommonModuleName() {
+        return getProjectModuleName("common");
+    }
+    private static String getProjectDomainModuleName() {
+        return getProjectModuleName("domain");
+    }
+    private static String getProjectInfrastructureModuleName() {
+        return getProjectModuleName("infrastructure");
+    }
+    private static String getProjectClientModuleName() {
+        return getProjectModuleName("client");
+    }
+    private static String getProjectAppModuleName() {
+        return getProjectModuleName("app");
+    }
+    private static String getProjectAdapterModuleName() {
+        return getProjectModuleName("adapter");
+    }
+
+    
 
     @NotNull
     private static StrategyConfig getStrategyConfig() {
@@ -223,7 +249,7 @@ public class GeneratorStart {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + commonProjectName + mavenPath + assembleClassName("", StringPool.DOT_JAVA);
+                        return rootPath + getProjectCommonModuleName() + mavenPath + assembleClassName("", StringPool.DOT_JAVA);
                     }
                 }
 
@@ -233,56 +259,56 @@ public class GeneratorStart {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectInfrastructureModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(xmlTemplate, xmlPath, "mapperXml", "") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + "/src/main/" + assembleClassName(tableInfo.getXmlName(), StringPool.DOT_XML);
+                        return rootPath + getProjectInfrastructureModuleName() + "/src/main/" + assembleClassName(tableInfo.getXmlName(), StringPool.DOT_XML);
                     }
                 }
                 , new FileOutConfig(mapperTemplate, parentPath + mapperPackage.replace(".", "/"), "mapper", "") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getMapperName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectInfrastructureModuleName() + mavenPath + assembleClassName(tableInfo.getMapperName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(mybatisPlusTemplate, parentPath + "infrastructure/mybatisplus", "MybatisPlus", "MybatisPlus") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectInfrastructureModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(gatewayImplTemplate, parentPath + "infrastructure/gateway", "GatewayImpl", "GatewayImpl") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectInfrastructureModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(repositoryTemplate, parentPath + "infrastructure/repository", "Repository", "Repository") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + infrastructureProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectInfrastructureModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "Entity.java.vm", parentPath + domainGroup, "Entity", "Entity") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + domainProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectDomainModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(gatewayTemplate, parentPath + "domain/gateway", "Gateway", "Gateway") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + domainProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectDomainModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 // ==============================Do End===========================================
@@ -292,28 +318,28 @@ public class GeneratorStart {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "Co.java.vm", parentPath + clientGroup + "/view", "Co", "VO") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "Export.java.vm", parentPath + clientGroup + "/excel/template", "Export", "Export") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "Import.java.vm", parentPath + clientGroup + "/excel/template", "Import", "Import") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 // ==============================Co End===========================================
@@ -323,70 +349,70 @@ public class GeneratorStart {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "GetByIdQry.java.vm", parentPath + clientGroup + "/request", "GetByIdQry", "GetByIdQry") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "DetailQry.java.vm", parentPath + clientGroup + "/request", "DetailQry", "DetailQry") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "ExportQry.java.vm", parentPath + clientGroup + "/request", "ExportQry", "ExportQry") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "ExportCmd.java.vm", parentPath + clientGroup + "/cmd", "ExportCmd", "ExportCmd") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "ImportCmd.java.vm", parentPath + clientGroup + "/cmd", "ImportCmd", "ImportCmd") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 /*, new FileOutConfig(templatePath + "CommonCmd.java.vm", parentPath + clientGroup, "CommonCmd") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), "CommonCmd", StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), "CommonCmd", StringPool.DOT_JAVA);
                     }
                 }*/
                 , new FileOutConfig(templatePath + "AddCmd.java.vm", parentPath + clientGroup + "/cmd", "AddCmd", "AddCmd") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "EditCmd.java.vm", parentPath + clientGroup + "/cmd", "EditCmd", "EditCmd") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "DeleteCmd.java.vm", parentPath + clientGroup + "/cmd", "DeleteCmd", "DeleteCmd") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 // ==============================Cmd End===========================================
@@ -396,63 +422,63 @@ public class GeneratorStart {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "PageQryExe.java.vm", parentPath + appGroup + "/query", "PageQryExe", "PageQryExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "DetailQryExe.java.vm", parentPath + appGroup + "/query", "DetailQryExe", "DetailQryExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "ExportCmdExe.java.vm", parentPath + appGroup + "/excel", "ExportCmdExe", "ExportCmdExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "AddCmdExe.java.vm", parentPath + appGroup, "AddCmdExe", "AddCmdExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "EditCmdExe.java.vm", parentPath + appGroup, "EditCmdExe", "EditCmdExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(templatePath + "DeleteCmdExe.java.vm", parentPath + appGroup, "DeleteCmdExe", "DeleteCmdExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
 //                , new FileOutConfig(templatePath + "ImportCmdExe.java.vm", parentPath + appGroup + "/excel", "ImportCmdExe", "ImportCmdExe") {
 //                    @Override
 //                    public String outputFile(TableInfo tableInfo) {
 //                        // 自定义输入文件名称
-//                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+//                        return rootPath + appProjectModuleName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
 //                    }
 //                }
                 , new FileOutConfig(templatePath + "ImportCmdExePlus.java.vm", parentPath + appGroup + "/excel", "ImportCmdExePlus", "ImportCmdExe") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
                 // ==============================Exe End===========================================
@@ -461,21 +487,21 @@ public class GeneratorStart {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getServiceName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectClientModuleName() + mavenPath + assembleClassName(tableInfo.getServiceName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(serviceImplTemplate, parentPath + "app", "serviceImpl", "") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + appProjectName + mavenPath + assembleClassName(tableInfo.getServiceImplName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAppModuleName() + mavenPath + assembleClassName(tableInfo.getServiceImplName(), StringPool.DOT_JAVA);
                     }
                 }
                 , new FileOutConfig(controllerTemplate, parentPath + "adapter/web", "controller", "") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
-                        return rootPath + controllerProjectName + mavenPath + assembleClassName(tableInfo.getControllerName(), StringPool.DOT_JAVA);
+                        return rootPath + getProjectAdapterModuleName() + mavenPath + assembleClassName(tableInfo.getControllerName(), StringPool.DOT_JAVA);
                     }
                 }
         );

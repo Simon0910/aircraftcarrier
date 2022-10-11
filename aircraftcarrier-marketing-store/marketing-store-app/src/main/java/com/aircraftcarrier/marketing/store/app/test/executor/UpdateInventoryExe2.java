@@ -262,7 +262,7 @@ public class UpdateInventoryExe2 {
 
                     //返回请求
                     for (PromiseRequest request : batchList) {
-                        request.future.completeAsync(() -> SingleResponse.error("处理异常"));
+                        request.future.completeAsync(() -> SingleResponse.error(e.getMessage()));
                     }
 
                     try {

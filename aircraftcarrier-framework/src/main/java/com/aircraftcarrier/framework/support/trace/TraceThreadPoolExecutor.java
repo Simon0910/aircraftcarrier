@@ -48,11 +48,11 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
             if (contextMap != null) {
                 // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
                 String traceId = contextMap.get(TraceIdUtil.TRACE_ID);
-                contextMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.generatorTraceId(), StringPool.UNDERSCORE));
+                contextMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.genUuid(), StringPool.UNDERSCORE));
                 MDC.setContextMap(contextMap);
             } else {
                 Map<String, String> newContextMap = new HashMap<>(16);
-                newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.generatorTraceId());
+                newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.genUuid());
                 MDC.setContextMap(newContextMap);
             }
             try {

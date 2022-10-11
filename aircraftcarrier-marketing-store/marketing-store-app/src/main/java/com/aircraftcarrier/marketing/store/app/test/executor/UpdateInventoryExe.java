@@ -188,7 +188,7 @@ public class UpdateInventoryExe {
 
                         //返回请求
                         for (RequestPromise request : batchList) {
-                            request.getFuture().completeAsync(() -> SingleResponse.error("处理异常"));
+                            request.getFuture().completeAsync(() -> SingleResponse.error(e.getMessage()));
                         }
 
                         try {

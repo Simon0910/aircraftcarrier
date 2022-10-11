@@ -38,10 +38,10 @@ public class TraceIdUtil {
      *
      * @return traceId
      */
-    public static String getTraceIdOrUUID() {
+    public static String getTraceIdOrUuid() {
         String traceId = getTraceId();
         if (traceId == null) {
-            traceId = generatorTraceId();
+            traceId = genUuid();
         }
         return traceId;
     }
@@ -52,12 +52,13 @@ public class TraceIdUtil {
      *
      * @return traceId
      */
-    public static String getTraceIdOrSettingUUID() {
+    public static String getTraceIdOrSetUuid() {
         String traceId = getTraceId();
-        if (traceId == null) {
-            setUUID();
+        if (traceId != null) {
+            return traceId;
         }
-        return traceId;
+        setTraceIdByUuid();
+        return getTraceId();
     }
 
     /**
@@ -66,15 +67,11 @@ public class TraceIdUtil {
      *
      * @return traceId
      */
-    public static String setUUID() {
-        String traceId = generatorTraceId();
-        setTraceId(traceId);
-        return traceId;
+    public static void setTraceIdByUuid() {
+        setTraceId(genUuid());
     }
 
-    public static String generatorTraceId() {
-        String traceId = UUID.randomUUID().toString().replace("-", "");
-        log.debug("generator traceId: 【{}】", traceId);
-        return traceId;
+    public static String genUuid() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 }

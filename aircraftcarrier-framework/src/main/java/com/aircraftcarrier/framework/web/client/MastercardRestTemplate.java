@@ -77,7 +77,7 @@ public class MastercardRestTemplate extends AbstractRestTemplate {
         if (httpHeaders == null) {
             httpHeaders = new HttpHeaders();
         }
-        String uuidFor32Bit = TraceIdUtil.generatorTraceId();
+        String uuidFor32Bit = TraceIdUtil.genUuid();
         httpHeaders.set("x-request-id", uuidFor32Bit);
         MediaType contentType = httpHeaders.getContentType();
         // ensuring a default content type

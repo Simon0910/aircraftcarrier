@@ -31,7 +31,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
             return traceId;
         }
 
-        traceId = TraceIdUtil.generatorTraceId();
+        traceId = TraceIdUtil.genUuid();
         log.debug("generatorTraceId: {}", traceId);
         return traceId;
     }

@@ -15,12 +15,14 @@ public class Main {
     private static final String PASSWORD = "12345678";
     private static final String AUTHOR = "lzp";
     private static final String[] TABLE_PREFIX = new String[]{"portal_", "farm_"};
-    private static final String OUTPUT_DIR = "/Users/zhipengliu/IdeaProjects/aircraftcarrier/aircraftcarrier-marketing-store";
-    private static final String PARENT = "com.aircraftcarrier.marketing.store";
+    private static final String OUTPUT_DIR = "/Users/zhipengliu/IdeaProjects/aircraftcarrier/aircraftcarrier-bpm";
+    private static final String PROJECT_NAME = "bpm";
+    private static final String PARENT = "com.aircraftcarrier.bpm";
 
 
     public static void main(String[] args) {
         GeneratorStart generatorStart = new GeneratorStart(URL, USERNAME, PASSWORD, AUTHOR, OUTPUT_DIR, TABLE_PREFIX);
+        generatorStart.projectName(PROJECT_NAME);
         generatorStart.parent(PARENT);
         generatorStart.moduleName("product")
                 .tables("product_details")

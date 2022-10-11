@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.aircraftcarrier</groupId>
+        <artifactId>aircraftcarrier-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../aircraftcarrier-parent</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>aircraftcarrier-bpm</artifactId>
+    <packaging>pom</packaging>
+    <name>Aircraft Carrier BPM</name>
+    <modules>
+        <module>bpm-common</module>
+        <module>bpm-domain</module>
+        <module>bpm-infrastructure</module>
+        <module>bpm-client</module>
+        <module>bpm-app</module>
+        <module>bpm-adapter</module>
+        <module>bpm-start</module>
+    </modules>
+</project>

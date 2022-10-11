@@ -18,6 +18,7 @@
         <module>aircraftcarrier-framework</module>
         <module>aircraftcarrier-marketing-store</module>
         <module>aircraftcarrier-generator</module>
+        <module>aircraftcarrier-bpm</module>
     </modules>
     <repositories>
         <!--阿里云仓库-->

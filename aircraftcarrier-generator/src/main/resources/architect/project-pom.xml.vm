@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.aircraftcarrier</groupId>
+        <artifactId>aircraftcarrier-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../aircraftcarrier-parent</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>aircraftcarrier-${projectName}</artifactId>
+    <packaging>pom</packaging>
+    <name>Aircraft Carrier ${projectName_U}</name>
+    <modules>
+        <module>${projectName}-common</module>
+        <module>${projectName}-domain</module>
+        <module>${projectName}-infrastructure</module>
+        <module>${projectName}-client</module>
+        <module>${projectName}-app</module>
+        <module>${projectName}-adapter</module>
+        <module>${projectName}-start</module>
+    </modules>
+</project>
