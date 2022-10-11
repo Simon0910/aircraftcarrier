@@ -17,13 +17,10 @@ import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
-import com.aircraftcarrier.marketing.store.domain.drools.KieTemplate;
-import com.aircraftcarrier.marketing.store.domain.drools.KieUtils;
 import com.aircraftcarrier.marketing.store.domain.event.AccountEvent;
 import com.aircraftcarrier.marketing.store.domain.model.test.Address;
 import com.aircraftcarrier.marketing.store.domain.model.test.Sale;
 import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
-import com.aircraftcarrier.marketing.store.infrastructure.config.reload.ReloadDroolsRules;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mybatisplus.DemoMybatisPlus;
@@ -65,10 +62,6 @@ public class TestServiceImpl implements TestService {
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
     private TransactionalExe transactionalExe;
-    @Resource
-    private KieTemplate kieTemplate;
-    @Resource
-    private ReloadDroolsRules reloadDroolsRules;
     @Resource
     DemoMapper demoMapper;
     @Resource
@@ -163,26 +156,6 @@ public class TestServiceImpl implements TestService {
         return "end";
     }
 
-    @Override
-    public void applyDiscount(Map<String, Object> params) {
-        Sale sale = BeanMapUtil.map2Obj(params, Sale.class);
-        kieTemplate.execute(sale);
-        log.info("执行规则后返回 sale: {}", JSON.toJSONString(sale));
-
-        Address address = BeanMapUtil.map2Obj(params, Address.class);
-        kieTemplate.execute(address);
-        log.info("执行规则后返回 address: {}", JSON.toJSONString(address));
-
-
-        KieUtils.updateToVersion(ReloadDroolsRules.content);
-
-        kieTemplate.execute(sale);
-        log.info("执行规则后返回 sale2: {}", JSON.toJSONString(sale));
-
-        kieTemplate.execute(address);
-        log.info("执行规则后返回 address2: {}", JSON.toJSONString(address));
-
-    }
 
     @Override
     public void deductionInventory(Serializable goodsNo) {

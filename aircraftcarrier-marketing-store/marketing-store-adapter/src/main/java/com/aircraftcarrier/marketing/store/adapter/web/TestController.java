@@ -127,14 +127,6 @@ public class TestController {
         return SingleResponse.ok();
     }
 
-    @ApiOperationSupport(order = 35)
-    @ApiOperation(value = "Drools规则引擎测试")
-    @PostMapping("/testDrools")
-    public SingleResponse<String> testDrools(@RequestBody Map<String, Object> params) {
-        testService.applyDiscount(params);
-        return SingleResponse.ok();
-    }
-
     @ApiOperationSupport(order = 36)
     @ApiOperation(value = "并发扣库存防止超卖")
     @GetMapping("/deductionInventory")
