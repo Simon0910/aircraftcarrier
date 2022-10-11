@@ -87,7 +87,7 @@ public class UpdateInventoryExe {
     /**
      * init
      */
-    @PostConstruct
+//    @PostConstruct
     private void init() {
         final ReentrantLock takeLock = new ReentrantLock();
         final Condition notEmpty = takeLock.newCondition();

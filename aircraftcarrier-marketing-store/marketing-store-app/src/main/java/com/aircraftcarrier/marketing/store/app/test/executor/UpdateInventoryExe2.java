@@ -53,7 +53,7 @@ public class UpdateInventoryExe2 {
     /**
      * threads
      */
-    private static final int N_THREADS = 2;
+    private static final int N_THREADS = 1;
 
     /**
      * Pool
@@ -95,7 +95,7 @@ public class UpdateInventoryExe2 {
      * https://github.com/trunks2008/RequestMerge
      */
     private void init1() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(N_THREADS);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             List<PromiseRequest> batchList = new ArrayList<>(batchSize);
             // empty wait put...
