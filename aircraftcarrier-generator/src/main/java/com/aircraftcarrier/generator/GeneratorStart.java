@@ -44,7 +44,7 @@ public class GeneratorStart {
     private static final String controllerSupperClassName = "";
     private static final String serviceSupperClassName = "";
     private static final String mapperSupperClassName = "com.aircraftcarrier.framework.data.core.MybatisBaseMapper";
-    private static final String entitySuffix = "Do";
+    private static final String entitySuffix = "DO";
     private static String moduleName;
     private static String[] tables;
     private static String URL;
@@ -288,14 +288,14 @@ public class GeneratorStart {
                 // ==============================Do End===========================================
 
                 // ==============================Co Start===========================================
-                , new FileOutConfig(templatePath + "PageCo.java.vm", parentPath + clientGroup + "/view", "PageCo", "PageVo") {
+                , new FileOutConfig(templatePath + "PageCo.java.vm", parentPath + clientGroup + "/view", "PageCo", "PageVO") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称
                         return rootPath + clientProjectName + mavenPath + assembleClassName(tableInfo.getOriginEntityName(), StringPool.DOT_JAVA);
                     }
                 }
-                , new FileOutConfig(templatePath + "Co.java.vm", parentPath + clientGroup + "/view", "Co", "Vo") {
+                , new FileOutConfig(templatePath + "Co.java.vm", parentPath + clientGroup + "/view", "Co", "VO") {
                     @Override
                     public String outputFile(TableInfo tableInfo) {
                         // 自定义输入文件名称

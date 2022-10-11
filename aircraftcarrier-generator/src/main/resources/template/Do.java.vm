@@ -3,6 +3,8 @@ package ${cfg.Do_p};
 import com.aircraftcarrier.framework.data.BaseDO;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,8 +23,8 @@ import java.time.LocalDateTime;
  * @since 1.0
  */
 #if(${entityLombokModel})
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
   #if(${chainModel})
 @Accessors(chain = true)
   #end
