@@ -1,8 +1,7 @@
-package com.demo.comletablefuture;
+package com.lzp.comletablefuture;
 
 import com.aircraftcarrier.framework.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;

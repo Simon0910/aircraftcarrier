@@ -1,6 +1,5 @@
-package com.demo.comletablefuture;
+package com.lzp.comletablefuture;
 
-import com.aircraftcarrier.framework.exception.SysException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
