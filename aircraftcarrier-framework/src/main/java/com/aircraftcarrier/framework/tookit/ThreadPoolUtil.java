@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.tookit;
 
+import cn.hutool.core.thread.ExecutorBuilder;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.ThreadException;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -81,34 +84,64 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 固定大小线程, 忽略其他请求
+     * 新增固定线程池 不需要队列（防止无限创建队列任务oom） 多余的请求直接丢弃
+     * <p>
+     * 使用场景：
+     * 1. newFixedThreadPool(1,"xxx-task"); // 开启一个后台监控任务
      */
-    public static TraceThreadPoolExecutor newFixedThreadPoolDiscardPolicy(int nThreads, String pooName) {
+    public static TraceThreadPoolExecutor newFixedThreadPool(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                new DefaultThreadFactory("discard-pool-" + pooName),
+                new DefaultThreadFactory("fix-discard-pool-" + pooName),
                 // 忽略其他请求
                 new ThreadPoolExecutor.DiscardPolicy());
     }
 
     /**
-     * 固定大小线程, 忽略其他请求, 没有任务自动回收所有线程
+     * 新建缓存线程池 固定线程大小(防止无限创建缓存线程oom) 多余的请求直接丢弃
+     * <p>
+     * 使用场景：
+     * 1. newCachedThreadPool(1,"refresh-token"); // 提前1小时，派一个线程取刷新token
      */
-    public static TraceThreadPoolExecutor newFixedThreadPoolDiscardPolicyRecycle(int nThreads, String pooName) {
-        TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(
+    public static TraceThreadPoolExecutor newCachedThreadPool(int nThreads, String pooName) {
+        return new TraceThreadPoolExecutor(
                 // 固定大小
-                nThreads, nThreads,
+                0, nThreads,
                 60L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                new DefaultThreadFactory("discard-recycle-pool-" + pooName),
+                new DefaultThreadFactory("cached-discard-pool-" + pooName),
                 // 忽略其他请求
                 new ThreadPoolExecutor.DiscardPolicy());
-        threadPool.allowCoreThreadTimeOut(true);
-        return threadPool;
     }
+
+    /**
+     * 新建单线程执行器 1个线程串行执行所有任务 50000队列任务（防止无限创建队列任务oom）多余的请求直接丢弃
+     * 使用场景：限流
+     */
+    public static ExecutorService newSingleThreadExecutor(String pooName) {
+        return ExecutorBuilder.create()
+                .setCorePoolSize(1)
+                .setMaxPoolSize(1)
+                .setKeepAliveTime(0L)
+                .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
+                .setWorkQueue(new LinkedBlockingQueue<Runnable>(50000))
+                .setThreadFactory(new DefaultThreadFactory("single-discard-pool-" + pooName))
+                .setHandler(new ThreadPoolExecutor.DiscardPolicy())
+                .buildFinalizable();
+    }
+
+    /**
+     * 新建工作窃取执行器
+     */
+    public static ExecutorService newWorkStealingPool() {
+        return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
+                        ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                        null, true);
+    }
+
 
     /**
      * executeVoid

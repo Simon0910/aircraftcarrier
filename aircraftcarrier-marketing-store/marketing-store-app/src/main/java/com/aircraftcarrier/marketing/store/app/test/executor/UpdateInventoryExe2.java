@@ -58,7 +58,7 @@ public class UpdateInventoryExe2 {
     /**
      * Pool
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(N_THREADS, "merge");
+    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(N_THREADS, "merge");
 
     /**
      * 批量处理 可配置
