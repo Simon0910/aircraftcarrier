@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.aircraftcarrier</groupId>
+        <artifactId>aircraftcarrier-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../aircraftcarrier-parent</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>aircraftcarrier-security</artifactId>
+    <packaging>pom</packaging>
+    <name>Aircraft Carrier Security</name>
+    <modules>
+        <module>security-common</module>
+        <module>security-domain</module>
+        <module>security-infrastructure</module>
+        <module>security-client</module>
+        <module>security-app</module>
+        <module>security-adapter</module>
+        <module>security-start</module>
+    </modules>
+</project>

@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.client;
+package com.aircraftcarrier.security.client;
 
 import com.aircraftcarrier.framework.security.core.service.SecurityAuthFrameworkService;
 

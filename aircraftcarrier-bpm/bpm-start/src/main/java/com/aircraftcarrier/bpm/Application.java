@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store;
+package com.aircraftcarrier.bpm;
 
 import com.aircraftcarrier.framework.tookit.LogTimeUtil;
 import com.aircraftcarrier.framework.web.LocalDateTimeSerializerConfig;
@@ -20,14 +20,14 @@ import org.springframework.context.annotation.PropertySource;
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @Import(LocalDateTimeSerializerConfig.class)
 @PropertySource(value = {
-        "project.properties",
-        "jdbc.properties",
-        "redis.properties"},
-        encoding = "utf-8")
-@SpringBootApplication(scanBasePackages = {"com.aircraftcarrier.marketing.store", "com.aircraftcarrier.security"}
+        "project.properties"
+//        ,"jdbc.properties"
+//        ,"redis.properties"
+}, encoding = "utf-8")
+@SpringBootApplication(scanBasePackages = {"com.aircraftcarrier.bpm", "com.aircraftcarrier.security"}
 //        , exclude = {SecurityAutoConfiguration.class}
 )
-@MapperScan("com.aircraftcarrier.marketing.store.infrastructure.repository")
+@MapperScan("com.aircraftcarrier.bpm.infrastructure.repository")
 public class Application {
 
     public static void main(String[] args) {

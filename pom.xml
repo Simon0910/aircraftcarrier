@@ -15,9 +15,10 @@
     <modules>
         <module>aircraftcarrier-dependencies</module>
         <module>aircraftcarrier-parent</module>
-        <module>aircraftcarrier-framework</module>
-        <module>aircraftcarrier-marketing-store</module>
         <module>aircraftcarrier-generator</module>
+        <module>aircraftcarrier-framework</module>
+        <module>aircraftcarrier-security</module>
+        <module>aircraftcarrier-marketing-store</module>
         <module>aircraftcarrier-bpm</module>
     </modules>
     <repositories>

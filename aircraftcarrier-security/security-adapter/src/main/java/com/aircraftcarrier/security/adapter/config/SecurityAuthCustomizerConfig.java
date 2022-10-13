@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.adapter.config;
+package com.aircraftcarrier.security.adapter.config;
 
 import com.aircraftcarrier.framework.security.core.service.SecurityAuthCustomizer;
 import com.aircraftcarrier.framework.web.WebProperties;

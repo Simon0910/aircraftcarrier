@@ -1,9 +1,9 @@
-package com.aircraftcarrier.marketing.store.app;
+package com.aircraftcarrier.security.app;
 
 import com.aircraftcarrier.framework.enums.StatusEnum;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.service.AbstractUsernamePasswordAuthentication;
-import com.aircraftcarrier.marketing.store.client.AuthService;
+import com.aircraftcarrier.security.client.AuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
