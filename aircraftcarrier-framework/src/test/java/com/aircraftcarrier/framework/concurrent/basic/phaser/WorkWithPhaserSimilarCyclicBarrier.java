@@ -5,6 +5,7 @@ import com.aircraftcarrier.framework.concurrent.MessageUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +18,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class WorkWithPhaserSimilarCyclicBarrier {
     public static void main(String[] args) throws InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(4);
+//        ExecutorService service = Executors.newFixedThreadPool(4);
+        ExecutorService service = ForkJoinPool.commonPool();
 
         Phaser phaser = new Phaser(3);
 

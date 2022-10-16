@@ -2,10 +2,14 @@ package com.aircraftcarrier.framework.concurrent.basic.phaser;
 
 import com.aircraftcarrier.framework.concurrent.BusyUtil;
 import com.aircraftcarrier.framework.concurrent.MessageUtil;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <a href="https://www.youtube.com/watch?v=Xro4KwoMNJ8&list=RDLVXro4KwoMNJ8&start_radio=1&rv=Xro4KwoMNJ8&t=885">...</a>
@@ -15,9 +19,17 @@ import java.util.concurrent.Phaser;
  * @date 2022/10/15
  * @since 1.0
  */
-public class WorkWithPhaserSimilar {
+public class WorkWithPhaser {
     public static void main(String[] args) {
-        ExecutorService service = Executors.newFixedThreadPool(4);
+//        ExecutorService service = Executors.newFixedThreadPool(4);
+        ExecutorService service = new ThreadPoolExecutor(
+                4, 4,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .build());
+//        ExecutorService service = ForkJoinPool.commonPool();
 
         Phaser phaser = new Phaser(1); // self-register
 
@@ -50,7 +62,10 @@ public class WorkWithPhaserSimilar {
 
         // shutdown
 //        service.shutdownNow();
-        service.shutdown();
+//        service.shutdown();
+
+        service.submit(new Service(phaser, "setDaemon"));
+        phaser.arriveAndAwaitAdvance();
     }
 
     public static class Service implements Runnable {
