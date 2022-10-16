@@ -3,8 +3,8 @@ package com.lzp.threadpool;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import org.junit.Test;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 类注释内容
@@ -18,7 +18,7 @@ public class ThreadPoolTest {
     /**
      * 只需要一个线程去刷新，多余的请求丢弃忽略
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newCachedThreadPool(1, "accessToken");
+    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newCachedThreadPool(1, "accessToken");
 
     @Test
     public void synchronousQueueTest() throws InterruptedException {

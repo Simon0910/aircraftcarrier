@@ -13,9 +13,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +36,6 @@ public class ThreadPoolUtil {
      * cpu
      */
     public static final int CORE_SIZE = Runtime.getRuntime().availableProcessors();
-
     /**
      * 核心线程数
      */
@@ -44,16 +45,10 @@ public class ThreadPoolUtil {
      * 线程池最大线程数
      */
     public static final int MAX_POOL_SIZE = CORE_SIZE * 4;
-
     /**
      * 线程空闲时间
      */
     public static final int KEEP_ALIVE_TIME = 60;
-
-    /**
-     * 默认
-     */
-    private static final TraceThreadPoolExecutor DEFAULT_THREAD_POOL = newDefaultThreadPool();
 
 
     /**
@@ -63,24 +58,12 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 全局默认, 50000队列，默认拒绝策略
+     * 默认
      */
-    public static TraceThreadPoolExecutor newDefaultThreadPool() {
-        return newDefaultThreadPool("common");
-    }
-
-    /**
-     * 全局默认, 50000队列，默认拒绝策略
-     */
-    public static TraceThreadPoolExecutor newDefaultThreadPool(String pooName) {
-        return new TraceThreadPoolExecutor(
-                // core, max
-                CORE_POOL_SIZE, MAX_POOL_SIZE,
-                // keepAliveTime
-                60, TimeUnit.SECONDS,
-                // Queue
-                new LinkedBlockingQueue<>(50000),
-                new DefaultThreadFactory("default-pool-" + pooName));
+    private static ExecutorService commonPool() {
+        return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                null, true);
     }
 
     /**
@@ -89,7 +72,7 @@ public class ThreadPoolUtil {
      * 使用场景：
      * 1. newFixedThreadPool(1,"xxx-task"); // 开启一个后台监控任务
      */
-    public static TraceThreadPoolExecutor newFixedThreadPool(int nThreads, String pooName) {
+    public static ExecutorService newFixedThreadPool(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 nThreads, nThreads,
@@ -106,7 +89,7 @@ public class ThreadPoolUtil {
      * 使用场景：
      * 1. newCachedThreadPool(1,"refresh-token"); // 提前1小时，派一个线程取刷新token
      */
-    public static TraceThreadPoolExecutor newCachedThreadPool(int nThreads, String pooName) {
+    public static ExecutorService newCachedThreadPool(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 0, nThreads,
@@ -122,10 +105,9 @@ public class ThreadPoolUtil {
      * 使用场景：限流
      */
     public static ExecutorService newSingleThreadExecutor(String pooName) {
+//        return Executors.newSingleThreadExecutor();
         return ExecutorBuilder.create()
-                .setCorePoolSize(1)
-                .setMaxPoolSize(1)
-                .setKeepAliveTime(0L)
+                .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new LinkedBlockingQueue<Runnable>(50000))
                 .setThreadFactory(new DefaultThreadFactory("single-discard-pool-" + pooName))
@@ -134,33 +116,77 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 新建工作窃取执行器
+     * newScheduledThreadPool
      */
-    public static ExecutorService newWorkStealingPool() {
-        return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
-                        ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-                        null, true);
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, String pooName) {
+        return Executors.newScheduledThreadPool(corePoolSize);
     }
 
+    /**
+     * 新建工作窃取执行器
+     */
+    public static ExecutorService newWorkStealingPool(String pooName) {
+        return Executors.newWorkStealingPool();
+    }
+
+    /**
+     * newSingleThreadScheduledExecutor
+     */
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor(String pooName) {
+        return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    /**
+     * newThreadPerTaskExecutor
+     */
+//    public static ExecutorService newThreadPerTaskExecutor(String pooName) {
+//        ThreadFactory threadFactory = ThreadFactoryBuilder
+//                .create()
+//                .setDaemon(true)
+//                .setNameFormat("newThreadPerTask-pool" + pooName + "-%d")
+//                .get();
+//        return Executors.newThreadPerTaskExecutor(threadFactory);
+//    }
+
+    /**
+     * newVirtualThreadPerTaskExecutor
+     */
+//    public static ExecutorService newVirtualThreadPerTaskExecutor(String pooName) {
+//        return Executors.newVirtualThreadPerTaskExecutor();
+//    }
 
     /**
      * executeVoid
      */
     public static void invokeVoid(CallableVoid callableVoid) {
-        invokeAllVoid(DEFAULT_THREAD_POOL, List.of(callableVoid));
+        invokeAllVoid(commonPool(), List.of(callableVoid));
+    }
+
+    /**
+     * executeVoid
+     */
+    public static void invokeVoid(ExecutorService executor, CallableVoid callableVoid) {
+        invokeAllVoid(executor, List.of(callableVoid));
     }
 
     /**
      * executeAllVoid
      */
-    public static void invokeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> asyncBatchTasks) {
-        invokeAllVoid(pool, asyncBatchTasks, false);
+    public static void invokeAllVoid(List<CallableVoid> asyncBatchTasks) {
+        invokeAllVoid(commonPool(), asyncBatchTasks, false);
+    }
+
+    /**
+     * executeAllVoid
+     */
+    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks) {
+        invokeAllVoid(executor, asyncBatchTasks, false);
     }
 
     /**
      * executeAllVoid ignoreFail
      */
-    public static void invokeAllVoid(ThreadPoolExecutor pool, List<CallableVoid> asyncBatchTasks, boolean ignoreFail) {
+    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks, boolean ignoreFail) {
         List<Callable<String>> callables = new ArrayList<>(asyncBatchTasks.size());
         for (CallableVoid task : asyncBatchTasks) {
             callables.add(() -> {
@@ -173,40 +199,47 @@ public class ThreadPoolUtil {
             });
         }
 
-        invokeAll(pool, callables, ignoreFail);
+        invokeAll(executor, callables, ignoreFail);
     }
 
     /**
      * execute
      */
     public static <T> T invoke(Callable<T> callable) {
-        List<T> list = invokeAll(DEFAULT_THREAD_POOL, List.of(callable));
+        List<T> list = invokeAll(commonPool(), List.of(callable));
         return list.get(0);
     }
 
     /**
      * execute
      */
-    public static <T> T invoke(ThreadPoolExecutor pool, Callable<T> callable) {
-        List<T> list = invokeAll(pool, List.of(callable));
+    public static <T> T invoke(ExecutorService executor, Callable<T> callable) {
+        List<T> list = invokeAll(executor, List.of(callable));
         return list.get(0);
     }
 
     /**
      * executeAll
      */
-    public static <T> List<T> invokeAll(ThreadPoolExecutor pool, List<Callable<T>> asyncBatchTasks) {
-        return invokeAll(pool, asyncBatchTasks, false);
+    public static <T> List<T> invokeAll(List<Callable<T>> asyncBatchTasks) {
+        return invokeAll(commonPool(), asyncBatchTasks, false);
+    }
+
+    /**
+     * executeAll
+     */
+    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> asyncBatchTasks) {
+        return invokeAll(executor, asyncBatchTasks, false);
     }
 
     /**
      * executeAll Ignore Fail
      */
-    public static <T> List<T> invokeAll(ThreadPoolExecutor pool, List<Callable<T>> asyncBatchTasks, boolean ignoreFail) {
+    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> asyncBatchTasks, boolean ignoreFail) {
         // 异步执行
         List<Future<T>> futures;
         try {
-            futures = pool.invokeAll(asyncBatchTasks);
+            futures = executor.invokeAll(asyncBatchTasks);
             // 等待批量任务执行完成。。。
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -244,12 +277,12 @@ public class ThreadPoolUtil {
         return resultList;
     }
 
-    public static Future<?> submit(ThreadPoolExecutor pool, Runnable task) {
-        return pool.submit(task);
+    public static Future<?> submit(ExecutorService executor, Runnable task) {
+        return executor.submit(task);
     }
 
-    public static <T> Future<T> submit(ThreadPoolExecutor pool, Callable<T> task) {
-        return pool.submit(task);
+    public static <T> Future<T> submit(ExecutorService executor, Callable<T> task) {
+        return executor.submit(task);
     }
 
 }

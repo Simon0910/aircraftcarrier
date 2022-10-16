@@ -14,10 +14,10 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,23 +58,19 @@ public class UpdateInventoryExe2 {
     /**
      * Pool
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(N_THREADS, "merge");
-
-    /**
-     * 批量处理 可配置
-     */
-    private final int batchSize = 500;
-
-    /**
-     * waitTimeout 可配置
-     */
-    private final long waitTimeout = 20;
-
+    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(N_THREADS, "merge");
     /**
      * REQUEST_QUEUE
      */
     private static final LinkedBlockingQueue<PromiseRequest> REQUEST_QUEUE = new LinkedBlockingQueue<>(50000);
-
+    /**
+     * 批量处理 可配置
+     */
+    private final int batchSize = 500;
+    /**
+     * waitTimeout 可配置
+     */
+    private final long waitTimeout = 20;
     /**
      * ProductGateway
      */

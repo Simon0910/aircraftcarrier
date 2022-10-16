@@ -13,8 +13,8 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,7 +63,7 @@ public class UpdateInventoryExe {
     /**
      * 2 threads
      */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(2, "merge");
+    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(2, "merge");
     /**
      * 批量处理 可配置
      */
@@ -73,15 +73,14 @@ public class UpdateInventoryExe {
      */
     private final long waitTimeout = 20;
     /**
-     * needSignal
-     */
-    private volatile boolean needSignal = true;
-
-    /**
      * ProductGateway
      */
     @Resource
     ProductGateway productGateway;
+    /**
+     * needSignal
+     */
+    private volatile boolean needSignal = true;
 
     /**
      * init
