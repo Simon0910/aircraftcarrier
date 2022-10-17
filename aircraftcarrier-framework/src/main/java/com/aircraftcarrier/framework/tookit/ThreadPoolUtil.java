@@ -6,23 +6,25 @@ import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.concurrent.MyDiscardPolicyRejectedExecutionHandler;
 import com.aircraftcarrier.framework.exception.ThreadException;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 并发执行工具
@@ -66,12 +68,18 @@ public class ThreadPoolUtil {
      * @return ThreadFactory
      */
     private static ThreadFactory buildThreadFactory(String pooName) {
-//        ThreadFactory threadFactory = Executors.defaultThreadFactory();
         return ThreadFactoryBuilder
                 .create()
                 .setDaemon(false)
                 .setNamePrefix(pooName + "-")
                 .build();
+    }
+
+    /**
+     * DiscardPolicy
+     */
+    private static MyDiscardPolicyRejectedExecutionHandler buildDiscardPolicy() {
+        return new MyDiscardPolicyRejectedExecutionHandler();
     }
 
     /**
@@ -97,7 +105,7 @@ public class ThreadPoolUtil {
                 new SynchronousQueue<>(),
                 buildThreadFactory("fix-discard-pool-" + pooName),
                 // 忽略其他请求
-                new MyDiscardPolicyRejectedExecutionHandler());
+                buildDiscardPolicy());
     }
 
     /**
@@ -114,7 +122,7 @@ public class ThreadPoolUtil {
                 new SynchronousQueue<>(),
                 buildThreadFactory("cached-discard-pool-" + pooName),
                 // 忽略其他请求
-                new MyDiscardPolicyRejectedExecutionHandler());
+                buildDiscardPolicy());
     }
 
     /**
@@ -122,13 +130,12 @@ public class ThreadPoolUtil {
      * 使用场景：限流
      */
     public static ExecutorService newSingleThreadExecutor(String pooName) {
-//        return Executors.newSingleThreadExecutor();
         return ExecutorBuilder.create()
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new LinkedBlockingQueue<Runnable>(50000))
                 .setThreadFactory(buildThreadFactory("single-discard-pool-" + pooName))
-                .setHandler(new ThreadPoolExecutor.DiscardPolicy())
+                .setHandler(buildDiscardPolicy())
                 .buildFinalizable();
     }
 
@@ -252,46 +259,38 @@ public class ThreadPoolUtil {
     /**
      * executeAll Ignore Fail
      */
-    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> asyncBatchTasks, boolean ignoreFail) {
-        // 异步执行
-        List<Future<T>> futures;
-        try {
-            futures = executor.invokeAll(asyncBatchTasks);
-            // 等待批量任务执行完成。。。
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("invokeAll - Interrupted error: ", e);
-            throw new ThreadException(e);
+    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks, boolean ignoreFail) {
+        if (tasks == null) {
+            throw new NullPointerException();
         }
-
-        // 按list顺序获取
-        List<T> resultList = new ArrayList<>(futures.size());
-        for (Future<T> future : futures) {
-            try {
-                T result = future.get();
-//                T result = future.get(10000, TimeUnit.MILLISECONDS);
-                resultList.add(result);
-                log.debug("get result: {}", JSON.toJSONString(result));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("get - InterruptedException: ", e);
-                if (!ignoreFail) {
-                    throw new ThreadException(e);
-                }
-            } catch (ExecutionException e) {
-                log.error("get - ExecutionException: ", e);
-                if (!ignoreFail) {
-                    throw new ThreadException(e);
+        ArrayList<Future<T>> futures = new ArrayList<>(tasks.size());
+        try {
+            for (Callable<T> t : tasks) {
+                RunnableFuture<T> f = new FutureTask<>(t);
+                futures.add(f);
+                executor.execute(f);
+            }
+            List<T> resultList = new ArrayList<>(futures.size());
+            for (Future<T> f : futures) {
+                if (!f.isDone()) {
+                    try {
+                        T result = f.get(10, TimeUnit.SECONDS);
+                        resultList.add(result);
+                    } catch (CancellationException | ExecutionException | InterruptedException | TimeoutException e) {
+                        if (!ignoreFail) {
+                            throw new ThreadException(e);
+                        }
+                    }
                 }
             }
-//            catch (TimeoutException e) {
-//                log.error("get - TimeoutException: ", e);
-//                if (!ignoreFail) {
-//                    throw new ThreadException(e);
-//                }
-//            }
+            return resultList;
+        } catch (Throwable t) {
+            for (Future<T> future : futures) {
+                future.cancel(true);
+            }
+            throw t;
         }
-        return resultList;
+
     }
 
     public static Future<?> submit(ExecutorService executor, Runnable task) {
