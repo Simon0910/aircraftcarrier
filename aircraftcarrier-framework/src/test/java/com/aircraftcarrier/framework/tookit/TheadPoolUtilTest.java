@@ -48,7 +48,7 @@ public class TheadPoolUtilTest {
         ThreadPoolUtil.invokeAllVoid(tasks);
     }
 
-    private void doSomething(String msg) throws RuntimeException {
+    private void doSomething(String msg) throws RuntimeException, InterruptedException {
         try {
             // api call
             Thread.sleep(2000);
@@ -57,9 +57,10 @@ public class TheadPoolUtilTest {
         }
 
         if ("order03".equals(msg)) {
-            throw new RuntimeException("call api error!");
+            TimeUnit.SECONDS.sleep(11);
+//            throw new RuntimeException("call api error!");
         }
-
+        System.out.println(msg);
     }
 
 }
