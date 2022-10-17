@@ -211,11 +211,11 @@ public class ThreadPoolUtil {
      * executeAllVoid ignoreFail
      */
     public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks, boolean ignoreFail) {
-        List<Callable<String>> callables = new ArrayList<>(asyncBatchTasks.size());
+        List<Callable<Void>> callables = new ArrayList<>(asyncBatchTasks.size());
         for (CallableVoid task : asyncBatchTasks) {
             callables.add(() -> {
                 task.call();
-                return "Void";
+                return null;
             });
         }
 
