@@ -214,11 +214,7 @@ public class ThreadPoolUtil {
         List<Callable<String>> callables = new ArrayList<>(asyncBatchTasks.size());
         for (CallableVoid task : asyncBatchTasks) {
             callables.add(() -> {
-                try {
-                    task.call();
-                } catch (Exception e) {
-                    throw new ThreadException(e);
-                }
+                task.call();
                 return "Void";
             });
         }
