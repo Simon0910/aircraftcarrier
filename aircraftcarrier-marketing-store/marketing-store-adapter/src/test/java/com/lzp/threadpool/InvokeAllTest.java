@@ -1,11 +1,14 @@
 package com.lzp.threadpool;
  
+import com.aircraftcarrier.framework.concurrent.MyDiscardPolicyRejectedExecutionHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,11 +38,15 @@ public class InvokeAllTest {
                     return thread;
                 },
 //                Executors.defaultThreadFactory(),
+                // https://cloud.tencent.com/developer/article/1330450
+//                new MyDiscardPolicyRejectedExecutionHandler()
                 new ThreadPoolExecutor.DiscardPolicy()
 //                new ThreadPoolExecutor.DiscardOldestPolicy()
 //                new ThreadPoolExecutor.AbortPolicy()
 //                new ThreadPoolExecutor.CallerRunsPolicy()
         );
+
+//        testPool = Executors.newWorkStealingPool();
  
         // generate several jobs here
         final List<Callable<Integer>> tasks = IntStream.range(1, 10).mapToObj((i) -> new Callable<Integer>() {

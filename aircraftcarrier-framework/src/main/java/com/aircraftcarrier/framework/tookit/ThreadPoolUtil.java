@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.tookit;
 import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.thread.ThreadFactoryBuilder;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
+import com.aircraftcarrier.framework.concurrent.MyDiscardPolicyRejectedExecutionHandler;
 import com.aircraftcarrier.framework.exception.ThreadException;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.alibaba.fastjson.JSON;
@@ -96,7 +97,7 @@ public class ThreadPoolUtil {
                 new SynchronousQueue<>(),
                 buildThreadFactory("fix-discard-pool-" + pooName),
                 // 忽略其他请求
-                new ThreadPoolExecutor.DiscardPolicy());
+                new MyDiscardPolicyRejectedExecutionHandler());
     }
 
     /**
@@ -113,7 +114,7 @@ public class ThreadPoolUtil {
                 new SynchronousQueue<>(),
                 buildThreadFactory("cached-discard-pool-" + pooName),
                 // 忽略其他请求
-                new ThreadPoolExecutor.DiscardPolicy());
+                new MyDiscardPolicyRejectedExecutionHandler());
     }
 
     /**
