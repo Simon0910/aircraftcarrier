@@ -1,11 +1,11 @@
 package com.aircraftcarrier.framework.tookit;
 
 import cn.hutool.core.thread.ExecutorBuilder;
+import cn.hutool.core.thread.ThreadFactoryBuilder;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.ThreadException;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.alibaba.fastjson.JSON;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +59,21 @@ public class ThreadPoolUtil {
     }
 
     /**
+     * buildThreadFactory
+     *
+     * @param pooName pooName
+     * @return ThreadFactory
+     */
+    private static ThreadFactory buildThreadFactory(String pooName) {
+//        ThreadFactory threadFactory = Executors.defaultThreadFactory();
+        return ThreadFactoryBuilder
+                .create()
+                .setDaemon(false)
+                .setNamePrefix(pooName + "-")
+                .build();
+    }
+
+    /**
      * 默认
      */
     private static ExecutorService commonPool() {
@@ -78,7 +94,7 @@ public class ThreadPoolUtil {
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                new DefaultThreadFactory("fix-discard-pool-" + pooName),
+                buildThreadFactory("fix-discard-pool-" + pooName),
                 // 忽略其他请求
                 new ThreadPoolExecutor.DiscardPolicy());
     }
@@ -95,7 +111,7 @@ public class ThreadPoolUtil {
                 0, nThreads,
                 60L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                new DefaultThreadFactory("cached-discard-pool-" + pooName),
+                buildThreadFactory("cached-discard-pool-" + pooName),
                 // 忽略其他请求
                 new ThreadPoolExecutor.DiscardPolicy());
     }
@@ -110,7 +126,7 @@ public class ThreadPoolUtil {
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new LinkedBlockingQueue<Runnable>(50000))
-                .setThreadFactory(new DefaultThreadFactory("single-discard-pool-" + pooName))
+                .setThreadFactory(buildThreadFactory("single-discard-pool-" + pooName))
                 .setHandler(new ThreadPoolExecutor.DiscardPolicy())
                 .buildFinalizable();
     }

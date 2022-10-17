@@ -59,11 +59,6 @@ public class UpdateInventoryExe {
      * REQUEST_QUEUE
      */
     private static final LinkedBlockingQueue<RequestPromise> REQUEST_QUEUE = new LinkedBlockingQueue<>(CAPACITY);
-
-    /**
-     * 2 threads
-     */
-    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(2, "merge");
     /**
      * 批量处理 可配置
      */
@@ -87,6 +82,8 @@ public class UpdateInventoryExe {
      */
 //    @PostConstruct
     private void init() {
+        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPool(2, "merge");
+
         final ReentrantLock takeLock = new ReentrantLock();
         final Condition notEmpty = takeLock.newCondition();
 
@@ -95,7 +92,7 @@ public class UpdateInventoryExe {
         List<RequestPromise> batchList = new ArrayList<>(CAPACITY);
 
         // takeThread 获取用户请求
-        THREAD_POOL.execute(() -> {
+        executorService.execute(() -> {
             while (true) {
                 try {
                     // take
@@ -120,7 +117,7 @@ public class UpdateInventoryExe {
         });
 
         // mergeThread 合并用户请求
-        THREAD_POOL.execute(() -> {
+        executorService.execute(() -> {
             while (true) {
                 // wait put...
                 if (batchList.size() < 1) {
@@ -207,6 +204,8 @@ public class UpdateInventoryExe {
 
             }
         });
+
+        executorService.shutdown();
     }
 
     /**

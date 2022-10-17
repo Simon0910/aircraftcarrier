@@ -54,11 +54,6 @@ public class UpdateInventoryExe2 {
      * threads
      */
     private static final int N_THREADS = 1;
-
-    /**
-     * Pool
-     */
-    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newFixedThreadPool(N_THREADS, "merge");
     /**
      * REQUEST_QUEUE
      */
@@ -80,9 +75,7 @@ public class UpdateInventoryExe2 {
     @PostConstruct
     private void init() {
 //        init1();
-        for (int i = 0; i < N_THREADS; i++) {
-            init2();
-        }
+          init2();
     }
 
     /**
@@ -183,7 +176,7 @@ public class UpdateInventoryExe2 {
      */
     private void init2() {
         // mergeThread 合并用户请求
-        THREAD_POOL.execute(() -> {
+        Runnable runnable = () -> {
             while (true) {
                 List<PromiseRequest> batchList = new ArrayList<>(batchSize);
                 // empty wait put...
@@ -266,12 +259,16 @@ public class UpdateInventoryExe2 {
                         TimeUnit.MILLISECONDS.sleep(1000);
                     } catch (InterruptedException ignored) {
                     }
-
-
                 }
-            }
 
-        });
+            }
+        };
+
+        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPool(N_THREADS, "merge");
+        for (int i = 0; i < N_THREADS; i++) {
+            executorService.execute(runnable);
+        }
+        executorService.shutdown();
     }
 
 
