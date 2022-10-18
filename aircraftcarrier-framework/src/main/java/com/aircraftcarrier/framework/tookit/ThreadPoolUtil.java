@@ -53,6 +53,10 @@ public class ThreadPoolUtil {
      * 线程空闲时间
      */
     public static final int KEEP_ALIVE_TIME = 60;
+    /**
+     * 每个线程等待多久 （秒）
+     */
+    public static int waitTimeout = 10;
 
 
     /**
@@ -267,20 +271,22 @@ public class ThreadPoolUtil {
                 executor.execute(f);
             }
             List<T> resultList = new ArrayList<>(futures.size());
-            for (Future<T> f : futures) {
-                if (!f.isDone()) {
-                    try {
-                        T result = f.get(10, TimeUnit.SECONDS);
-                        resultList.add(result);
-                    } catch (CancellationException | ExecutionException | InterruptedException | TimeoutException e) {
-                        if (!ignoreFail) {
-                            throw new ThreadException(e);
-                        }
+            for (int i = 0, size = futures.size(); i < size; i++) {
+                try {
+                    T result = futures.get(i).get(waitTimeout, TimeUnit.SECONDS);
+                    resultList.add(result);
+                } catch (CancellationException | ExecutionException | InterruptedException | TimeoutException e) {
+                    futures.get(i).cancel(true);
+                    if (!ignoreFail) {
+                        throw new ThreadException("[" + i + "]: " + e);
+                    } else {
+                        log.error("get [{}] error: ", i, e);
                     }
                 }
             }
             return resultList;
         } catch (Throwable t) {
+            log.error("invokeAll error: ", t);
             for (Future<T> future : futures) {
                 future.cancel(true);
             }

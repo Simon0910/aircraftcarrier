@@ -48,19 +48,40 @@ public class TheadPoolUtilTest {
         ThreadPoolUtil.invokeAllVoid(tasks);
     }
 
-    private void doSomething(String msg) throws RuntimeException, InterruptedException {
+    private void doSomething(String msg) throws InterruptedException {
         try {
             // api call
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            log.error("xxx: ", e);
-        }
+            TimeUnit.MILLISECONDS.sleep(20);
 
-        if ("order03".equals(msg)) {
-            TimeUnit.SECONDS.sleep(11);
+            if ("order03".equals(msg)) {
 //            throw new RuntimeException("call api error!");
+                for (int i = 0; i < 20; i++) {
+                    TimeUnit.SECONDS.sleep(1);
+                    System.out.println(Thread.currentThread().getName() + " ::03 " + Thread.currentThread().isAlive());
+                    System.out.println(Thread.currentThread().getName() + " ::03 " + Thread.currentThread().isInterrupted());
+                    System.out.println(Thread.currentThread().getName() + " ::03 " + Thread.currentThread().getState());
+                }
+//            Thread.currentThread().interrupt();
+            }
+
+            if ("order04".equals(msg)) {
+//            throw new RuntimeException("call api error!");
+                for (int i = 0; i < 20; i++) {
+                    TimeUnit.SECONDS.sleep(1);
+                    System.out.println(Thread.currentThread().getName() + " ::::04 " + Thread.currentThread().isAlive());
+                    System.out.println(Thread.currentThread().getName() + " ::::04 " + Thread.currentThread().isInterrupted());
+                    System.out.println(Thread.currentThread().getName() + " ::::04 " + Thread.currentThread().getState());
+                }
+//            Thread.currentThread().interrupt();
+            }
+
+            System.out.println(msg);
+        } catch (Throwable t) {
+            System.out.println(Thread.currentThread().getName() + " error " + Thread.currentThread().isAlive());
+            System.out.println(Thread.currentThread().getName() + " error " + Thread.currentThread().isInterrupted());
+            System.out.println(Thread.currentThread().getName() + " error " + Thread.currentThread().getState());
+            throw t;
         }
-        System.out.println(msg);
     }
 
 }
