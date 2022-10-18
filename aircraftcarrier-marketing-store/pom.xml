@@ -31,6 +31,12 @@
             <groupId>com.aircraftcarrier</groupId>
             <artifactId>security-app</artifactId>
             <version>${revision}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.aircraftcarrier</groupId>
+                    <artifactId>aircraftcarrier-framework</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

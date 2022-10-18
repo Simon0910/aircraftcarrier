@@ -2,6 +2,7 @@ package com.aircraftcarrier.marketing.store;
 
 import com.aircraftcarrier.framework.tookit.LogTimeUtil;
 import com.aircraftcarrier.framework.web.LocalDateTimeSerializerConfig;
+import com.aircraftcarrier.security.app.AuthServiceImpl;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
@@ -25,6 +26,7 @@ import org.springframework.context.annotation.PropertySource;
         "redis.properties"},
         encoding = "utf-8")
 @SpringBootApplication(scanBasePackages = {"com.aircraftcarrier.marketing.store", "com.aircraftcarrier.security"}
+        ,scanBasePackageClasses = AuthServiceImpl.class
 //        , exclude = {SecurityAutoConfiguration.class}
 )
 @MapperScan("com.aircraftcarrier.marketing.store.infrastructure.repository")
