@@ -258,6 +258,13 @@ public class ThreadPoolUtil {
 
     /**
      * executeAll Ignore Fail
+     * <a href="https://cloud.tencent.com/developer/article/1330450">...</a>
+     * <a href="https://bugs.openjdk.org/browse/JDK-8286463">...</a>
+     * <a href="https://bugs.openjdk.org/browse/JDK-8160037?focusedCommentId=13964474&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-13964474">...</a>
+     * <p>
+     * Doug Lea:
+     * I agree with Martin. The behavior matches the specifications
+     * -- shutdownNow returns the list of tasks, that the user should cancel if appropriate (that's why they are returned).
      */
     public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks, boolean ignoreFail) {
         if (tasks == null) {
@@ -277,6 +284,8 @@ public class ThreadPoolUtil {
                     T result = f.get(perWaitTimeout, TimeUnit.SECONDS);
                     resultList.add(result);
                 } catch (CancellationException | ExecutionException | InterruptedException | TimeoutException e) {
+                    // CancellationException | ExecutionException： 子线程死了
+                    // InterruptedException | TimeoutException：子线程还活着，子线程判断Thread.currentThread().isInterrupted()自己停止
                     f.cancel(true);
                     if (!ignoreFail) {
                         throw new ThreadException("[" + i + "]: " + e);
