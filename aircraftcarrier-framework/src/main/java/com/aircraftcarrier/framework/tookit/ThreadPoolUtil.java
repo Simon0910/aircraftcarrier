@@ -56,7 +56,7 @@ public class ThreadPoolUtil {
     /**
      * 每个线程等待多久 （秒）
      */
-    public static int waitTimeout = 10;
+    public static int perWaitTimeout = 10;
 
 
     /**
@@ -272,11 +272,12 @@ public class ThreadPoolUtil {
             }
             List<T> resultList = new ArrayList<>(futures.size());
             for (int i = 0, size = futures.size(); i < size; i++) {
+                Future<T> f = futures.get(i);
                 try {
-                    T result = futures.get(i).get(waitTimeout, TimeUnit.SECONDS);
+                    T result = f.get(perWaitTimeout, TimeUnit.SECONDS);
                     resultList.add(result);
                 } catch (CancellationException | ExecutionException | InterruptedException | TimeoutException e) {
-                    futures.get(i).cancel(true);
+                    f.cancel(true);
                     if (!ignoreFail) {
                         throw new ThreadException("[" + i + "]: " + e);
                     } else {
