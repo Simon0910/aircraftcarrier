@@ -53,7 +53,7 @@ public class UpdateInventoryExe2 {
     /**
      * threads
      */
-    private static final int N_THREADS = 1;
+    private static final int N_THREADS = 10;
     /**
      * REQUEST_QUEUE
      */

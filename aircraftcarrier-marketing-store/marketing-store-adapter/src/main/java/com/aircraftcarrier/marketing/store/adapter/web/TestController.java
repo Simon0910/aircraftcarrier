@@ -132,7 +132,7 @@ public class TestController {
     @GetMapping("/deductionInventory")
     public SingleResponse<String> deductionInventory(@RequestParam Serializable goodsNo) {
         // jmeter 模拟测试
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 2; i++) {
             testService.deductionInventory(goodsNo);
         }
         return SingleResponse.ok();
