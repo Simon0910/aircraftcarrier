@@ -34,11 +34,16 @@ public class PrintTimeTask extends AbstractAsyncTask {
 
     @Override
     public void runTask() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             SleepUtil.sleepSeconds(1);
             System.out.println("i am running: " + DateTimeUtil.now());
+
+            System.out.println("state:: " + getState());
+            System.out.println("waiting:: " + getWaitingTask().keySet());
+            System.out.println("running:: " + getRunningTask().keySet());
+
             if (Thread.currentThread().isInterrupted()) {
-//                System.out.println("ok i am stop !");
+                System.out.println("ok i am stop !");
 //                break;
             }
         }
@@ -54,5 +59,10 @@ public class PrintTimeTask extends AbstractAsyncTask {
     public void afterThrowing(Throwable e) {
         // 保存数据库标识 task_fail
         System.out.println("task_fail");
+    }
+
+    @Override
+    public void after() {
+
     }
 }
