@@ -37,6 +37,9 @@ public class LogTimeUtil {
         return System.currentTimeMillis() - startTime;
     }
 
+    public static String endTimeStr(long startTime) {
+        return endTime(startTime) + "ms";
+    }
 
     /**
      * 获取时钟
@@ -62,6 +65,10 @@ public class LogTimeUtil {
         return elapsed;
     }
 
+    public static String getDurationStr(Stopwatch stopwatch) {
+        return getDuration(stopwatch) + "ms";
+    }
+
     /**
      * 重新计时
      *
@@ -81,6 +88,10 @@ public class LogTimeUtil {
     public static long endStopwatchTime(Stopwatch stopwatch) {
         stopwatch.stop();
         return stopwatch.elapsed(TimeUnit.MILLISECONDS);
+    }
+
+    public static String endStopwatchTimeStr(Stopwatch stopwatch) {
+        return endStopwatchTime(stopwatch) + "ms";
     }
 
 }

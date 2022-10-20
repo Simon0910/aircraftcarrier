@@ -7,9 +7,9 @@ import org.joda.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
- * admin
+ * @author admin
  */
-public class JodaTimeUtil {
+public class DateTimeUtil {
 
     /**
      * YYYY_MM_DD_FORMAT
@@ -23,7 +23,7 @@ public class JodaTimeUtil {
     /**
      * JodaTimeUtil
      */
-    private JodaTimeUtil() {
+    private DateTimeUtil() {
     }
 
     /**
