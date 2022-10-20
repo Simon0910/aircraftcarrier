@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Spring Boot Starter
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author admin
  */
 @Slf4j
+@EnableScheduling
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @Import(LocalDateTimeSerializerConfig.class)
 @PropertySource(value = {
