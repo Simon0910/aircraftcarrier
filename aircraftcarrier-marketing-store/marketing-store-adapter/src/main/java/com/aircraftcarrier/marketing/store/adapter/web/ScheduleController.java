@@ -24,18 +24,23 @@ public class ScheduleController {
     @Resource
     DynamicTaskService dynamicTaskService;
 
-    @GetMapping("/updateCron")
+    @GetMapping("/add")
     public String add(String cron) {
-        // "0/10 * * * * ?"
+        // "0/60 * * * * ?"
         dynamicTaskService.add(new PrintTimeTask(cron));
         return "ok";
     }
 
-    @GetMapping("/updateTimer")
+    @GetMapping("/cancel")
     public String stop() {
-        dynamicTaskService.stop(new PrintTimeTask());
+        dynamicTaskService.cancel(new PrintTimeTask());
         return "ok";
     }
 
+    @GetMapping("/executeOnce")
+    public String executeOnce() {
+        dynamicTaskService.executeOnce(new PrintTimeTask());
+        return "ok";
+    }
 
 }

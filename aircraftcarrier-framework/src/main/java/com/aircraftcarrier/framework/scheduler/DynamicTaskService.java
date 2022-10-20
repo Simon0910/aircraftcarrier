@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 
 /**
  * @author liuzhipeng
@@ -21,7 +21,7 @@ public class DynamicTaskService {
     /**
      * 以下两个都是线程安全的集合类。
      */
-    public Map<String, ScheduledFuture<?>> taskMap = new ConcurrentHashMap<>();
+    public Map<String, Future<?>> scheduledMap = new ConcurrentHashMap<>();
 
     private final Map<String, AbstractAsyncTask> runningTask = new ConcurrentHashMap<>();
 
@@ -52,14 +52,10 @@ public class DynamicTaskService {
      */
     public boolean add(AbstractAsyncTask task) {
         // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，先删除之前的，再添加现在的。（即重复就覆盖）
-        ScheduledFuture<?> schedule;
-        if (null != (schedule = taskMap.get(task.getTaskName()))) {
+        Future<?> schedule;
+        if (null != (schedule = scheduledMap.get(task.getTaskName()))) {
             if (!schedule.isDone()) {
-                log.error("schedule should be done before start up");
-                return false;
-            }
-            if (task.isRunning()) {
-                log.error("task need stop before start up!");
+                log.error("schedule should be cancel before add");
                 return false;
             }
         }
@@ -79,7 +75,7 @@ public class DynamicTaskService {
 //            Trigger trigger = new PeriodicTrigger(timer);
             return trigger.nextExecutionTime(triggerContext);
         });
-        taskMap.put(task.getTaskName(), schedule);
+        scheduledMap.put(task.getTaskName(), schedule);
 
         synchronized (task) {
             task.setState(AbstractAsyncTask.State.WAITING);
@@ -98,10 +94,11 @@ public class DynamicTaskService {
      * @param task task
      * @return boolean
      */
-    public boolean stop(AbstractAsyncTask task) {
+    public boolean cancel(AbstractAsyncTask task) {
         String taskName = task.getTaskName();
-        ScheduledFuture<?> scheduledFuture;
-        if (null == (scheduledFuture = taskMap.get(taskName))) {
+        Future<?> scheduledFuture;
+        if (null == (scheduledFuture = scheduledMap.get(taskName))) {
+            log.info("schedule not found");
             return false;
         }
 
@@ -109,12 +106,21 @@ public class DynamicTaskService {
         log.info("task canceled: {}", canceled);
         log.info("task is done: {}", scheduledFuture.isDone());
 
-        taskMap.remove(taskName);
-        log.info("remove task: {}", scheduledFuture);
+        scheduledMap.remove(taskName);
         runningTask.remove(taskName);
         waitingTask.remove(taskName);
-
-        task.stop();
+        log.info("remove task: {}", scheduledFuture);
         return true;
     }
+
+
+    /**
+     * 手动执行一次
+     *
+     * @param task task
+     */
+    public void executeOnce(AbstractAsyncTask task) {
+        new Thread(task).start();
+    }
+
 }

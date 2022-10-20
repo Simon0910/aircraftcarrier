@@ -1,10 +1,14 @@
 package com.aircraftcarrier.framework.scheduler;
 
+import com.aircraftcarrier.framework.cache.LockUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author liuzhipeng
@@ -16,8 +20,8 @@ public abstract class AbstractAsyncTask implements Runnable {
      * state
      */
     private State state;
-    private WeakReference<Map<String, AbstractAsyncTask>> waitingTask;
-    private WeakReference<Map<String, AbstractAsyncTask>> runningTask;
+    private WeakReference<Map<String, AbstractAsyncTask>> waitingTask = new WeakReference<>(new ConcurrentHashMap<>());
+    private WeakReference<Map<String, AbstractAsyncTask>> runningTask = new WeakReference<>(new ConcurrentHashMap<>());
 
     private String taskName;
 
@@ -31,21 +35,23 @@ public abstract class AbstractAsyncTask implements Runnable {
     }
 
     @Override
-    public void run() {
-        try {
-            synchronized (this) {
-                state = State.RUNNING;
-                if (waitingTask != null) {
-                    waitingTask.get().remove(taskName);
-                }
-                if (runningTask != null) {
-                    runningTask.get().put(taskName, this);
-                }
-            }
+    public final void run() {
+        if (Thread.currentThread().isInterrupted()) {
+            log.error("i am isInterrupted so not run!");
+            throw new RuntimeException("i am isInterrupted so not run!");
+        }
 
+        try {
             // 1. 前者通知
             if (!before()) {
-                log.info("task is not start");
+                log.info("task before ==> false");
+                return;
+            }
+
+            synchronized (this) {
+                state = State.RUNNING;
+                Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
+                Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
             }
 
             boolean success = true;
@@ -70,19 +76,16 @@ public abstract class AbstractAsyncTask implements Runnable {
             }
 
         } finally {
-            setState(State.FINALLY);
-            if (Thread.currentThread().isInterrupted()) {
-                setState(State.INTERRUPTED);
-            }
+            state = State.FINALLY;
             synchronized (this) {
-                state = State.WAITING;
-                if (waitingTask != null) {
-                    waitingTask.get().put(taskName, this);
-                }
-                if (runningTask != null) {
-                    runningTask.get().remove(taskName);
-                }
+                Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
+                Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
             }
+            if (Thread.currentThread().isInterrupted()) {
+                state = State.INTERRUPTED;
+                interrupted();
+            }
+            LockUtil.unLock(getTaskName());
         }
 
     }
@@ -93,7 +96,12 @@ public abstract class AbstractAsyncTask implements Runnable {
      * @return boolean
      */
     public boolean before() {
-        return true;
+        if (LockUtil.tryLock(getTaskName())) {
+            log.info("task get lock ok");
+            return true;
+        }
+        log.info("task get lock fail");
+        return false;
     }
 
     /**
@@ -120,12 +128,10 @@ public abstract class AbstractAsyncTask implements Runnable {
     }
 
     /**
-     * stop
+     * interrupted 任务
      */
-    public void stop() {
-
+    public void interrupted() {
     }
-
 
     public final String getTaskName() {
         return taskName;
@@ -144,15 +150,15 @@ public abstract class AbstractAsyncTask implements Runnable {
     }
 
     public final boolean isRunning() {
-        return State.RUNNING == getState();
+        return state == State.RUNNING;
     }
 
     public final boolean isInterrupted() {
-        return State.INTERRUPTED == getState();
+        return state == State.INTERRUPTED;
     }
 
     public final Map<String, AbstractAsyncTask> getWaitingTask() {
-        return waitingTask.get();
+        return Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).orElse(new HashMap<>());
     }
 
     public final void setWaitingTask(Map<String, AbstractAsyncTask> waitingTask) {
@@ -160,7 +166,7 @@ public abstract class AbstractAsyncTask implements Runnable {
     }
 
     public final Map<String, AbstractAsyncTask> getRunningTask() {
-        return runningTask.get();
+        return Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).orElse(new HashMap<>());
     }
 
     public final void setRunningTask(Map<String, AbstractAsyncTask> runningTask) {
@@ -168,7 +174,7 @@ public abstract class AbstractAsyncTask implements Runnable {
     }
 
     enum State {
-        WAITING, RUNNING, INTERRUPTED, FINALLY, TERMINATED
+        WAITING, RUNNING, FINALLY, INTERRUPTED, TERMINATED
     }
 
 }

@@ -11,7 +11,7 @@ import com.aircraftcarrier.framework.tookit.SleepUtil;
 public class PrintTimeTask extends AbstractAsyncTask {
 
     public PrintTimeTask() {
-        this("0/10 * * * * ?");
+        this("0/60 * * * * ?");
     }
 
     public PrintTimeTask(String cron) {
@@ -34,9 +34,9 @@ public class PrintTimeTask extends AbstractAsyncTask {
 
     @Override
     public void runTask() {
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             SleepUtil.sleepSeconds(1);
-            System.out.println("i am running: " + DateTimeUtil.now());
+            System.out.println("i am running " + i + ": " + DateTimeUtil.now());
 
             System.out.println("state:: " + getState());
             System.out.println("waiting:: " + getWaitingTask().keySet());
@@ -44,25 +44,9 @@ public class PrintTimeTask extends AbstractAsyncTask {
 
             if (Thread.currentThread().isInterrupted()) {
                 System.out.println("ok i am stop !");
-//                break;
+                throw new RuntimeException("ok i am stop !");
             }
         }
     }
 
-    @Override
-    public void afterReturning() {
-        // 保存数据库标识 task_success
-        System.out.println("task_success");
-    }
-
-    @Override
-    public void afterThrowing(Throwable e) {
-        // 保存数据库标识 task_fail
-        System.out.println("task_fail");
-    }
-
-    @Override
-    public void after() {
-
-    }
 }
