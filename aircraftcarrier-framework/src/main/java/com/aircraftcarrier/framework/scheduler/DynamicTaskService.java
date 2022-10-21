@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.scheduler;
 
+import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -9,8 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author liuzhipeng
@@ -18,10 +23,12 @@ import java.util.concurrent.FutureTask;
 @Slf4j
 public class DynamicTaskService {
 
+    private final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool(10, "self-cancel");
+    private final ExecutorService cancelService = ThreadPoolUtil.newCachedThreadPool(10, "self-cancel");
+
     private final ThreadPoolTaskScheduler taskScheduler;
-    /**
-     * 以下两个都是线程安全的集合类。
-     */
+
+    public Map<String, Future<?>> manualScheduledMap = new ConcurrentHashMap<>();
     public Map<String, Future<?>> scheduledMap = new ConcurrentHashMap<>();
 
     private final Map<String, AbstractAsyncTask> runningTask = new ConcurrentHashMap<>();
@@ -53,14 +60,15 @@ public class DynamicTaskService {
         // 如果任务正在running
         AbstractAsyncTask asyncTask = runningTask.get(task.getTaskName());
         if (asyncTask != null) {
-            log.error("task is already running...");
+            // 可能是定时任务正在运行，或者另一个手动任务正在执行
+            log.error("task [{}] is already running...", task.getTaskName());
             return false;
         }
 
-        // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，就返回
+        // 上一个定时任务还没有完成
         Future<?> schedule;
         if (null != (schedule = scheduledMap.get(task.getTaskName())) && !schedule.isDone()) {
-            log.error("schedule should be cancel before add");
+            log.error("schedule task [{}] should be cancel before execute!", task.getTaskName());
             return false;
         }
 
@@ -82,7 +90,57 @@ public class DynamicTaskService {
         task.setWaitingTask(waitingTask);
         task.setRunningTask(runningTask);
 
-        log.info("add {}", schedule);
+        log.info("add :: {}", schedule);
+        return true;
+    }
+
+    /**
+     * 手动执行一次
+     *
+     * @param task task
+     */
+    public boolean executeOnceManual(AbstractAsyncTask task) {
+        // 如果任务正在running
+        AbstractAsyncTask asyncTask = runningTask.get(task.getTaskName());
+        if (asyncTask != null) {
+            // 可能是定时任务正在运行，或者另一个手动任务正在执行
+            log.error("task [{}] is already running...", task.getTaskName());
+            return false;
+        }
+
+        // 上一个手动任务还没有完成
+        Future<?> schedule;
+        if (null != (schedule = manualScheduledMap.get(task.getTaskName())) && !schedule.isDone()) {
+            log.error("manual schedule task [{}] should be cancel before execute!", task.getTaskName());
+            return false;
+        }
+
+        FutureTask<Void> f = new FutureTask<>(task, null);
+        executorService.execute(f);
+
+        manualScheduledMap.put(task.getTaskName(), f);
+        // 相互引用会有问题吗？怎么验证？
+        waitingTask.put(task.getTaskName(), task);
+        task.setWaitingTask(waitingTask);
+        task.setRunningTask(runningTask);
+
+        // 注册异步任务，执行完成自动取消
+        cancelService.execute(() -> {
+            try {
+                f.get(2, TimeUnit.HOURS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                log.error("manual schedule ERROR: ", e);
+            } finally {
+                log.info("manual schedule task [{}] self cancel...", task.getTaskName());
+                f.cancel(true);
+                // 等待了很久还没完成，手动取消后又添加执行了，保证移除的是之前的自己，不是新添加的Future
+                if (f == manualScheduledMap.get(task.getTaskName())) {
+                    log.info("manual schedule task [{}] self remove", task.getTaskName());
+                    manualScheduledMap.remove(task.getTaskName());
+                }
+            }
+        });
+        log.info("executeOnce :: {}", f);
         return true;
     }
 
@@ -97,52 +155,42 @@ public class DynamicTaskService {
         String taskName = task.getTaskName();
         Future<?> scheduledFuture;
         if (null == (scheduledFuture = scheduledMap.get(taskName))) {
-            log.info("schedule not found");
+            log.info("schedule not found!");
             return false;
         }
 
-        boolean canceled = scheduledFuture.cancel(true);
-        log.info("task canceled: {}", canceled);
-        log.info("task is done: {}", scheduledFuture.isDone());
+        boolean cancel = scheduledFuture.cancel(true);
+        log.info("schedule canceled... {}", cancel);
+        log.info("schedule is done: {}", scheduledFuture.isDone());
 
         scheduledMap.remove(taskName);
         // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
-        log.info("remove task: {}", scheduledFuture);
+        log.info("remove schedule task: {}", scheduledFuture);
         return true;
     }
 
 
     /**
-     * 手动执行一次
+     * 停止任务
      *
      * @param task task
+     * @return boolean
      */
-    public boolean executeOnce(AbstractAsyncTask task) {
-        // 如果任务正在running
-        AbstractAsyncTask asyncTask = runningTask.get(task.getTaskName());
-        if (asyncTask != null) {
-            log.error("task is already running...");
+    public boolean cancelManual(AbstractAsyncTask task) {
+        String taskName = task.getTaskName();
+        Future<?> future;
+        if (null == (future = manualScheduledMap.get(taskName))) {
+            log.info("manual schedule not found!");
             return false;
         }
 
-        // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，就返回
-        Future<?> schedule;
-        if (null != (schedule = scheduledMap.get(task.getTaskName())) && !schedule.isDone()) {
-            log.error("schedule should be cancel before executeOnce");
-            return false;
-        }
+        boolean cancel = future.cancel(true);
+        log.info("manual schedule cancel... {}", cancel);
+        log.info("manual schedule is done: {}", future.isDone());
 
-        FutureTask<Void> f = new FutureTask<>(task, null);
-        new Thread(f).start();
-
-        scheduledMap.put(task.getTaskName(), f);
-        // 相互引用会有问题吗？怎么验证？
-        waitingTask.put(task.getTaskName(), task);
-        task.setWaitingTask(waitingTask);
-        task.setRunningTask(runningTask);
-
-        log.info("executeOnce {}", f);
+        manualScheduledMap.remove(taskName);
+        // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
+        log.info("remove manual schedule task: {}", future);
         return true;
     }
-
 }

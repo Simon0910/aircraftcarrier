@@ -28,19 +28,25 @@ public class ScheduleController {
     public String add(String cron) {
         // "0/60 * * * * ?"
         dynamicTaskService.add(new PrintTimeTask(cron));
-        return "ok";
+        return "add";
     }
 
     @GetMapping("/cancel")
-    public String stop() {
+    public String cancel() {
         dynamicTaskService.cancel(new PrintTimeTask());
-        return "ok";
+        return "cancel";
     }
 
-    @GetMapping("/executeOnce")
-    public String executeOnce() {
-        dynamicTaskService.executeOnce(new PrintTimeTask());
-        return "ok";
+    @GetMapping("/executeOnceManual")
+    public String executeOnceManual() {
+        dynamicTaskService.executeOnceManual(new PrintTimeTask());
+        return "executeOnceManual";
+    }
+
+    @GetMapping("/cancelManual")
+    public String cancelManual() {
+        dynamicTaskService.cancelManual(new PrintTimeTask());
+        return "cancelManual";
     }
 
 }
