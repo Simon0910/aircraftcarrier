@@ -1,6 +1,5 @@
 package com.aircraftcarrier.marketing.store.adapter.scheduler;
 
-import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.scheduler.AbstractAsyncTask;
 import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
@@ -16,20 +15,6 @@ public class PrintTimeTask extends AbstractAsyncTask {
 
     public PrintTimeTask(String cron) {
         super("print", cron);
-    }
-
-    @Override
-    public boolean before() {
-        // if task running return false;
-        // else 获取锁
-        if (LockUtil.tryLock(getTaskName())) {
-            // if task running return false;
-            // 保存数据库标识 task_running
-            System.out.println("task_running");
-            // unlock(getTaskName())
-            return true;
-        }
-        return false;
     }
 
     @Override

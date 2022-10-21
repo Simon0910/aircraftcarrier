@@ -41,17 +41,22 @@ public abstract class AbstractAsyncTask implements Runnable {
             throw new RuntimeException("i am isInterrupted so not run!");
         }
 
-        try {
-            // 1. 前者通知
-            if (!before()) {
-                log.info("task before ==> false");
-                return;
-            }
+        if (!LockUtil.tryLock(getTaskName())) {
+            log.info("task get lock fail");
+            return;
+        }
 
+        try {
             synchronized (this) {
                 state = State.RUNNING;
                 Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
                 Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
+            }
+
+            // 1. 前者通知
+            if (!before()) {
+                log.info("task before ==> false");
+                return;
             }
 
             boolean success = true;
@@ -77,15 +82,19 @@ public abstract class AbstractAsyncTask implements Runnable {
 
         } finally {
             state = State.FINALLY;
-            synchronized (this) {
-                Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
-                Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
+            try {
+                if (Thread.currentThread().isInterrupted()) {
+                    state = State.INTERRUPTED;
+                    interrupted();
+                }
+
+                synchronized (this) {
+                    Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
+                    Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
+                }
+            } finally {
+                LockUtil.unLock(getTaskName());
             }
-            if (Thread.currentThread().isInterrupted()) {
-                state = State.INTERRUPTED;
-                interrupted();
-            }
-            LockUtil.unLock(getTaskName());
         }
 
     }
@@ -96,12 +105,7 @@ public abstract class AbstractAsyncTask implements Runnable {
      * @return boolean
      */
     public boolean before() {
-        if (LockUtil.tryLock(getTaskName())) {
-            log.info("task get lock ok");
-            return true;
-        }
-        log.info("task get lock fail");
-        return false;
+        return true;
     }
 
     /**
