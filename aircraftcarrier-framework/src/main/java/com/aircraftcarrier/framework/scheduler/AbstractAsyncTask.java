@@ -4,9 +4,7 @@ import com.aircraftcarrier.framework.cache.LockUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
-import java.lang.ref.WeakReference;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,8 +18,8 @@ public abstract class AbstractAsyncTask implements Runnable {
      */
     private State state;
 
-    private WeakReference<Map<String, AbstractAsyncTask>> waitingTask = new WeakReference<>(new ConcurrentHashMap<>());
-    private WeakReference<Map<String, AbstractAsyncTask>> runningTask = new WeakReference<>(new ConcurrentHashMap<>());
+    private Map<String, AbstractAsyncTask> waitingTask = new ConcurrentHashMap<>();
+    private Map<String, AbstractAsyncTask> runningTask = new ConcurrentHashMap<>();
 
     private String taskName;
 
@@ -50,8 +48,8 @@ public abstract class AbstractAsyncTask implements Runnable {
 
             synchronized (this) {
                 state = State.RUNNING;
-                Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
-                Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
+                removeWaiting();
+                putRunning();
             }
 
             boolean success = true;
@@ -90,8 +88,11 @@ public abstract class AbstractAsyncTask implements Runnable {
                 }
             } finally {
                 synchronized (this) {
-                    Optional.ofNullable(waitingTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.put(taskName, this));
-                    Optional.ofNullable(runningTask).flatMap(e -> Optional.ofNullable(e.get())).ifPresent(t -> t.remove(taskName));
+                    putWaiting();
+                    removeRunning();
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    removeWaiting();
                 }
                 LockUtil.unLock(getTaskName());
             }
@@ -158,13 +159,32 @@ public abstract class AbstractAsyncTask implements Runnable {
     }
 
     public final void setWaitingTask(Map<String, AbstractAsyncTask> waitingTask) {
-        this.waitingTask = new WeakReference<>(waitingTask);
+        this.waitingTask = waitingTask;
     }
 
     public final void setRunningTask(Map<String, AbstractAsyncTask> runningTask) {
-        this.runningTask = new WeakReference<>(runningTask);
+        this.runningTask = runningTask;
     }
 
+    private void putWaiting() {
+        waitingTask.put(taskName, this);
+    }
+
+    private void removeWaiting() {
+        waitingTask.remove(taskName);
+    }
+
+    private void putRunning() {
+        runningTask.put(taskName, this);
+    }
+
+    private void removeRunning() {
+        runningTask.remove(taskName);
+    }
+
+//    public void removeRunning(AbstractAsyncTask task) {
+//        runningTask.remove(task.getTaskName());
+//    }
 
     enum State {
         WAITING, RUNNING, FINALLY, INTERRUPTED, TERMINATED

@@ -3,11 +3,13 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.scheduler.AbstractAsyncTask;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
+import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
 import com.alibaba.fastjson.JSON;
@@ -33,6 +35,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -259,4 +262,27 @@ public class TestController {
         testService.reentrantLock(key);
         return SingleResponse.ok("reentrantLock");
     }
+
+    private final Map<String, AbstractAsyncTask> runningTask = new ConcurrentHashMap<>();
+
+    @ApiOperationSupport(order = 52)
+    @ApiOperation(value = "引用测试")
+    @GetMapping("/reference")
+    public SingleResponse<String> reference() {
+        for (int i = 0; i < 10000; i++) {
+            PrintTimeTask task = new PrintTimeTask("cron");
+
+            runningTask.put(task.getTaskName(), task);
+            task.setRunningTask(runningTask);
+
+            threadPoolExecutor.execute(() -> {
+//                task.removeRunning(task);
+            });
+
+            System.out.println(runningTask.size());
+            System.out.println();
+        }
+        return SingleResponse.ok("reference");
+    }
+
 }
