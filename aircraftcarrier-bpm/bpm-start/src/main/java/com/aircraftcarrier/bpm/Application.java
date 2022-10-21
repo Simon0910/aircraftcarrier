@@ -1,6 +1,6 @@
 package com.aircraftcarrier.bpm;
 
-import com.aircraftcarrier.framework.tookit.LogTimeUtil;
+import com.aircraftcarrier.framework.tookit.TimeLogUtil;
 import com.aircraftcarrier.framework.web.LocalDateTimeSerializerConfig;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +32,10 @@ public class Application {
 
     public static void main(String[] args) {
         log.info("Begin to start Spring Boot Application");
-        Stopwatch stopwatch = LogTimeUtil.startStopwatchTime();
+        Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 
         SpringApplication.run(Application.class, args);
 
-        log.info("End starting Spring Boot Application, Time used: {}", LogTimeUtil.endStopwatchTime(stopwatch));
+        log.info("End starting Spring Boot Application, Time used: {}", TimeLogUtil.endStopwatchTime(stopwatch));
     }
 }

@@ -23,6 +23,7 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -57,6 +58,8 @@ public class ThreadPoolUtil {
      * 每个线程等待多久 （秒）
      */
     public static int perWaitTimeout = 10;
+
+    private static final int QUEUE_SIZE = 50000;
 
 
     /**
@@ -96,12 +99,26 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 新增固定线程池 不需要队列（防止无限创建队列任务oom） 多余的请求直接丢弃
+     * 固定线程池 默认上限50000缓冲任务（防止无限创建队列任务oom） 多余的请求同步阻塞 （不丢弃任务）
+     */
+    public static ExecutorService newFixedThreadPool(int nThreads, String pooName) {
+        return new TraceThreadPoolExecutor(
+                // 固定大小
+                nThreads, nThreads,
+                0L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(QUEUE_SIZE),
+                buildThreadFactory("fix-caller-pool-" + pooName),
+                // 其他请求同步请求
+                new ThreadPoolExecutor.CallerRunsPolicy());
+    }
+
+    /**
+     * 固定线程池 不需要队列（防止无限创建队列任务oom） 多余的请求直接丢弃
      * <p>
      * 使用场景：
      * 1. newFixedThreadPool(1,"xxx-task"); // 开启一个后台监控任务
      */
-    public static ExecutorService newFixedThreadPool(int nThreads, String pooName) {
+    public static ExecutorService newFixedThreadPoolDiscard(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 nThreads, nThreads,
@@ -113,12 +130,26 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 新建缓存线程池 固定线程大小(防止无限创建缓存线程oom) 多余的请求直接丢弃
+     * 缓存线程池 最大nThreads线程大小(防止无限创建缓存线程oom) 同步队列（默认队列就排队串行了！！！） 多余的请求同步阻塞 （不丢弃任务）
+     */
+    public static ExecutorService newCachedThreadPool(int nThreads, String pooName) {
+        return new TraceThreadPoolExecutor(
+                // 固定大小
+                0, nThreads,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                buildThreadFactory("cached-caller-pool-" + pooName),
+                // 其他请求同步请求
+                new ThreadPoolExecutor.CallerRunsPolicy());
+    }
+
+    /**
+     * 缓存线程池 最大nThreads线程大小(防止无限创建缓存线程oom) 同步队列 多余的请求直接丢弃
      * <p>
      * 使用场景：
      * 1. newCachedThreadPool(1,"refresh-token"); // 提前1小时，派一个线程取刷新token
      */
-    public static ExecutorService newCachedThreadPool(int nThreads, String pooName) {
+    public static ExecutorService newCachedThreadPoolDiscard(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 0, nThreads,
@@ -130,14 +161,27 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 新建单线程执行器 1个线程串行执行所有任务 50000队列任务（防止无限创建队列任务oom）多余的请求直接丢弃
-     * 使用场景：限流
+     * 单线程执行器 1个线程串行执行所有任务 默认上限50000缓冲任务（防止无限创建队列任务oom）多余的请求同步阻塞 （不丢弃任务）
      */
     public static ExecutorService newSingleThreadExecutor(String pooName) {
         return ExecutorBuilder.create()
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
-                .setWorkQueue(new LinkedBlockingQueue<Runnable>(50000))
+                .setWorkQueue(new LinkedBlockingQueue<>(QUEUE_SIZE))
+                .setThreadFactory(buildThreadFactory("single-caller-pool-" + pooName))
+                .setHandler(new ThreadPoolExecutor.CallerRunsPolicy())
+                .buildFinalizable();
+    }
+
+    /**
+     * 单线程执行器 1个线程串行执行所有任务 同步队列 多余的请求直接丢弃
+     * 使用场景：限流
+     */
+    public static ExecutorService newSingleThreadExecutorDiscard(String pooName) {
+        return ExecutorBuilder.create()
+                .setCorePoolSize(1).setMaxPoolSize(1)
+                .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
+                .setWorkQueue(new SynchronousQueue<>())
                 .setThreadFactory(buildThreadFactory("single-discard-pool-" + pooName))
                 .setHandler(buildDiscardPolicy())
                 .buildFinalizable();
@@ -151,10 +195,12 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 新建工作窃取执行器
+     * 工作窃取执行器
      */
-    public static ExecutorService newWorkStealingPool(String pooName) {
-        return Executors.newWorkStealingPool();
+    public static ExecutorService newWorkStealingPool(int parallelism, String pooName) {
+        return new ForkJoinPool(parallelism,
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                null, true);
     }
 
     /**
@@ -214,7 +260,8 @@ public class ThreadPoolUtil {
     /**
      * executeAllVoid ignoreFail
      */
-    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks, boolean ignoreFail) {
+    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks,
+                                     boolean ignoreFail) {
         List<Callable<Void>> callables = new ArrayList<>(asyncBatchTasks.size());
         for (CallableVoid task : asyncBatchTasks) {
             callables.add(() -> {
@@ -266,7 +313,8 @@ public class ThreadPoolUtil {
      * I agree with Martin. The behavior matches the specifications
      * -- shutdownNow returns the list of tasks, that the user should cancel if appropriate (that's why they are returned).
      */
-    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks, boolean ignoreFail) {
+    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks,
+                                        boolean ignoreFail) {
         if (tasks == null) {
             throw new NullPointerException();
         }

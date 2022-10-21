@@ -26,13 +26,13 @@ public class SimilarUtil {
 
 
     public static void main(String[] args) {
-        long l = LogTimeUtil.startTime();
+        long l = TimeLogUtil.beginTime();
         double d = similar("福建省", "234福232建32省2");
-        System.out.println(LogTimeUtil.endTimeStr(l));
+        System.out.println(TimeLogUtil.endTimeStr(l));
 
-        l = LogTimeUtil.startTime();
+        l = TimeLogUtil.beginTime();
         Integer i = similarLevenshtein("福建省", "234福232建32省2");
-        System.out.println(LogTimeUtil.endTimeStr(l));
+        System.out.println(TimeLogUtil.endTimeStr(l));
 
         System.out.println(d + " :: " + i);
         System.out.println(similar("福建省", "福建城") + " :: " + similarLevenshtein("福建省", "福建城"));

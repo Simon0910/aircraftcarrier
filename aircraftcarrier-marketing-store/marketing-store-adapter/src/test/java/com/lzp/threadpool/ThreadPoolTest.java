@@ -18,7 +18,7 @@ public class ThreadPoolTest {
     /**
      * 只需要一个线程去刷新，多余的请求丢弃忽略
      */
-    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newCachedThreadPool(1, "accessToken");
+    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "accessToken");
 
     @Test
     public void synchronousQueueTest() throws InterruptedException {

@@ -11,12 +11,12 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/7/28
  * @since 1.0
  */
-public class LogTimeUtil {
+public class TimeLogUtil {
 
     /**
      * LogTimeUtil
      */
-    private LogTimeUtil() {
+    private TimeLogUtil() {
     }
 
     /**
@@ -24,7 +24,7 @@ public class LogTimeUtil {
      *
      * @return long
      */
-    public static long startTime() {
+    public static long beginTime() {
         return System.currentTimeMillis();
     }
 

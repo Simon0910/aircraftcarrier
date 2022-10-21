@@ -82,7 +82,7 @@ public class UpdateInventoryExe {
      */
 //    @PostConstruct
     private void init() {
-        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPool(2, "merge");
+        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPoolDiscard(2, "merge");
 
         final ReentrantLock takeLock = new ReentrantLock();
         final Condition notEmpty = takeLock.newCondition();

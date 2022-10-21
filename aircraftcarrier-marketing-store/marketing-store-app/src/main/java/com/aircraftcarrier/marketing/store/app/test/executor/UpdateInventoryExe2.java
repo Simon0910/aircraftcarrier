@@ -264,7 +264,7 @@ public class UpdateInventoryExe2 {
             }
         };
 
-        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPool(N_THREADS, "merge");
+        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPoolDiscard(N_THREADS, "merge");
         for (int i = 0; i < N_THREADS; i++) {
             executorService.execute(runnable);
         }

@@ -41,7 +41,7 @@ public class MoneyUtilTest {
 
     @Test
     public void testMoneyUtil1() {
-        long start = LogTimeUtil.startTime();
+        long start = TimeLogUtil.beginTime();
 
         BigDecimal moneyB = null;
         for (int i = 0; i < 10000; i++) {
@@ -51,12 +51,12 @@ public class MoneyUtilTest {
         }
         log.info(JSON.toJSONString(moneyB));
 
-        log.info("耗时: {}", LogTimeUtil.endTime(start));
+        log.info("耗时: {}", TimeLogUtil.endTime(start));
     }
 
     @Test
     public void testMoneyUtilDivide() {
-        Stopwatch stopwatch = LogTimeUtil.startStopwatchTime();
+        Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 
         Money money = null;
         for (int i = 0; i < 10000; i++) {
@@ -65,12 +65,12 @@ public class MoneyUtilTest {
         }
         log.info(JSON.toJSONString(money));
 
-        log.info("耗时: {}", LogTimeUtil.endStopwatchTime(stopwatch));
+        log.info("耗时: {}", TimeLogUtil.endStopwatchTime(stopwatch));
     }
 
     @Test
     public void testMoneyUtilMultiply() {
-        Stopwatch stopwatch = LogTimeUtil.startStopwatchTime();
+        Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 
         Money money = null;
         for (int i = 0; i < 10000; i++) {
@@ -79,12 +79,12 @@ public class MoneyUtilTest {
         }
         log.info(JSON.toJSONString(money));
 
-        log.info("耗时: {}", LogTimeUtil.endStopwatchTime(stopwatch));
+        log.info("耗时: {}", TimeLogUtil.endStopwatchTime(stopwatch));
     }
 
     @Test
     public void testMoneyUtilSubtract() {
-        Stopwatch stopwatch = LogTimeUtil.startStopwatchTime();
+        Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 
         Money money = null;
         for (int i = 0; i < 10000; i++) {
@@ -93,12 +93,12 @@ public class MoneyUtilTest {
         }
         log.info(JSON.toJSONString(money));
 
-        log.info("耗时: {}", LogTimeUtil.endStopwatchTime(stopwatch));
+        log.info("耗时: {}", TimeLogUtil.endStopwatchTime(stopwatch));
     }
 
     @Test
     public void testMoneyUtilAdd() {
-        Stopwatch stopwatch = LogTimeUtil.startStopwatchTime();
+        Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 
         Money money = null;
         for (int i = 0; i < 10000; i++) {
@@ -107,7 +107,7 @@ public class MoneyUtilTest {
         }
         log.info(JSON.toJSONString(money));
 
-        log.info("耗时: {}", LogTimeUtil.endStopwatchTime(stopwatch));
+        log.info("耗时: {}", TimeLogUtil.endStopwatchTime(stopwatch));
     }
 
     @Test
