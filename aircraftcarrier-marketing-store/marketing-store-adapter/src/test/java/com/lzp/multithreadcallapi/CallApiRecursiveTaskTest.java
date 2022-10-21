@@ -31,6 +31,17 @@ public class CallApiRecursiveTaskTest {
     private static final AtomicLong atomicLong = new AtomicLong();
     private static CallApiService callApiService;
 
+    /**
+     * todo  1. LongAdder why not ? 使用场景？
+     * todo  2. corePoolSize == 0时 一定要用SynchronousQueue？ 不然就可能串行无限执行了！！
+     * 参考：
+     * {@link java.util.concurrent.Executors#newCachedThreadPool() }
+     * {@link cn.hutool.core.thread.ExecutorBuilder#build(cn.hutool.core.thread.ExecutorBuilder) }
+     * todo  3. https://www.bilibili.com/video/BV1M34y1q7M2/?spm_id_from=333.999.0.0&vd_source=5ae6c4b2dbcbc1516cef3f31fbe2abb2
+     * todo  4. https://cloud.tencent.com/developer/article/1366581
+     * todo  5. https://mp.weixin.qq.com/s/BX-EvTOMWc8d4H0mK6wpSA
+     * todo  6. https://tech.meituan.com/2022/05/12/principles-and-practices-of-completablefuture.html
+     */
     @Before
     public void before() {
         for (int i = 0; i < num; i++) {

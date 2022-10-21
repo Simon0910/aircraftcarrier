@@ -100,6 +100,9 @@ public class ThreadPoolUtil {
 
     /**
      * 固定线程池 默认上限50000缓冲任务（防止无限创建队列任务oom） 多余的请求同步阻塞 （不丢弃任务）
+     * <p>
+     * 参考：
+     * {@link java.util.concurrent.Executors#newFixedThreadPool(int)} }
      */
     public static ExecutorService newFixedThreadPool(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
@@ -131,6 +134,10 @@ public class ThreadPoolUtil {
 
     /**
      * 缓存线程池 最大nThreads线程大小(防止无限创建缓存线程oom) 同步队列（默认队列就排队串行了！！！） 多余的请求同步阻塞 （不丢弃任务）
+     * <p>
+     * 参考：
+     * {@link java.util.concurrent.Executors#newCachedThreadPool() }
+     * {@link cn.hutool.core.thread.ExecutorBuilder#build(cn.hutool.core.thread.ExecutorBuilder) }
      */
     public static ExecutorService newCachedThreadPool(int nThreads, String pooName) {
         return new TraceThreadPoolExecutor(
@@ -162,6 +169,8 @@ public class ThreadPoolUtil {
 
     /**
      * 单线程执行器 1个线程串行执行所有任务 默认上限50000缓冲任务（防止无限创建队列任务oom）多余的请求同步阻塞 （不丢弃任务）
+     * 参考：
+     * {@link java.util.concurrent.Executors#newSingleThreadExecutor() }
      */
     public static ExecutorService newSingleThreadExecutor(String pooName) {
         return ExecutorBuilder.create()
@@ -189,6 +198,8 @@ public class ThreadPoolUtil {
 
     /**
      * newScheduledThreadPool
+     * 参考：
+     * {@link java.util.concurrent.Executors#newScheduledThreadPool(int)} }
      */
     public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, String pooName) {
         return Executors.newScheduledThreadPool(corePoolSize);
@@ -196,6 +207,8 @@ public class ThreadPoolUtil {
 
     /**
      * 工作窃取执行器
+     * 参考：
+     * {@link java.util.concurrent.Executors#newWorkStealingPool(int)} }
      */
     public static ExecutorService newWorkStealingPool(int parallelism, String pooName) {
         return new ForkJoinPool(parallelism,
@@ -205,6 +218,9 @@ public class ThreadPoolUtil {
 
     /**
      * newSingleThreadScheduledExecutor
+     * <p>
+     * 参考：
+     * {@link java.util.concurrent.Executors#newSingleThreadScheduledExecutor()} }
      */
     public static ScheduledExecutorService newSingleThreadScheduledExecutor(String pooName) {
         return Executors.newSingleThreadScheduledExecutor();
@@ -212,6 +228,8 @@ public class ThreadPoolUtil {
 
     /**
      * newThreadPerTaskExecutor
+     * 参考：
+     * {@link java.util.concurrent.Executors#newThreadPerTaskExecutor(ThreadFactory)} }
      */
 //    public static ExecutorService newThreadPerTaskExecutor(String pooName) {
 //        ThreadFactory threadFactory = ThreadFactoryBuilder
@@ -224,6 +242,8 @@ public class ThreadPoolUtil {
 
     /**
      * newVirtualThreadPerTaskExecutor
+     * 参考：
+     * {@link Executors#newVirtualThreadPerTaskExecutor()} }
      */
 //    public static ExecutorService newVirtualThreadPerTaskExecutor(String pooName) {
 //        return Executors.newVirtualThreadPerTaskExecutor();
