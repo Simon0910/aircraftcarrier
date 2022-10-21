@@ -24,12 +24,12 @@ public class PrintTimeTask extends AbstractAsyncTask {
             System.out.println("i am running " + i + ": " + DateTimeUtil.now());
 
             System.out.println("state:: " + getState());
-            System.out.println("waiting:: " + getWaitingTask().keySet());
-            System.out.println("running:: " + getRunningTask().keySet());
 
+            // if isInterrupted to do something
             if (Thread.currentThread().isInterrupted()) {
-                System.out.println("ok i am stop !");
-                throw new RuntimeException("ok i am stop !");
+                System.out.println("ok i am stop ! to do finish");
+                break;
+//                throw new RuntimeException("ok i am stop !");
             }
         }
     }

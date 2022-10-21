@@ -51,7 +51,14 @@ public class DynamicTaskService {
      * @return boolean
      */
     public boolean add(AbstractAsyncTask task) {
-        // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，先删除之前的，再添加现在的。（即重复就覆盖）
+        // 如果任务正在running
+        AbstractAsyncTask asyncTask = runningTask.get(task.getTaskName());
+        if (asyncTask != null) {
+            log.error("task is already running...");
+            return false;
+        }
+
+        // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，就返回
         Future<?> schedule;
         if (null != (schedule = scheduledMap.get(task.getTaskName()))) {
             if (!schedule.isDone()) {
@@ -59,9 +66,6 @@ public class DynamicTaskService {
                 return false;
             }
         }
-
-        task.setWaitingTask(waitingTask);
-        task.setRunningTask(runningTask);
 
         // schedule :调度给定的Runnable ，在指定的执行时间调用它。
         //一旦调度程序关闭或返回的ScheduledFuture被取消，执行将结束。
@@ -76,12 +80,10 @@ public class DynamicTaskService {
             return trigger.nextExecutionTime(triggerContext);
         });
         scheduledMap.put(task.getTaskName(), schedule);
-
-        synchronized (task) {
-            task.setState(AbstractAsyncTask.State.WAITING);
-            waitingTask.put(task.getTaskName(), task);
-            runningTask.remove(task.getTaskName());
-        }
+        // 相互引用会有问题吗？怎么验证？
+        waitingTask.put(task.getTaskName(), task);
+        task.setWaitingTask(waitingTask);
+        task.setRunningTask(runningTask);
 
         log.info("add {}", schedule);
         return true;
@@ -107,8 +109,7 @@ public class DynamicTaskService {
         log.info("task is done: {}", scheduledFuture.isDone());
 
         scheduledMap.remove(taskName);
-        runningTask.remove(taskName);
-        waitingTask.remove(taskName);
+        // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
         log.info("remove task: {}", scheduledFuture);
         return true;
     }
@@ -120,6 +121,13 @@ public class DynamicTaskService {
      * @param task task
      */
     public void executeOnce(AbstractAsyncTask task) {
+        // 如果任务正在running
+        AbstractAsyncTask asyncTask = runningTask.get(task.getTaskName());
+        if (asyncTask != null) {
+            log.error("task is already running...");
+            return ;
+        }
+        task.setRunningTask(runningTask);
         new Thread(task).start();
     }
 
