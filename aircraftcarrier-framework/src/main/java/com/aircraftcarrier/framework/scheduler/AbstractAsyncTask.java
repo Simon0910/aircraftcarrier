@@ -85,24 +85,29 @@ public abstract class AbstractAsyncTask implements Runnable {
         } finally {
             // 一个短暂的 finally 状态
             state = State.FINALLY;
+            // ********************中断通知*************************
             try {
                 if (Thread.currentThread().isInterrupted()) {
-                    // 可能还在等待集合，等待断中完成
-                    state = State.INTERRUPTED;
+                    // 可能还在运行集合，或等待集合，等待断中完成
+                    // FINALLY RUNNING WAITING
                     interrupted();
                 }
             } finally {
+                // 正常执行，running ==》 waiting
+                synchronized (this) {
+                    state = State.WAITING;
+                    putWaiting();
+                    removeRunning();
+                }
+
                 if (Thread.currentThread().isInterrupted()) {
                     // 断中完成，移除等待集合
+                    // INTERRUPTED
+                    state = State.INTERRUPTED;
                     removeWaiting();
-                } else {
-                    // 正常执行，running ==》 waiting
-                    synchronized (this) {
-                        state = State.WAITING;
-                        putWaiting();
-                        removeRunning();
-                    }
                 }
+                // ********************中断通知*************************
+
                 // 释放锁
                 LockUtil.unLock(getTaskName());
             }
