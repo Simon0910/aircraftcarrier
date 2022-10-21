@@ -36,16 +36,19 @@ public abstract class AbstractAsyncTask implements Runnable {
     @Override
     public final void run() {
         try {
+            // 启动前被中断了
             if (Thread.currentThread().isInterrupted()) {
                 log.error("i am isInterrupted so not run!");
                 throw new RuntimeException("i am isInterrupted so not run!");
             }
 
+            // 任务执行前获取分布式锁， 保证一个任务执行 （注意：各个环境不要争抢同一个锁影响）
             if (!LockUtil.tryLock(getTaskName())) {
                 log.info("task get lock fail");
                 return;
             }
 
+            // 正常执行，waiting ==》 running
             synchronized (this) {
                 state = State.RUNNING;
                 removeWaiting();
@@ -80,20 +83,27 @@ public abstract class AbstractAsyncTask implements Runnable {
             }
 
         } finally {
+            // 一个短暂的 finally 状态
             state = State.FINALLY;
             try {
                 if (Thread.currentThread().isInterrupted()) {
+                    // 可能还在等待集合，等待断中完成
                     state = State.INTERRUPTED;
                     interrupted();
                 }
             } finally {
-                synchronized (this) {
-                    putWaiting();
-                    removeRunning();
-                }
                 if (Thread.currentThread().isInterrupted()) {
+                    // 断中完成，移除等待集合
                     removeWaiting();
+                } else {
+                    // 正常执行，running ==》 waiting
+                    synchronized (this) {
+                        state = State.WAITING;
+                        putWaiting();
+                        removeRunning();
+                    }
                 }
+                // 释放锁
                 LockUtil.unLock(getTaskName());
             }
         }
