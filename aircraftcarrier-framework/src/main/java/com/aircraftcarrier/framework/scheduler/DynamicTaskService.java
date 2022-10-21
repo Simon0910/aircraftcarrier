@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * @author liuzhipeng
@@ -33,8 +34,6 @@ public class DynamicTaskService {
 
     /**
      * 查看已开启但还未执行的动态任务
-     *
-     * @return
      */
     public List<String> getWaitingTaskList() {
         return new ArrayList<>(waitingTask.keySet());
@@ -60,11 +59,9 @@ public class DynamicTaskService {
 
         // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，就返回
         Future<?> schedule;
-        if (null != (schedule = scheduledMap.get(task.getTaskName()))) {
-            if (!schedule.isDone()) {
-                log.error("schedule should be cancel before add");
-                return false;
-            }
+        if (null != (schedule = scheduledMap.get(task.getTaskName())) && !schedule.isDone()) {
+            log.error("schedule should be cancel before add");
+            return false;
         }
 
         // schedule :调度给定的Runnable ，在指定的执行时间调用它。
@@ -120,15 +117,32 @@ public class DynamicTaskService {
      *
      * @param task task
      */
-    public void executeOnce(AbstractAsyncTask task) {
+    public boolean executeOnce(AbstractAsyncTask task) {
         // 如果任务正在running
         AbstractAsyncTask asyncTask = runningTask.get(task.getTaskName());
         if (asyncTask != null) {
             log.error("task is already running...");
-            return ;
+            return false;
         }
+
+        // 此处的逻辑是 ，如果当前已经有这个名字的任务存在，就返回
+        Future<?> schedule;
+        if (null != (schedule = scheduledMap.get(task.getTaskName())) && !schedule.isDone()) {
+            log.error("schedule should be cancel before executeOnce");
+            return false;
+        }
+
+        FutureTask<Void> f = new FutureTask<>(task, null);
+        new Thread(f).start();
+
+        scheduledMap.put(task.getTaskName(), f);
+        // 相互引用会有问题吗？怎么验证？
+        waitingTask.put(task.getTaskName(), task);
+        task.setWaitingTask(waitingTask);
         task.setRunningTask(runningTask);
-        new Thread(task).start();
+
+        log.info("executeOnce {}", f);
+        return true;
     }
 
 }
