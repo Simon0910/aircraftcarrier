@@ -19,6 +19,10 @@ public class TimeLogUtil {
     private TimeLogUtil() {
     }
 
+    private static String wrapperElapsedTime(long duration) {
+        return "==> elapsed time: [ " + duration + " ] ms";
+    }
+
     /**
      * 获取开始时间
      *
@@ -38,7 +42,7 @@ public class TimeLogUtil {
     }
 
     public static String endTimeStr(long startTime) {
-        return endTime(startTime) + "ms";
+        return wrapperElapsedTime(endTime(startTime));
     }
 
     /**
@@ -91,7 +95,7 @@ public class TimeLogUtil {
     }
 
     public static String endStopwatchTimeStr(Stopwatch stopwatch) {
-        return endStopwatchTime(stopwatch) + "ms";
+        return wrapperElapsedTime(endStopwatchTime(stopwatch));
     }
 
 }

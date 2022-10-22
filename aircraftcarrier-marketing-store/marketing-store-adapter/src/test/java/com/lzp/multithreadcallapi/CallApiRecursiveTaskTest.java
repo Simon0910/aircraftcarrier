@@ -1,11 +1,11 @@
 package com.lzp.multithreadcallapi;
 
 import com.aircraftcarrier.framework.tookit.JsonUtil;
-import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.framework.tookit.TimeLogUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.Assert;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
@@ -27,9 +28,11 @@ public class CallApiRecursiveTaskTest {
     private static final int num = 10000;
 
     private static final List<Param> params = new ArrayList<>(num);
-    private static final LongAdder longAdder = new LongAdder();
-    private static final AtomicLong atomicLong = new AtomicLong();
     private static CallApiService callApiService;
+    private static final AtomicLong atomicLong = new AtomicLong();
+    private static final LongAdder longAdder = new LongAdder();
+    private static final LongAccumulator longAccumulator = new LongAccumulator(Long::sum, 0);
+
 
     /**
      * todo  1. LongAdder why not ? 使用场景？
@@ -49,17 +52,27 @@ public class CallApiRecursiveTaskTest {
             params.add(param);
         }
         callApiService = (param) -> {
-            longAdder.increment();
+//            longAdder.increment();
+            longAccumulator.accumulate(1);
 //            SleepUtil.sleepMilliseconds(RandomUtil.nextInt(100, 200));
             SleepUtil.sleepMilliseconds(200);
+
             Result result = new Result();
             result.setId(1L);
-//            result.setName("name" + longAdder.longValue()); // why not ?
             result.setName("name" + atomicLong.incrementAndGet());
+//            result.setName("name" + longAdder.longValue()); // why not ?
+//            result.setName("name" + longAccumulator.get());
             result.setDate(new Date());
             log.info(">>>>>>>>>>> {}", JsonUtil.toJson(result));
             return result;
         };
+    }
+
+    @After
+    public void after() {
+        System.out.println("1 =======>" + longAccumulator.get());
+        longAccumulator.reset();
+        System.out.println("2 =======>" + longAccumulator.get());
     }
 
     @Test
