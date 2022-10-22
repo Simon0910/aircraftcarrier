@@ -84,7 +84,7 @@ public class CallApiRecursiveTaskTest {
             results.add(result);
         }
         System.out.println("for ===> " + results.size());
-        System.out.println(TimeLogUtil.endTimeStr(l));
+        TimeLogUtil.endTimePrintln(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }
@@ -97,7 +97,7 @@ public class CallApiRecursiveTaskTest {
         task.fork();
         List<Result> results = task.join();
         System.out.println("RecursiveTask ===> " + results.size());
-        System.out.println(TimeLogUtil.endTimeStr(l));
+        TimeLogUtil.endTimePrintln(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }
@@ -116,7 +116,7 @@ public class CallApiRecursiveTaskTest {
         List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
 
         System.out.println("ForkJoinPool ===> " + results.size());
-        System.out.println(TimeLogUtil.endTimeStr(l));
+        TimeLogUtil.endTimePrintln(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }
@@ -133,7 +133,7 @@ public class CallApiRecursiveTaskTest {
         List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
 
         System.out.println("ThreadPoolExecutor ===> " + results.size());
-        System.out.println(TimeLogUtil.endTimeStr(l));
+        TimeLogUtil.endTimePrintln(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }

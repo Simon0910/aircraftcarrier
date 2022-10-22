@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import com.google.common.base.Stopwatch;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/7/28
  * @since 1.0
  */
+@Slf4j
 public class TimeLogUtil {
 
     /**
@@ -20,7 +22,7 @@ public class TimeLogUtil {
     }
 
     private static String wrapperElapsedTime(long duration) {
-        return "==> elapsed time: [ " + duration + " ] ms";
+        return "elapsed time: [ " + duration + " ] ms ";
     }
 
     /**
@@ -41,8 +43,17 @@ public class TimeLogUtil {
         return System.currentTimeMillis() - startTime;
     }
 
-    public static String endTimeStr(long startTime) {
-        return wrapperElapsedTime(endTime(startTime));
+    public static void endTimePrintln(long startTime) {
+        System.out.println(wrapperElapsedTime(endTime(startTime)));
+    }
+
+    public static void endTimePrintln(String message, long startTime) {
+        System.out.println(String.format(message.replaceAll("\\{\\}", "%s"), wrapperElapsedTime(endTime(startTime))));
+    }
+
+    public static void endTimeLog(String message, long startTime) {
+        // 定位不到具体再哪一行打印的？
+        log.info(String.format(message.replaceAll("\\{\\}", "%s"), wrapperElapsedTime(endTime(startTime))));
     }
 
     /**
@@ -94,8 +105,8 @@ public class TimeLogUtil {
         return stopwatch.elapsed(TimeUnit.MILLISECONDS);
     }
 
-    public static String endStopwatchTimeStr(Stopwatch stopwatch) {
-        return wrapperElapsedTime(endStopwatchTime(stopwatch));
+    public static void endStopwatchTimePrintln(Stopwatch stopwatch) {
+        System.out.println(wrapperElapsedTime(endStopwatchTime(stopwatch)));
     }
 
 }
