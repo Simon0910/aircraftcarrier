@@ -284,8 +284,7 @@ public class MybatisBatchUtil {
             SelectBody selectBody = select.getSelectBody();
             if (selectBody instanceof PlainSelect) {
                 this.setWhere((PlainSelect) selectBody);
-            } else if (selectBody instanceof SetOperationList) {
-                SetOperationList setOperationList = (SetOperationList) selectBody;
+            } else if (selectBody instanceof SetOperationList setOperationList) {
                 List<SelectBody> selects = setOperationList.getSelects();
                 selects.forEach(s -> this.setWhere((PlainSelect) s));
             }

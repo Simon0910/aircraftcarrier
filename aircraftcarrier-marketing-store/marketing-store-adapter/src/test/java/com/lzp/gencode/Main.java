@@ -97,14 +97,12 @@ public class Main {
     }
 
     private static void parsing(Object json, List<PropertyModel> propertyModelList) {
-        if (json instanceof JSONArray) {
-            JSONArray array = (JSONArray) json;
+        if (json instanceof JSONArray array) {
             Iterator<Object> iterator = array.stream().iterator();
             while (iterator.hasNext()) {
                 parsing(JSONUtil.parse(iterator.next()), propertyModelList);
             }
-        } else if (json instanceof JSONObject) {
-            JSONObject jsonObject = (JSONObject) json;
+        } else if (json instanceof JSONObject jsonObject) {
             Object value = jsonObject.get("value");
             String desc = jsonObject.getStr("desc");
             String type = jsonObject.getStr("type");

@@ -51,8 +51,7 @@ public class MybatisInterceptor implements Interceptor {
     public Object intercept(Invocation invocation) throws Throwable {
         Object target = invocation.getTarget();
         Object[] args = invocation.getArgs();
-        if (target instanceof Executor) {
-            final Executor executor = (Executor) target;
+        if (target instanceof final Executor executor) {
             Object parameter = args[1];
             boolean isUpdate = args.length == 2;
             MappedStatement ms = (MappedStatement) args[0];

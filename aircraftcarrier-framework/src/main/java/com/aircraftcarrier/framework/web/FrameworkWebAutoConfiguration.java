@@ -113,8 +113,7 @@ public class FrameworkWebAutoConfiguration implements WebMvcConfigurer {
                 .build();
         List<HttpMessageConverter<?>> httpMessageConverters = restTemplate.getMessageConverters();
         httpMessageConverters.forEach(httpMessageConverter -> {
-            if (httpMessageConverter instanceof StringHttpMessageConverter) {
-                StringHttpMessageConverter messageConverter = (StringHttpMessageConverter) httpMessageConverter;
+            if (httpMessageConverter instanceof StringHttpMessageConverter messageConverter) {
                 messageConverter.setDefaultCharset(StandardCharsets.UTF_8);
             }
         });
