@@ -50,7 +50,8 @@ public class CallApiRecursiveTaskTest {
         }
         callApiService = (param) -> {
             longAdder.increment();
-            SleepUtil.sleepMilliseconds(RandomUtil.nextInt(100, 200));
+//            SleepUtil.sleepMilliseconds(RandomUtil.nextInt(100, 200));
+            SleepUtil.sleepMilliseconds(200);
             Result result = new Result();
             result.setId(1L);
 //            result.setName("name" + longAdder.longValue()); // why not ?

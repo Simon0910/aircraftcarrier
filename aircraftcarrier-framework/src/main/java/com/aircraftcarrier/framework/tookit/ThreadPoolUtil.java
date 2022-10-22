@@ -59,7 +59,7 @@ public class ThreadPoolUtil {
      */
     public static int perWaitTimeout = 10;
 
-    private static final int QUEUE_SIZE = 50000;
+    private static final int QUEUE_SIZE = 1024;
 
 
     /**

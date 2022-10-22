@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 public class DynamicTaskService {
 
     private final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolDiscard(10, "self-cancel");
-    private final ExecutorService cancelService = ThreadPoolUtil.newCachedThreadPoolDiscard(10, "self-cancel");
+    private final ExecutorService cancelService = ThreadPoolUtil.newCachedThreadPool(10, "self-cancel");
 
     private final ThreadPoolTaskScheduler taskScheduler;
 
