@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.scheduler;
+package com.aircraftcarrier.framework.scheduling;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
 import lombok.extern.slf4j.Slf4j;

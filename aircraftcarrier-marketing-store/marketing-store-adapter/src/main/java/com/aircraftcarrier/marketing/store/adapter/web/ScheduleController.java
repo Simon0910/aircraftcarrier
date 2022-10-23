@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.adapter.web;
 
-import com.aircraftcarrier.framework.scheduler.DynamicTaskService;
+import com.aircraftcarrier.framework.scheduling.DynamicTaskService;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;

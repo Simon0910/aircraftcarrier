@@ -3,7 +3,7 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.scheduler.AbstractAsyncTask;
+import com.aircraftcarrier.framework.scheduling.AbstractAsyncTask;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;

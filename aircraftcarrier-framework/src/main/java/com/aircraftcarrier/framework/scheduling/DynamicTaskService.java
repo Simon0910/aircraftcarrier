@@ -1,8 +1,9 @@
-package com.aircraftcarrier.framework.scheduler;
+package com.aircraftcarrier.framework.scheduling;
 
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.concurrent.ScheduledExecutorTask;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
@@ -102,6 +103,8 @@ public class DynamicTaskService {
 
     /**
      * 手动执行一次
+     * {@link ScheduledExecutorTask#isOneTimeTask()}
+     * <p>
      * 注意： 定时未开始前允许手动执行
      *
      * @param task task

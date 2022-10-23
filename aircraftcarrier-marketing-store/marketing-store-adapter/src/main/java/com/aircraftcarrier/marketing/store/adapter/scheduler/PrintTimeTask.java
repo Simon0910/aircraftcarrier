@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.adapter.scheduler;
 
-import com.aircraftcarrier.framework.scheduler.AbstractAsyncTask;
+import com.aircraftcarrier.framework.scheduling.AbstractAsyncTask;
 import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import lombok.extern.slf4j.Slf4j;

@@ -16,5 +16,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.aircraftcarrier.framework.support.config.TraceAsyncAutoConfiguration,\
   com.aircraftcarrier.framework.support.config.SupportAutoConfiguration,\
   com.aircraftcarrier.framework.web.FrameworkWebAutoConfiguration,\
-  com.aircraftcarrier.framework.scheduler.TaskSchedulingAutoConfiguration
+  com.aircraftcarrier.framework.scheduling.TaskSchedulingAutoConfiguration
 
