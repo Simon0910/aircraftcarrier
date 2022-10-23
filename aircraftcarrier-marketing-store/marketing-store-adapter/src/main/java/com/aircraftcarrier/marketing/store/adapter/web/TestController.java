@@ -3,7 +3,7 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.scheduling.AbstractAsyncTask;
+import com.aircraftcarrier.framework.scheduling.DynamicTaskService;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
@@ -263,7 +263,7 @@ public class TestController {
         return SingleResponse.ok("reentrantLock");
     }
 
-    private final Map<String, AbstractAsyncTask> taskTask = new ConcurrentHashMap<>();
+    private final Map<String, DynamicTaskService.AbstractAsyncTask> taskTask = new ConcurrentHashMap<>();
 
     @ApiOperationSupport(order = 52)
     @ApiOperation(value = "引用测试")
@@ -273,7 +273,7 @@ public class TestController {
             PrintTimeTask task = new PrintTimeTask("cron");
 
             taskTask.put(task.getTaskName(), task);
-            task.holdTaskMap(taskTask);
+//            task.holdTaskMap(taskTask);
 
             threadPoolExecutor.execute(() -> {
 //                task.removeTask(task);
