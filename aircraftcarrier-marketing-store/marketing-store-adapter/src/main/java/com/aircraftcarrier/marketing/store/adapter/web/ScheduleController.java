@@ -24,11 +24,11 @@ public class ScheduleController {
     @Resource
     DynamicTaskService dynamicTaskService;
 
-    @GetMapping("/add")
-    public String add(String cron) {
+    @GetMapping("/register")
+    public String register(String cron) {
         // "0/60 * * * * ?"
-        dynamicTaskService.add(new PrintTimeTask(cron));
-        return "add";
+        dynamicTaskService.register(new PrintTimeTask(cron));
+        return "register";
     }
 
     @GetMapping("/cancel")

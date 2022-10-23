@@ -263,7 +263,7 @@ public class TestController {
         return SingleResponse.ok("reentrantLock");
     }
 
-    private final Map<String, AbstractAsyncTask> runningTask = new ConcurrentHashMap<>();
+    private final Map<String, AbstractAsyncTask> taskTask = new ConcurrentHashMap<>();
 
     @ApiOperationSupport(order = 52)
     @ApiOperation(value = "引用测试")
@@ -272,14 +272,14 @@ public class TestController {
         for (int i = 0; i < 10000; i++) {
             PrintTimeTask task = new PrintTimeTask("cron");
 
-            runningTask.put(task.getTaskName(), task);
-            task.setRunningTask(runningTask);
+            taskTask.put(task.getTaskName(), task);
+            task.holdTaskMap(taskTask);
 
             threadPoolExecutor.execute(() -> {
-//                task.removeRunning(task);
+//                task.removeTask(task);
             });
 
-            System.out.println(runningTask.size());
+            System.out.println(taskTask.size());
             System.out.println();
         }
         return SingleResponse.ok("reference");

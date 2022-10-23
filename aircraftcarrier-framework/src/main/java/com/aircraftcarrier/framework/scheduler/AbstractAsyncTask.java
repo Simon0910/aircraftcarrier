@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author liuzhipeng
@@ -15,11 +14,11 @@ public abstract class AbstractAsyncTask implements Runnable {
 
     /**
      * state
+     * volatile 为了定时线程和手动线程相互及时的看到
      */
-    private State state;
+    private volatile State state;
 
-    private Map<String, AbstractAsyncTask> waitingTask = new ConcurrentHashMap<>();
-    private Map<String, AbstractAsyncTask> runningTask = new ConcurrentHashMap<>();
+    private Map<String, AbstractAsyncTask> dynamicTaskMap;
 
     private String taskName;
 
@@ -30,30 +29,21 @@ public abstract class AbstractAsyncTask implements Runnable {
         Assert.hasText(cron, "cron must not be blank");
         this.taskName = taskName;
         this.cron = cron;
-        this.state = State.WAITING;
+        state = State.WAITING;
     }
 
     @Override
     public final void run() {
         try {
-            // 启动前被中断了
-            if (Thread.currentThread().isInterrupted()) {
-                log.error("i am isInterrupted so not run!");
-                throw new RuntimeException("i am isInterrupted so not run!");
-            }
-
             // 任务执行前获取分布式锁， 保证一个任务执行 （注意：各个环境不要争抢同一个锁影响）
             if (!LockUtil.tryLock(getTaskName())) {
+                // 可能手动任务抢到了锁，定时任务被挤掉了，只能到一个周期了
                 log.info("task get lock fail");
                 return;
             }
 
             // 正常执行，waiting ==》 running
-            synchronized (this) {
-                state = State.RUNNING;
-                removeWaiting();
-                putRunning();
-            }
+            updateState(State.RUNNING);
 
             boolean success = true;
             try {
@@ -83,36 +73,26 @@ public abstract class AbstractAsyncTask implements Runnable {
             }
 
         } finally {
-            // 一个短暂的 finally 状态
-            state = State.FINALLY;
-            // ********************中断通知*************************
-            try {
-                if (Thread.currentThread().isInterrupted()) {
-                    // 可能还在运行集合，或等待集合，等待断中完成
-                    // FINALLY RUNNING WAITING
-                    interrupted();
-                }
-            } finally {
-                // 正常执行，running ==》 waiting
-                synchronized (this) {
-                    state = State.WAITING;
-                    putWaiting();
-                    removeRunning();
-                }
+            // 正常执行，running ==》 waiting
+            updateState(State.WAITING);
 
-                if (Thread.currentThread().isInterrupted()) {
-                    // 断中完成，移除等待集合
-                    // INTERRUPTED
-                    state = State.INTERRUPTED;
-                    removeWaiting();
-                }
-                // ********************中断通知*************************
-
-                // 释放锁
-                LockUtil.unLock(getTaskName());
+            if (Thread.currentThread().isInterrupted()) {
+                // 断中完成，移除等待集合
+                // INTERRUPTED
+                updateState(State.INTERRUPTED);
+                dynamicTaskMap.remove(taskName);
             }
+
+            // 释放锁
+            // 失败了怎么办？register时会判断!schedule.isDone() 所以不会重复注册
+            // 直到下次可重入再次执行任务？下次执行还是同一个线程吗，不是的话LockUtil实现逻辑就不可重入了！！待验证
+            LockUtil.unLock(getTaskName());
         }
 
+    }
+
+    private void updateState(State newState) {
+        state = newState;
     }
 
     /**
@@ -147,12 +127,6 @@ public abstract class AbstractAsyncTask implements Runnable {
     public void after() {
     }
 
-    /**
-     * interrupted 任务
-     */
-    public void interrupted() {
-    }
-
     public final String getTaskName() {
         return taskName;
     }
@@ -165,6 +139,10 @@ public abstract class AbstractAsyncTask implements Runnable {
         return state;
     }
 
+    public final boolean istWaiting() {
+        return state == State.WAITING;
+    }
+
     public final boolean isRunning() {
         return state == State.RUNNING;
     }
@@ -173,32 +151,12 @@ public abstract class AbstractAsyncTask implements Runnable {
         return state == State.INTERRUPTED;
     }
 
-    public final void setWaitingTask(Map<String, AbstractAsyncTask> waitingTask) {
-        this.waitingTask = waitingTask;
+    public final void holdTaskMap(Map<String, AbstractAsyncTask> dynamicTaskMap) {
+        this.dynamicTaskMap = dynamicTaskMap;
     }
 
-    public final void setRunningTask(Map<String, AbstractAsyncTask> runningTask) {
-        this.runningTask = runningTask;
-    }
-
-    private void putWaiting() {
-        waitingTask.put(taskName, this);
-    }
-
-    private void removeWaiting() {
-        waitingTask.remove(taskName);
-    }
-
-    private void putRunning() {
-        runningTask.put(taskName, this);
-    }
-
-    private void removeRunning() {
-        runningTask.remove(taskName);
-    }
-
-//    public void removeRunning(AbstractAsyncTask task) {
-//        runningTask.remove(task.getTaskName());
+//    public void removeTask(AbstractAsyncTask task) {
+//        dynamicTaskMap.remove(task.getTaskName());
 //    }
 
     enum State {

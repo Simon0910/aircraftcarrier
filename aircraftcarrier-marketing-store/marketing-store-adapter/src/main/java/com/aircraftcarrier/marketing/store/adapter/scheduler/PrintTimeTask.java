@@ -3,10 +3,12 @@ package com.aircraftcarrier.marketing.store.adapter.scheduler;
 import com.aircraftcarrier.framework.scheduler.AbstractAsyncTask;
 import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author liuzhipeng
  */
+@Slf4j
 public class PrintTimeTask extends AbstractAsyncTask {
 
     public PrintTimeTask() {
@@ -21,13 +23,11 @@ public class PrintTimeTask extends AbstractAsyncTask {
     public void runTask() {
         for (int i = 0; i < 10; i++) {
             SleepUtil.sleepSeconds(1);
-            System.out.println("i am running " + i + ": " + DateTimeUtil.now());
-
-            System.out.println("state:: " + getState());
+            log.info("i am running " + i + ": " + DateTimeUtil.now() + "  state:: " + getState());
 
             // if isInterrupted to do something
             if (Thread.currentThread().isInterrupted()) {
-                System.out.println("ok i am stop ! to do finish");
+                log.info("ok i am stop ! to do finish");
                 break;
 //                throw new RuntimeException("ok i am stop !");
             }
