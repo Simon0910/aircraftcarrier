@@ -30,8 +30,8 @@ public class DynamicTaskService {
     private final Map<String, AbstractAsyncTask> manualDynamicTaskMap = new ConcurrentHashMap<>();
     private final ExecutorService manualService = ThreadPoolUtil.newCachedThreadPoolDiscard(10, "manual-schedule");
     private final ExecutorService selfCancelService = ThreadPoolUtil.newCachedThreadPool(10, "self-cancel");
-    public Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
-    public Map<String, FutureTask<?>> manualFutureTaskMap = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
+    private final Map<String, FutureTask<?>> manualFutureTaskMap = new ConcurrentHashMap<>();
     private final ThreadPoolTaskScheduler taskScheduler;
 
     public DynamicTaskService(ThreadPoolTaskScheduler taskScheduler) {

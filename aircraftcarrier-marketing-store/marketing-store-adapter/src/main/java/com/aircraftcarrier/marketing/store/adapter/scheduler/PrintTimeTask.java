@@ -11,12 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PrintTimeTask extends AbstractAsyncTask {
 
+    private static final String TASK_NAME = "print";
+
     public PrintTimeTask() {
         this("0/60 * * * * ?");
     }
 
     public PrintTimeTask(String cron) {
-        super("print", cron);
+        super(TASK_NAME, cron);
     }
 
     @Override

@@ -20,9 +20,9 @@ public abstract class AbstractAsyncTask implements Runnable {
 
     private Map<String, AbstractAsyncTask> dynamicTaskMap;
 
-    private String taskName;
+    private final String taskName;
 
-    private String cron;
+    private final String cron;
 
     public AbstractAsyncTask(String taskName, String cron) {
         Assert.hasText(taskName, "taskName must not be blank");
@@ -151,13 +151,13 @@ public abstract class AbstractAsyncTask implements Runnable {
         return state == State.INTERRUPTED;
     }
 
+    /**
+     * 怎么限制只能 DynamicTaskService 设置
+     * 创建共享TaskMapHold单例类
+     */
     public final void holdTaskMap(Map<String, AbstractAsyncTask> dynamicTaskMap) {
         this.dynamicTaskMap = dynamicTaskMap;
     }
-
-//    public void removeTask(AbstractAsyncTask task) {
-//        dynamicTaskMap.remove(task.getTaskName());
-//    }
 
     enum State {
         WAITING, RUNNING, FINALLY, INTERRUPTED, TERMINATED
