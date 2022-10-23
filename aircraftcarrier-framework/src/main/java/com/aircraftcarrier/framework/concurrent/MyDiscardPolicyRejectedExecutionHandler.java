@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author lzp
+ * {@link ThreadPoolExecutor.DiscardPolicy}
  */
 @Slf4j
 public class MyDiscardPolicyRejectedExecutionHandler implements RejectedExecutionHandler {

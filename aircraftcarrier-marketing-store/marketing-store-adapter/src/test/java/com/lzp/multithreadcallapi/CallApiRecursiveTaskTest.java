@@ -129,7 +129,7 @@ public class CallApiRecursiveTaskTest {
             task.add(() -> callApiService.getResult(new Param()));
         }
 
-        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool(1000, "call-api");
+        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool("call-api");
         List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
 
         System.out.println("ThreadPoolExecutor ===> " + results.size());

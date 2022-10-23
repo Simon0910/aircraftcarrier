@@ -30,8 +30,14 @@ public class DynamicTaskService {
 
     private final Map<String, AbstractAsyncTask> dynamicTaskMap = new ConcurrentHashMap<>();
     private final Map<String, AbstractAsyncTask> manualDynamicTaskMap = new ConcurrentHashMap<>();
-    private final ExecutorService manualService = ThreadPoolUtil.newCachedThreadPoolDiscard(10, "manual-schedule");
-    private final ExecutorService selfCancelService = ThreadPoolUtil.newCachedThreadPool(10, "self-cancel");
+    private final ExecutorService manualService = ThreadPoolUtil.newCachedThreadPoolDiscard(100, "manual-schedule");
+    /**
+     * executeOnceManual::for->13, manualService.nThreads = 10, selfCancelService.nThreads = 12。 manualService形成3个触发拒绝，selfCancelService形成1个触发CallerRunsPolicy
+     * 此时只要是触发了1个CallerRunsPolicy就形成无限阻塞了
+     * 解决1： selfCancelService.nThreads >= for.size ( ThreadPoolUtil.newCachedThreadPool(>=for.size, "self-cancel"); )
+     * 解决2： 使用jdk默认的 newCachedThreadPool
+     */
+    private final ExecutorService selfCancelService = ThreadPoolUtil.newCachedThreadPool("self-cancel");
     private final Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
     private final Map<String, FutureTask<?>> manualFutureTaskMap = new ConcurrentHashMap<>();
     private final ThreadPoolTaskScheduler taskScheduler;
@@ -81,11 +87,7 @@ public class DynamicTaskService {
                 return false;
             }
 
-            // schedule :调度给定的Runnable ，在指定的执行时间调用它。
-            //一旦调度程序关闭或返回的ScheduledFuture被取消，执行将结束。
-            //参数：
-            //任务 – 触发器触发时执行的 Runnable
-            //startTime – 任务所需的执行时间（如果这是过去，则任务将立即执行，即尽快执行）
+            // taskScheduler todo 多个定时任务串行执行了？有没有并发执行
             schedule = taskScheduler.schedule(task, triggerContext -> {
                 // 使用CronTrigger触发器，可动态修改cron表达式来操作循环规则
                 Trigger trigger = new CronTrigger(task.getCron());
@@ -104,10 +106,35 @@ public class DynamicTaskService {
     }
 
     /**
+     * 停止任务
+     *
+     * @param task task
+     * @return boolean
+     */
+    public boolean cancel(AbstractAsyncTask task) {
+        String taskName = task.getTaskName();
+        Future<?> scheduledFuture;
+        if (null == (scheduledFuture = scheduledMap.get(taskName))) {
+            log.info("schedule not found!");
+            return false;
+        }
+
+        boolean cancel = scheduledFuture.cancel(true);
+        log.info("schedule canceled... {}", cancel);
+        log.info("schedule is done: {}", scheduledFuture.isDone());
+
+        scheduledMap.remove(taskName);
+        // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
+        log.info("remove schedule task: {}", scheduledFuture);
+        return true;
+    }
+
+    /**
      * 手动执行一次
      * {@link ScheduledExecutorTask#isOneTimeTask()}
      * <p>
      * 注意： 定时未开始前允许手动执行
+     * 注意：大于manualService.最大线程数不执行
      *
      * @param task task
      */
@@ -161,42 +188,6 @@ public class DynamicTaskService {
         }
     }
 
-
-    private void removeManualScheduler(Map<String, FutureTask<?>> manualFutureTaskMap, String taskName, Future<?> f, Consumer<Void> message) {
-        synchronized (taskName.intern()) {
-            if (f == manualFutureTaskMap.get(taskName)) {
-                message.accept(null);
-                manualFutureTaskMap.remove(taskName);
-            }
-        }
-    }
-
-
-    /**
-     * 停止任务
-     *
-     * @param task task
-     * @return boolean
-     */
-    public boolean cancel(AbstractAsyncTask task) {
-        String taskName = task.getTaskName();
-        Future<?> scheduledFuture;
-        if (null == (scheduledFuture = scheduledMap.get(taskName))) {
-            log.info("schedule not found!");
-            return false;
-        }
-
-        boolean cancel = scheduledFuture.cancel(true);
-        log.info("schedule canceled... {}", cancel);
-        log.info("schedule is done: {}", scheduledFuture.isDone());
-
-        scheduledMap.remove(taskName);
-        // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
-        log.info("remove schedule task: {}", scheduledFuture);
-        return true;
-    }
-
-
     /**
      * 停止任务
      *
@@ -218,6 +209,18 @@ public class DynamicTaskService {
         removeManualScheduler(manualFutureTaskMap, taskName, futureTask, (unused) -> log.info("remove manual futureTask: {}", futureTask));
         // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
         return true;
+    }
+
+    /**
+     * removeManualScheduler
+     */
+    private void removeManualScheduler(Map<String, FutureTask<?>> manualFutureTaskMap, String taskName, Future<?> f, Consumer<Void> message) {
+        synchronized (taskName.intern()) {
+            if (f == manualFutureTaskMap.get(taskName)) {
+                message.accept(null);
+                manualFutureTaskMap.remove(taskName);
+            }
+        }
     }
 
     /**

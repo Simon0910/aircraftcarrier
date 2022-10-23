@@ -133,21 +133,21 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * 缓存线程池 最大nThreads线程大小(防止无限创建缓存线程oom) 同步队列（默认队列就排队串行了！！！） 多余的请求同步阻塞 （不丢弃任务）
+     * 缓存线程池 10秒空闲时间(防止无限创建缓存线程oom) 同步队列（默认队列就排队串行了！！！） 默认拒绝策略
      * <p>
      * 参考：
      * {@link java.util.concurrent.Executors#newCachedThreadPool() }
      * {@link cn.hutool.core.thread.ExecutorBuilder#build(cn.hutool.core.thread.ExecutorBuilder) }
      */
-    public static ExecutorService newCachedThreadPool(int nThreads, String pooName) {
+    public static ExecutorService newCachedThreadPool(String pooName) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
-                0, nThreads,
-                60L, TimeUnit.SECONDS,
+                0, Integer.MAX_VALUE,
+                10L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                buildThreadFactory("cached-caller-pool-" + pooName),
-                // 其他请求同步请求
-                new ThreadPoolExecutor.CallerRunsPolicy());
+                buildThreadFactory("cached-pool-" + pooName),
+                // 默认拒绝策略
+                new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
