@@ -31,7 +31,7 @@ public class DynamicTaskService {
     private final ExecutorService manualService = ThreadPoolUtil.newCachedThreadPoolDiscard(10, "manual-schedule");
     private final ExecutorService selfCancelService = ThreadPoolUtil.newCachedThreadPool(10, "self-cancel");
     public Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
-    public Map<String, FutureTask<?>> manualScheduledMap = new ConcurrentHashMap<>();
+    public Map<String, FutureTask<?>> manualFutureTaskMap = new ConcurrentHashMap<>();
     private final ThreadPoolTaskScheduler taskScheduler;
 
     public DynamicTaskService(ThreadPoolTaskScheduler taskScheduler) {
@@ -75,7 +75,7 @@ public class DynamicTaskService {
             // 上一个定时任务还没取消
             ScheduledFuture<?> schedule;
             if (null != (schedule = scheduledMap.get(task.getTaskName())) && !schedule.isDone()) {
-                log.error("schedule task [{}] has been register ! please cancel before register", task.getTaskName());
+                log.error("ScheduledFuture [{}] has been register ! please cancel before register", task.getTaskName());
                 return false;
             }
 
@@ -96,7 +96,7 @@ public class DynamicTaskService {
             dynamicTaskMap.put(task.getTaskName(), task);
             task.holdTaskMap(dynamicTaskMap);
 
-            log.info("add :: {}", schedule);
+            log.info("register :: {}", schedule);
             return true;
         }
     }
@@ -127,16 +127,16 @@ public class DynamicTaskService {
             }
 
             // 上一个手动任务还没取消
-            FutureTask<?> manualSchedule;
-            if (null != (manualSchedule = manualScheduledMap.get(task.getTaskName())) && !manualSchedule.isDone()) {
-                log.error("manual schedule task [{}] has been register ! please cancel before register", task.getTaskName());
+            FutureTask<?> manualFutureTask;
+            if (null != (manualFutureTask = manualFutureTaskMap.get(task.getTaskName())) && !manualFutureTask.isDone()) {
+                log.error("manual FutureTask [{}] has been register ! please cancel before register", task.getTaskName());
                 return false;
             }
 
             FutureTask<Void> f = new FutureTask<>(task, null);
             manualService.execute(f);
 
-            manualScheduledMap.put(task.getTaskName(), f);
+            manualFutureTaskMap.put(task.getTaskName(), f);
             manualDynamicTaskMap.put(task.getTaskName(), task);
             task.holdTaskMap(manualDynamicTaskMap);
 
@@ -146,12 +146,12 @@ public class DynamicTaskService {
                 try {
                     f.get(2, TimeUnit.HOURS);
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                    log.error("manual schedule ERROR: ", e);
+                    log.error("manual manualFutureTask ERROR: ", e);
                 } finally {
-                    log.info("manual schedule task [{}] self cancel...", innerTask.getTaskName());
+                    log.info("manual manualFutureTask [{}] self cancel...", innerTask.getTaskName());
                     f.cancel(true);
                     // 等待了很久还没完成，手动取消后又添加执行了，保证移除的是之前的自己，不是新添加的Future
-                    removeManualScheduler(manualScheduledMap, innerTask.getTaskName(), f, (unused) -> log.info("manual schedule task [{}] self remove", innerTask.getTaskName()));
+                    removeManualScheduler(manualFutureTaskMap, innerTask.getTaskName(), f, (unused) -> log.info("manual manualFutureTask [{}] self remove", innerTask.getTaskName()));
                 }
             });
             log.info("executeOnce :: {}", f);
@@ -159,11 +159,12 @@ public class DynamicTaskService {
         }
     }
 
-    private void removeManualScheduler(Map<String, FutureTask<?>> scheduledMap, String taskName, Future<?> f, Consumer<Void> message) {
+
+    private void removeManualScheduler(Map<String, FutureTask<?>> manualFutureTaskMap, String taskName, Future<?> f, Consumer<Void> message) {
         synchronized (taskName.intern()) {
-            if (f == scheduledMap.get(taskName)) {
+            if (f == manualFutureTaskMap.get(taskName)) {
                 message.accept(null);
-                scheduledMap.remove(taskName);
+                manualFutureTaskMap.remove(taskName);
             }
         }
     }
@@ -202,17 +203,17 @@ public class DynamicTaskService {
      */
     public boolean cancelManual(AbstractAsyncTask task) {
         String taskName = task.getTaskName();
-        FutureTask<?> future;
-        if (null == (future = manualScheduledMap.get(taskName))) {
-            log.info("manual schedule not found!");
+        FutureTask<?> futureTask;
+        if (null == (futureTask = manualFutureTaskMap.get(taskName))) {
+            log.info("manual futureTask not found!");
             return false;
         }
 
-        boolean cancel = future.cancel(true);
-        log.info("manual schedule cancel... {}", cancel);
-        log.info("manual schedule is done: {}", future.isDone());
+        boolean cancel = futureTask.cancel(true);
+        log.info("manual futureTask cancel... {}", cancel);
+        log.info("manual futureTask is done: {}", futureTask.isDone());
 
-        removeManualScheduler(manualScheduledMap, taskName, future, (unused) -> log.info("remove manual schedule task: {}", future));
+        removeManualScheduler(manualFutureTaskMap, taskName, futureTask, (unused) -> log.info("remove manual futureTask: {}", futureTask));
         // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
         return true;
     }
