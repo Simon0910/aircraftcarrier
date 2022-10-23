@@ -4,8 +4,8 @@ import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.concurrent.ScheduledExecutorTask;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.util.Assert;
 
@@ -40,9 +40,9 @@ public class DynamicTaskService {
     private final ExecutorService selfCancelService = ThreadPoolUtil.newCachedThreadPool("self-cancel");
     private final Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
     private final Map<String, FutureTask<?>> manualFutureTaskMap = new ConcurrentHashMap<>();
-    private final ThreadPoolTaskScheduler taskScheduler;
+    private final ConcurrentTaskScheduler taskScheduler;
 
-    public DynamicTaskService(ThreadPoolTaskScheduler taskScheduler) {
+    public DynamicTaskService(ConcurrentTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }
 
