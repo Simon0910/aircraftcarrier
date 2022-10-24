@@ -206,5 +206,12 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
         </dependency>
+
+        <!-- https://icode.best/i/48800044409098 -->
+        <dependency>
+            <groupId>org.burningwave</groupId>
+            <artifactId>core</artifactId>
+            <version>9.5.2</version>
+        </dependency>
     </dependencies>
 </project>

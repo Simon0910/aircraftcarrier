@@ -1,9 +1,5 @@
 package com.aircraftcarrier.framework.tookit;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -83,28 +79,5 @@ public class CollectionUtil {
         // 计算年龄平均值
         return list.stream().collect(Collectors.collectingAndThen(Collectors.averagingDouble(mapper), Double::doubleValue));
     }
-
-    /**
-     * 深拷贝
-     * 防止改变参数原来结构
-     *
-     * @param srcList src
-     * @param <T>     对象
-     * @return dest
-     */
-    public static <T> List<T> depCopy(List<T> srcList) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(srcList);
-            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            return (List<T>) ois.readObject();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>();
-    }
-
 
 }
