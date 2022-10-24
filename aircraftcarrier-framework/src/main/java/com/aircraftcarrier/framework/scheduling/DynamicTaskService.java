@@ -402,7 +402,12 @@ public class DynamicTaskService {
             return state == State.INTERRUPTED;
         }
 
-        public final void setProgress(int progress) {
+        /**
+         * 上报进度
+         *
+         * @param progress 进度 1 - 100
+         */
+        public final void reportProgress(int progress) {
             this.progress = progress;
         }
 

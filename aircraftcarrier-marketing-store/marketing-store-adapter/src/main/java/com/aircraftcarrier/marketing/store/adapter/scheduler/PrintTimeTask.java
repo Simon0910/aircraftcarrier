@@ -31,7 +31,7 @@ public class PrintTimeTask extends DynamicTaskService.AbstractAsyncTask {
         final int step = 10;
         for (int i = 0; i < step; i++) {
             double percentage = MathUtil.getPercentage(i, step);
-            setProgress((int) (percentage * 100));
+            reportProgress((int) (percentage * 100));
 
             SleepUtil.sleepSeconds(1);
             log.info("i am running task:[{}] i = {} state = {}", getTaskName(), i, getState());
