@@ -43,6 +43,11 @@ public class DynamicTaskService {
     private final Map<String, FutureTask<?>> manualFutureTaskMap = new ConcurrentHashMap<>();
     private final ConcurrentTaskScheduler taskScheduler;
 
+    /**
+     * 同一时刻最多有几个任务在运行 corePoolSize
+     *
+     * @see TaskSchedulingAutoConfiguration#concurrentTaskScheduler()
+     */
     public DynamicTaskService(ConcurrentTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }

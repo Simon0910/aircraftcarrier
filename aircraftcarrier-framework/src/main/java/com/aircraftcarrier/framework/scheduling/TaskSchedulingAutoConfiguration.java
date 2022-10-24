@@ -22,7 +22,7 @@ public class TaskSchedulingAutoConfiguration {
     @Bean
     public ConcurrentTaskScheduler concurrentTaskScheduler() {
         ConcurrentTaskScheduler concurrentTaskScheduler = new ConcurrentTaskScheduler();
-        // 10个任务同时再执行
+        // 同一时刻最多有几个任务在运行 corePoolSize
         concurrentTaskScheduler.setScheduledExecutor(Executors.newScheduledThreadPool(10));
         return concurrentTaskScheduler;
     }

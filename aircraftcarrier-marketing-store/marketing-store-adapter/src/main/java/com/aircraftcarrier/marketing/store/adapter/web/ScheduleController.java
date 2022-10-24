@@ -30,8 +30,12 @@ public class ScheduleController {
     @GetMapping("/register")
     public String register(String cron) {
         // "0/60 * * * * ?"
-        for (int i = 0; i < 10; i++) {
-            dynamicTaskService.register(new PrintTimeTask("task" + i, cron));
+        for (int i = 1; i <= 11; i++) {
+            if (i == 11) {
+                dynamicTaskService.register(new PrintTimeTask("task-" + i, "0/25 * * * * ?"));
+                break;
+            }
+            dynamicTaskService.register(new PrintTimeTask("task-" + i, "0/20 * * * * ?"));
         }
         return "register";
     }
@@ -44,7 +48,7 @@ public class ScheduleController {
 
     @GetMapping("/executeOnceManual")
     public String executeOnceManual() {
-        for (int i = 0; i < 13; i++) {
+        for (int i = 1; i <= 13; i++) {
             dynamicTaskService.executeOnceManual(new PrintTimeTask("task" + i, "null"));
         }
         return "executeOnceManual";
