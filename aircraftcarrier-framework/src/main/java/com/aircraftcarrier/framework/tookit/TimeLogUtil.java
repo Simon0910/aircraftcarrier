@@ -25,6 +25,11 @@ public class TimeLogUtil {
         return "elapsed time: [ " + duration + " ] ms ";
     }
 
+    private static String replacePlaceholder(String message) {
+        return message.replaceAll("\\{\\}", "%s");
+    }
+
+
     /**
      * 获取开始时间
      *
@@ -48,12 +53,12 @@ public class TimeLogUtil {
     }
 
     public static void endTimePrintln(String message, long startTime) {
-        System.out.println(String.format(message.replaceAll("\\{\\}", "%s"), wrapperElapsedTime(endTime(startTime))));
+        System.out.printf((replacePlaceholder(message)) + "%n", wrapperElapsedTime(endTime(startTime)));
     }
 
     public static void endTimeLog(String message, long startTime) {
         // 定位不到具体再哪一行打印的？
-        log.info(String.format(message.replaceAll("\\{\\}", "%s"), wrapperElapsedTime(endTime(startTime))));
+        log.info(String.format(replacePlaceholder(message), wrapperElapsedTime(endTime(startTime))));
     }
 
     /**
@@ -78,10 +83,6 @@ public class TimeLogUtil {
         stopwatch.reset();
         stopwatch.start();
         return elapsed;
-    }
-
-    public static String getDurationStr(Stopwatch stopwatch) {
-        return getDuration(stopwatch) + "ms";
     }
 
     /**
@@ -109,4 +110,8 @@ public class TimeLogUtil {
         System.out.println(wrapperElapsedTime(endStopwatchTime(stopwatch)));
     }
 
+    public static void endStopwatchTimePrintlnLog(String message, Stopwatch stopwatch) {
+        // 定位不到具体再哪一行打印的？
+        log.info(String.format(replacePlaceholder(message), wrapperElapsedTime(endStopwatchTime(stopwatch))));
+    }
 }

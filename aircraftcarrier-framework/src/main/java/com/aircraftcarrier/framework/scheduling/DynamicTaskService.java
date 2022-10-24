@@ -9,6 +9,7 @@ import org.springframework.scheduling.concurrent.ScheduledExecutorTask;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,15 +47,35 @@ public class DynamicTaskService {
         this.taskScheduler = taskScheduler;
     }
 
+    private static List<MonitorViewTask> getMonitorViewTasks(List<AbstractAsyncTask> abstractAsyncTasks) {
+        List<MonitorViewTask> results = new ArrayList<>(abstractAsyncTasks.size());
+        for (AbstractAsyncTask asyncTask : abstractAsyncTasks) {
+            MonitorViewTask monitorViewTask = new MonitorViewTask();
+            monitorViewTask.setTaskName(asyncTask.taskName);
+            monitorViewTask.setCron(asyncTask.cron);
+            monitorViewTask.setState(asyncTask.state.toString());
+            monitorViewTask.setProgress(asyncTask.progress);
+            results.add(monitorViewTask);
+        }
+        return results;
+    }
+
     /**
      * 查看已开启但还未执行的动态任务
      */
-    public List<String> getWaitingTaskList() {
-        return dynamicTaskMap.entrySet().stream().filter(e -> e.getValue().istWaiting()).toList().stream().map(Map.Entry::getKey).toList();
+    public List<MonitorViewTask> getWaitingTaskList() {
+        List<AbstractAsyncTask> abstractAsyncTasks = dynamicTaskMap.values().stream().filter(AbstractAsyncTask::isWaiting).toList();
+        return getMonitorViewTasks(abstractAsyncTasks);
     }
 
-    public List<String> getRunningTaskList() {
-        return dynamicTaskMap.entrySet().stream().filter(e -> e.getValue().isRunning()).toList().stream().map(Map.Entry::getKey).toList();
+    public List<MonitorViewTask> getRunningTaskList() {
+        List<AbstractAsyncTask> abstractAsyncTasks = dynamicTaskMap.values().stream().filter(AbstractAsyncTask::isRunning).toList();
+        return getMonitorViewTasks(abstractAsyncTasks);
+    }
+
+    public List<MonitorViewTask> getTaskList() {
+        List<AbstractAsyncTask> abstractAsyncTasks = dynamicTaskMap.values().stream().toList();
+        return getMonitorViewTasks(abstractAsyncTasks);
     }
 
     /**
@@ -87,7 +108,7 @@ public class DynamicTaskService {
                 return false;
             }
 
-            // taskScheduler todo 多个定时任务串行执行了？有没有并发执行
+            // taskScheduler
             schedule = taskScheduler.schedule(task, triggerContext -> {
                 // 使用CronTrigger触发器，可动态修改cron表达式来操作循环规则
                 Trigger trigger = new CronTrigger(task.getCron());
@@ -238,6 +259,11 @@ public class DynamicTaskService {
          * volatile 为了定时线程和手动线程相互及时的看到
          */
         private volatile State state;
+
+        /**
+         * 进度 0-100
+         */
+        private volatile int progress;
         private Map<String, AbstractAsyncTask> dynamicTaskMap;
 
         public AbstractAsyncTask(String taskName, String cron) {
@@ -246,6 +272,7 @@ public class DynamicTaskService {
             this.taskName = taskName;
             this.cron = cron;
             state = State.WAITING;
+            progress = 0;
         }
 
         @Override
@@ -291,6 +318,7 @@ public class DynamicTaskService {
             } finally {
                 // 正常执行，running ==》 waiting
                 updateState(State.WAITING);
+                progress = 0;
 
                 if (Thread.currentThread().isInterrupted()) {
                     // 断中完成，移除等待集合
@@ -305,6 +333,13 @@ public class DynamicTaskService {
                 LockUtil.unLock(getTaskName());
             }
 
+        }
+
+        /**
+         * 怎么限制只能 DynamicTaskService
+         */
+        private void holdTaskMap(Map<String, AbstractAsyncTask> dynamicTaskMap) {
+            this.dynamicTaskMap = dynamicTaskMap;
         }
 
         private void updateState(State newState) {
@@ -355,7 +390,7 @@ public class DynamicTaskService {
             return state;
         }
 
-        public final boolean istWaiting() {
+        public final boolean isWaiting() {
             return state == State.WAITING;
         }
 
@@ -367,11 +402,8 @@ public class DynamicTaskService {
             return state == State.INTERRUPTED;
         }
 
-        /**
-         * 怎么限制只能 DynamicTaskService
-         */
-        private void holdTaskMap(Map<String, AbstractAsyncTask> dynamicTaskMap) {
-            this.dynamicTaskMap = dynamicTaskMap;
+        public final void setProgress(int progress) {
+            this.progress = progress;
         }
 
         @Override

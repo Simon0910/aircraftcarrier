@@ -1,6 +1,8 @@
 package com.aircraftcarrier.marketing.store.adapter.web;
 
+import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.scheduling.DynamicTaskService;
+import com.aircraftcarrier.framework.scheduling.MonitorViewTask;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 定时任务
@@ -34,10 +37,8 @@ public class ScheduleController {
     }
 
     @GetMapping("/cancel")
-    public String cancel() {
-        for (int i = 0; i < 1000; i++) {
-            dynamicTaskService.cancel(new PrintTimeTask("task" + i, "null"));
-        }
+    public String cancel(String taskName) {
+        dynamicTaskService.cancel(new PrintTimeTask(taskName, "null"));
         return "cancel";
     }
 
@@ -50,11 +51,14 @@ public class ScheduleController {
     }
 
     @GetMapping("/cancelManual")
-    public String cancelManual() {
-        for (int i = 0; i < 1000; i++) {
-            dynamicTaskService.cancelManual(new PrintTimeTask("task" + i, "null"));
-        }
+    public String cancelManual(String taskName) {
+        dynamicTaskService.cancelManual(new PrintTimeTask(taskName, "null"));
         return "cancelManual";
     }
 
+    @GetMapping("/monitor")
+    public MultiResponse<MonitorViewTask> monitor() {
+        List<MonitorViewTask> taskList = dynamicTaskService.getTaskList();
+        return MultiResponse.ok(taskList);
+    }
 }
