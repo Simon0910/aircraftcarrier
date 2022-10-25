@@ -25,10 +25,10 @@ import java.util.function.Consumer;
  * 还可以优化：观察者模式 监听状态， 怎么实现共享状态
  */
 @Slf4j
-public class DynamicTaskService {
+public class TaskService {
 
-    private final Map<String, AbstractAsyncTask> dynamicTaskMap = new ConcurrentHashMap<>();
-    private final Map<String, AbstractAsyncTask> manualDynamicTaskMap = new ConcurrentHashMap<>();
+    private final Map<String, AbstractTask> dynamicTaskMap = new ConcurrentHashMap<>();
+    private final Map<String, AbstractTask> manualDynamicTaskMap = new ConcurrentHashMap<>();
     private final ExecutorService manualService = ThreadPoolUtil.newCachedThreadPoolDiscard(100, "manual-schedule");
     /**
      * executeOnceManual::for->13, manualService.nThreads = 10, selfCancelService.nThreads = 12。 manualService形成3个触发拒绝，selfCancelService形成1个触发CallerRunsPolicy
@@ -46,14 +46,14 @@ public class DynamicTaskService {
      *
      * @see TaskSchedulingAutoConfiguration#concurrentTaskScheduler()
      */
-    public DynamicTaskService(ConcurrentTaskScheduler taskScheduler) {
+    public TaskService(ConcurrentTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }
 
-    private static List<MonitorViewTask> getMonitorViewTasks(List<AbstractAsyncTask> abstractAsyncTasks) {
-        List<MonitorViewTask> results = new ArrayList<>(abstractAsyncTasks.size());
-        for (AbstractAsyncTask asyncTask : abstractAsyncTasks) {
-            MonitorViewTask monitorViewTask = new MonitorViewTask();
+    private static List<TaskMonitorView> getMonitorViewTasks(List<AbstractTask> abstractAsyncTasks) {
+        List<TaskMonitorView> results = new ArrayList<>(abstractAsyncTasks.size());
+        for (AbstractTask asyncTask : abstractAsyncTasks) {
+            TaskMonitorView monitorViewTask = new TaskMonitorView();
             monitorViewTask.setTaskName(asyncTask.getTaskName());
             monitorViewTask.setCron(asyncTask.getCron());
             monitorViewTask.setState(asyncTask.getState().toString());
@@ -66,18 +66,18 @@ public class DynamicTaskService {
     /**
      * 查看已开启但还未执行的动态任务
      */
-    public List<MonitorViewTask> getWaitingTaskList() {
-        List<AbstractAsyncTask> abstractAsyncTasks = dynamicTaskMap.values().stream().filter(AbstractAsyncTask::isWaiting).toList();
+    public List<TaskMonitorView> getWaitingTaskList() {
+        List<AbstractTask> abstractAsyncTasks = dynamicTaskMap.values().stream().filter(AbstractTask::isWaiting).toList();
         return getMonitorViewTasks(abstractAsyncTasks);
     }
 
-    public List<MonitorViewTask> getRunningTaskList() {
-        List<AbstractAsyncTask> abstractAsyncTasks = dynamicTaskMap.values().stream().filter(AbstractAsyncTask::isRunning).toList();
+    public List<TaskMonitorView> getRunningTaskList() {
+        List<AbstractTask> abstractAsyncTasks = dynamicTaskMap.values().stream().filter(AbstractTask::isRunning).toList();
         return getMonitorViewTasks(abstractAsyncTasks);
     }
 
-    public List<MonitorViewTask> getTaskList() {
-        List<AbstractAsyncTask> abstractAsyncTasks = dynamicTaskMap.values().stream().toList();
+    public List<TaskMonitorView> getTaskList() {
+        List<AbstractTask> abstractAsyncTasks = dynamicTaskMap.values().stream().toList();
         return getMonitorViewTasks(abstractAsyncTasks);
     }
 
@@ -87,17 +87,17 @@ public class DynamicTaskService {
      * @param task task
      * @return boolean
      */
-    public boolean register(AbstractAsyncTask task) {
+    public boolean register(AbstractTask task) {
         // synchronized 避免重复注册同一个任务
         synchronized (task.getTaskName().intern()) {
             // 如果任务正在running
-            AbstractAsyncTask manualAsyncTask = manualDynamicTaskMap.get(task.getTaskName());
+            AbstractTask manualAsyncTask = manualDynamicTaskMap.get(task.getTaskName());
             if (manualAsyncTask != null && manualAsyncTask.isRunning()) {
                 // 手动任务正在执行
                 log.error("manual task [{}] is already running...", task.getTaskName());
                 return false;
             }
-            AbstractAsyncTask asyncTask = dynamicTaskMap.get(task.getTaskName());
+            AbstractTask asyncTask = dynamicTaskMap.get(task.getTaskName());
             if (asyncTask != null && asyncTask.isRunning()) {
                 // 定时任务正在运行
                 log.error("schedule task [{}] is already running...", task.getTaskName());
@@ -135,7 +135,7 @@ public class DynamicTaskService {
      * @param task task
      * @return boolean
      */
-    public boolean cancel(AbstractAsyncTask task) {
+    public boolean cancel(AbstractTask task) {
         String taskName = task.getTaskName();
         Future<?> scheduledFuture;
         if (null == (scheduledFuture = scheduledMap.get(taskName))) {
@@ -162,17 +162,17 @@ public class DynamicTaskService {
      *
      * @param task task
      */
-    public boolean executeOnceManual(AbstractAsyncTask task) {
+    public boolean executeOnceManual(AbstractTask task) {
         // synchronized 避免重复注册同一个任务
         synchronized (task.getTaskName().intern()) {
             // 如果任务正在running
-            AbstractAsyncTask asyncTask = dynamicTaskMap.get(task.getTaskName());
+            AbstractTask asyncTask = dynamicTaskMap.get(task.getTaskName());
             if (asyncTask != null && asyncTask.isRunning()) {
                 // 定时任务正在运行
                 log.error("schedule task [{}] is already running...", task.getTaskName());
                 return false;
             }
-            AbstractAsyncTask manualAsyncTask = manualDynamicTaskMap.get(task.getTaskName());
+            AbstractTask manualAsyncTask = manualDynamicTaskMap.get(task.getTaskName());
             if (manualAsyncTask != null && manualAsyncTask.isRunning()) {
                 // 手动任务正在执行
                 log.error("manual task [{}] is already running...", task.getTaskName());
@@ -195,7 +195,7 @@ public class DynamicTaskService {
 
             // 注册异步任务，执行完成自动取消
             selfCancelService.execute(() -> {
-                final AbstractAsyncTask innerTask = task;
+                final AbstractTask innerTask = task;
                 try {
                     f.get(2, TimeUnit.HOURS);
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -218,7 +218,7 @@ public class DynamicTaskService {
      * @param task task
      * @return boolean
      */
-    public boolean cancelManual(AbstractAsyncTask task) {
+    public boolean cancelManual(AbstractTask task) {
         String taskName = task.getTaskName();
         FutureTask<?> futureTask;
         if (null == (futureTask = manualFutureTaskMap.get(taskName))) {

@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * @author lzp
  */
-public class MonitorViewTask implements Serializable {
+public class TaskMonitorView implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private String taskName;
@@ -54,6 +54,7 @@ public class MonitorViewTask implements Serializable {
     public String getNextTime() {
         CronExpression cronExpression = CronExpression.parse(cron);
         LocalDateTime dateTime = cronExpression.next(LocalDateTime.now());
+        assert dateTime != null;
         return dateTime.format(FORMATTER);
     }
 

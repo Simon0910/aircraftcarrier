@@ -10,7 +10,7 @@ import java.util.Map;
  * @author liuzhipeng
  */
 @Slf4j
-public abstract class AbstractAsyncTask implements Runnable {
+public abstract class AbstractTask implements Runnable {
 
     private final String taskName;
     private final String cron;
@@ -24,9 +24,9 @@ public abstract class AbstractAsyncTask implements Runnable {
      * 进度 0-100
      */
     private volatile int progress;
-    private Map<String, AbstractAsyncTask> dynamicTaskMap;
+    private Map<String, AbstractTask> dynamicTaskMap;
 
-    public AbstractAsyncTask(String taskName, String cron) {
+    public AbstractTask(String taskName, String cron) {
         Assert.hasText(taskName, "taskName must not be blank");
         Assert.hasText(cron, "cron must not be blank");
         this.taskName = taskName;
@@ -106,7 +106,7 @@ public abstract class AbstractAsyncTask implements Runnable {
      * <p>
      * 因为不想暴漏 dynamicTaskMap 和 manualDynamicTaskMap 任务集合，避免内部逻辑错乱
      */
-    void holdTaskMap(Map<String, AbstractAsyncTask> dynamicTaskMap) {
+    void holdTaskMap(Map<String, AbstractTask> dynamicTaskMap) {
         this.dynamicTaskMap = dynamicTaskMap;
     }
 

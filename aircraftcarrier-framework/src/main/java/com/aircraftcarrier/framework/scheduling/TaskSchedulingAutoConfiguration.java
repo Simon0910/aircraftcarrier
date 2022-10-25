@@ -15,8 +15,8 @@ import java.util.concurrent.Executors;
 public class TaskSchedulingAutoConfiguration {
 
     @Bean
-    public DynamicTaskService dynamicTaskService(ConcurrentTaskScheduler taskScheduler) {
-        return new DynamicTaskService(taskScheduler);
+    public TaskService dynamicTaskService(ConcurrentTaskScheduler taskScheduler) {
+        return new TaskService(taskScheduler);
     }
 
     @Bean
