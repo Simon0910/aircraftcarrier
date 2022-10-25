@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.LongAdder;
 @Slf4j
 public class CallApiRecursiveTaskTest {
 
-    private static final int num = 10000;
+    private static final int num = 10;
 
     private static final List<Param> params = new ArrayList<>(num);
     private static CallApiService callApiService;
@@ -49,6 +49,7 @@ public class CallApiRecursiveTaskTest {
     public void before() {
         for (int i = 0; i < num; i++) {
             Param param = new Param();
+            param.setI(i);
             params.add(param);
         }
         callApiService = (param) -> {
@@ -64,25 +65,29 @@ public class CallApiRecursiveTaskTest {
 //            result.setName("name" + longAccumulator.get());
             result.setDate(new Date());
             log.info(">>>>>>>>>>> {}", JsonUtil.toJson(result));
+            if (param.getI() == 5) {
+                int n = 1 / 0;
+            }
             return result;
         };
     }
 
     @After
     public void after() {
-        System.out.println("1 =======>" + longAccumulator.get());
+        System.out.println("longAccumulator1 =======>" + longAccumulator.get());
         longAccumulator.reset();
-        System.out.println("2 =======>" + longAccumulator.get());
+        System.out.println("longAccumulator2 =======>" + longAccumulator.get());
     }
 
     @Test
     public void testCall_For() {
         long l = TimeLogUtil.beginTime();
         List<Result> results = new ArrayList<>(num);
-        for (int i = 0; i < num; i++) {
-            Result result = callApiService.getResult(new Param());
+        for (Param param : params) {
+            Result result = callApiService.getResult(param);
             results.add(result);
         }
+
         System.out.println("for ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
 
@@ -93,12 +98,15 @@ public class CallApiRecursiveTaskTest {
     public void testCall_RecursiveTask() {
         // 底层使用默认 ForkJoinPool.commonPool()
         long l = TimeLogUtil.beginTime();
-        CallApiRecursiveTask<Param, Result> task = new CallApiRecursiveTask<>((param) -> callApiService.getResult(param), params);
+//        CallApiRecursiveTask<Param, Result> task = new CallApiRecursiveTask<>((param) -> callApiService.getResult(param), params);
+        CallApiRecursiveTask<Param, Result> task = new CallApiRecursiveTask<>((param) -> callApiService.getResult(param), params, 1);
 
 //        task.fork();
 //        List<Result> results = task.join();
 
-        List<Result> results = ThreadPoolUtil.invoke(task, 1000);
+//        List<Result> results = ThreadPoolUtil.invoke(task, 1000);
+
+        List<Result> results = ThreadPoolUtil.invoke(task);
 
         System.out.println("RecursiveTask ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
@@ -111,9 +119,10 @@ public class CallApiRecursiveTaskTest {
         // https://www.bilibili.com/video/BV1M34y1q7M2/?spm_id_from=333.999.0.0&vd_source=5ae6c4b2dbcbc1516cef3f31fbe2abb2
         // ForkJoinPool 使用场景主要时为了解决流式处理，有依赖关系的操作避免队列引起的死循环 如stream底层，CompletableFuture底层
         long l = TimeLogUtil.beginTime();
+
         List<Callable<Result>> task = new ArrayList<>(num);
-        for (int i = 0; i < num; i++) {
-            task.add(() -> callApiService.getResult(new Param()));
+        for (Param param : params) {
+            task.add(() -> callApiService.getResult(param));
         }
 
         ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call-api");
@@ -128,9 +137,10 @@ public class CallApiRecursiveTaskTest {
     @Test
     public void testCall_ThreadPoolExecutor() {
         long l = TimeLogUtil.beginTime();
+
         List<Callable<Result>> task = new ArrayList<>(num);
-        for (int i = 0; i < num; i++) {
-            task.add(() -> callApiService.getResult(new Param()));
+        for (Param param : params) {
+            task.add(() -> callApiService.getResult(param));
         }
 
         ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool("call-api");

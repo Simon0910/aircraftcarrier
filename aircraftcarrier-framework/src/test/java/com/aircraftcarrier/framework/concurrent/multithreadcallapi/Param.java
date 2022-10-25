@@ -9,4 +9,12 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Param {
+    int i;
+
+    public Param() {
+    }
+
+    public Param(int i) {
+        this.i = i;
+    }
 }
