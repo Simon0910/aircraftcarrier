@@ -126,7 +126,9 @@ public class CallApiRecursiveTaskTest {
         }
 
         ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call-api");
-        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
+
+//        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
+        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task, true);
 
         System.out.println("ForkJoinPool ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
