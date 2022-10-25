@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.adapter.scheduler;
 
-import com.aircraftcarrier.framework.scheduling.DynamicTaskService;
+import com.aircraftcarrier.framework.scheduling.AbstractAsyncTask;
 import com.aircraftcarrier.framework.tookit.MathUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author liuzhipeng
  */
 @Slf4j
-public class PrintTimeTask extends DynamicTaskService.AbstractAsyncTask {
+public class PrintTimeTask extends AbstractAsyncTask {
 
     private static final String TASK_NAME = "print";
     private static final String CRON = "0/60 * * * * ?";
