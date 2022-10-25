@@ -93,9 +93,13 @@ public class CallApiRecursiveTaskTest {
     public void testCall_RecursiveTask() {
         // 底层使用默认 ForkJoinPool.commonPool()
         long l = TimeLogUtil.beginTime();
-        CallApiRecursiveTask<Param, Result> task = new CallApiRecursiveTask<>((param) -> callApiService.getResult(param), params, Runtime.getRuntime().availableProcessors());
-        task.fork();
-        List<Result> results = task.join();
+        CallApiRecursiveTask<Param, Result> task = new CallApiRecursiveTask<>((param) -> callApiService.getResult(param), params);
+
+//        task.fork();
+//        List<Result> results = task.join();
+
+        List<Result> results = ThreadPoolUtil.invoke(task, 1000);
+
         System.out.println("RecursiveTask ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
 

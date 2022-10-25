@@ -19,6 +19,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -61,6 +63,13 @@ public class ThreadPoolUtil {
 
     private static final int QUEUE_SIZE = 1024;
 
+    /**
+     * 默认守护线程，无需手动关闭
+     */
+    private static final ForkJoinPool DEFAULT_THREAD_POOL = new ForkJoinPool(
+            Runtime.getRuntime().availableProcessors(),
+            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+            null, true);
 
     /**
      * 私有
@@ -89,14 +98,6 @@ public class ThreadPoolUtil {
         return new MyDiscardPolicyRejectedExecutionHandler();
     }
 
-    /**
-     * 默认
-     */
-    private static ExecutorService commonPool() {
-        return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
-                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-                null, true);
-    }
 
     /**
      * 固定线程池 默认上限50000缓冲任务（防止无限创建队列任务oom） 多余的请求同步阻塞 （不丢弃任务）
@@ -210,7 +211,7 @@ public class ThreadPoolUtil {
      * 参考：
      * {@link java.util.concurrent.Executors#newWorkStealingPool(int)} }
      */
-    public static ExecutorService newWorkStealingPool(int parallelism, String pooName) {
+    public static ForkJoinPool newWorkStealingPool(int parallelism, String pooName) {
         return new ForkJoinPool(parallelism,
                 ForkJoinPool.defaultForkJoinWorkerThreadFactory,
                 null, true);
@@ -253,7 +254,7 @@ public class ThreadPoolUtil {
      * executeVoid
      */
     public static void invokeVoid(CallableVoid callableVoid) {
-        invokeAllVoid(commonPool(), List.of(callableVoid));
+        invokeAllVoid(DEFAULT_THREAD_POOL, List.of(callableVoid));
     }
 
     /**
@@ -266,8 +267,22 @@ public class ThreadPoolUtil {
     /**
      * executeAllVoid
      */
+    public static void invokeVoid(RecursiveAction task) {
+        DEFAULT_THREAD_POOL.invoke(task);
+    }
+
+    /**
+     * executeAllVoid
+     */
+    public static void invokeVoid(RecursiveAction task, int parallelism) {
+        ThreadPoolUtil.newWorkStealingPool(parallelism, "recursiveAction-pool").invoke(task);
+    }
+
+    /**
+     * executeAllVoid
+     */
     public static void invokeAllVoid(List<CallableVoid> asyncBatchTasks) {
-        invokeAllVoid(commonPool(), asyncBatchTasks, false);
+        invokeAllVoid(DEFAULT_THREAD_POOL, asyncBatchTasks, false);
     }
 
     /**
@@ -297,7 +312,7 @@ public class ThreadPoolUtil {
      * execute
      */
     public static <T> T invoke(Callable<T> callable) {
-        List<T> list = invokeAll(commonPool(), List.of(callable));
+        List<T> list = invokeAll(DEFAULT_THREAD_POOL, List.of(callable));
         return list.get(0);
     }
 
@@ -310,10 +325,24 @@ public class ThreadPoolUtil {
     }
 
     /**
+     * execute
+     */
+    public static <V> V invoke(RecursiveTask<V> task) {
+        return DEFAULT_THREAD_POOL.invoke(task);
+    }
+
+    /**
+     * execute
+     */
+    public static <V> V invoke(RecursiveTask<V> task, int parallelism) {
+        return ThreadPoolUtil.newWorkStealingPool(parallelism, "recursiveTask-pool").invoke(task);
+    }
+
+    /**
      * executeAll
      */
     public static <T> List<T> invokeAll(List<Callable<T>> asyncBatchTasks) {
-        return invokeAll(commonPool(), asyncBatchTasks, false);
+        return invokeAll(DEFAULT_THREAD_POOL, asyncBatchTasks, false);
     }
 
     /**

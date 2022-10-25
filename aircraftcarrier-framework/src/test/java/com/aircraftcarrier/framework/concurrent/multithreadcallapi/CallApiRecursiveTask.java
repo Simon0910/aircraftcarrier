@@ -24,13 +24,9 @@ public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {
     private final Function<T, R> function;
 
     public CallApiRecursiveTask(Function<T, R> function, List<T> params) {
-        this(function, params, ForkJoinPool.commonPool().getParallelism());
-    }
-
-    public CallApiRecursiveTask(Function<T, R> function, List<T> params, int granularity) {
         this.function = function;
         this.params = params;
-        this.granularity = granularity;
+        this.granularity = ForkJoinPool.commonPool().getParallelism();
     }
 
     @Override
