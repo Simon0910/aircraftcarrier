@@ -1,4 +1,4 @@
-package com.lzp.gencode;
+package com.aircraftcarrier.framework.basic.gencode;
 
 import lombok.Getter;
 import lombok.Setter;

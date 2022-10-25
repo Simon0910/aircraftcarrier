@@ -1,4 +1,4 @@
-package com.lzp.comletablefuture;
+package com.aircraftcarrier.framework.concurrent.comletablefuture;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;

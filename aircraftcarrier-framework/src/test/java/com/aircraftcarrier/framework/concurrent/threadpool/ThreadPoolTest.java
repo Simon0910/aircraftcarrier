@@ -1,4 +1,4 @@
-package com.lzp.threadpool;
+package com.aircraftcarrier.framework.concurrent.threadpool;
 
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import org.junit.Test;

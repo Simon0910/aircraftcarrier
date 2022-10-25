@@ -1,4 +1,4 @@
-package com.lzp.gencode;
+package com.aircraftcarrier.framework.basic.gencode;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONArray;

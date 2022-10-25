@@ -1,4 +1,4 @@
-package com.lzp.java8;
+package com.aircraftcarrier.framework.basic.java8;
 
 import org.junit.Test;
 
