@@ -147,6 +147,7 @@ public class TaskService {
         log.info("schedule canceled... {}", cancel);
         log.info("schedule is done: {}", scheduledFuture.isDone());
 
+        dynamicTaskMap.remove(taskName);
         scheduledMap.remove(taskName);
         // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
         log.info("remove schedule task: {}", scheduledFuture);
@@ -242,6 +243,7 @@ public class TaskService {
         synchronized (taskName.intern()) {
             if (f == manualFutureTaskMap.get(taskName)) {
                 message.accept(null);
+                manualDynamicTaskMap.remove(taskName);
                 manualFutureTaskMap.remove(taskName);
             }
         }
