@@ -7,6 +7,11 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cglib.beans.BeanCopier;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
@@ -349,5 +354,49 @@ public class BeanUtil {
      */
     private static <S, T> String genKey(Class<S> source, Class<T> target) {
         return source.getName() + target.getName();
+    }
+
+    /**
+     * 深拷贝
+     * 防止改变参数原来结构
+     *
+     * @param src src
+     * @param <T> 对象
+     * @return dest
+     */
+    public static <T extends Serializable> T deepCopy(T src) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(src);
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            return (T) ois.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 深拷贝
+     * 防止改变参数原来结构
+     *
+     * @param src src
+     * @param <T> 对象
+     * @return dest
+     */
+    public static <T extends Serializable> List<T> deepCopyList(List<T> src) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(src);
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            return (List<T>) ois.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

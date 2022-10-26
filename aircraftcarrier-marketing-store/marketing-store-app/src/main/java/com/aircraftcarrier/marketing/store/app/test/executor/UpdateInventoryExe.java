@@ -9,13 +9,12 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -60,11 +59,6 @@ public class UpdateInventoryExe {
      * REQUEST_QUEUE
      */
     private static final LinkedBlockingQueue<RequestPromise> REQUEST_QUEUE = new LinkedBlockingQueue<>(CAPACITY);
-
-    /**
-     * 2 threads
-     */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(2, "merge");
     /**
      * 批量处理 可配置
      */
@@ -74,21 +68,22 @@ public class UpdateInventoryExe {
      */
     private final long waitTimeout = 20;
     /**
+     * ProductGateway
+     */
+    @Resource
+    ProductGateway productGateway;
+    /**
      * needSignal
      */
     private volatile boolean needSignal = true;
 
     /**
-     * ProductGateway
-     */
-    @Resource
-    ProductGateway productGateway;
-
-    /**
      * init
      */
-    @PostConstruct
+//    @PostConstruct
     private void init() {
+        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPoolDiscard(2, "merge");
+
         final ReentrantLock takeLock = new ReentrantLock();
         final Condition notEmpty = takeLock.newCondition();
 
@@ -97,7 +92,7 @@ public class UpdateInventoryExe {
         List<RequestPromise> batchList = new ArrayList<>(CAPACITY);
 
         // takeThread 获取用户请求
-        THREAD_POOL.execute(() -> {
+        executorService.execute(() -> {
             while (true) {
                 try {
                     // take
@@ -122,7 +117,7 @@ public class UpdateInventoryExe {
         });
 
         // mergeThread 合并用户请求
-        THREAD_POOL.execute(() -> {
+        executorService.execute(() -> {
             while (true) {
                 // wait put...
                 if (batchList.size() < 1) {
@@ -188,7 +183,7 @@ public class UpdateInventoryExe {
 
                         //返回请求
                         for (RequestPromise request : batchList) {
-                            request.getFuture().completeAsync(() -> SingleResponse.error("处理异常"));
+                            request.getFuture().completeAsync(() -> SingleResponse.error(e.getMessage()));
                         }
 
                         try {
@@ -209,6 +204,8 @@ public class UpdateInventoryExe {
 
             }
         });
+
+        executorService.shutdown();
     }
 
     /**

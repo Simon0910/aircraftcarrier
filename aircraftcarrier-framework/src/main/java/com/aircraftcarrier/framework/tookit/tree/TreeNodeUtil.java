@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.tookit.tree;
 
 
-import com.aircraftcarrier.framework.tookit.CollectionUtil;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 
 import java.io.Serializable;
@@ -40,7 +40,7 @@ public class TreeNodeUtil {
             return new ArrayList<>();
         }
         // 防止改变参数原来结构
-        list = CollectionUtil.depCopy(list);
+        list = BeanUtil.deepCopyList(list);
 
         Map<Serializable, T> root = MapUtil.newHashMap(128);
         Map<Serializable, T> nodeMap = list.stream().collect(Collectors.toMap(AbstractTreeNode::getAbstractId, Function.identity()));
@@ -75,7 +75,7 @@ public class TreeNodeUtil {
             return new ArrayList<>();
         }
         // 防止改变参数原来结构
-        list = CollectionUtil.depCopy(list);
+        list = BeanUtil.deepCopyList(list);
 
         Map<Serializable, T> root = MapUtil.newHashMap(128);
         Map<Serializable, T> nodeMap = list.stream().collect(Collectors.toMap(AbstractTreeNode::getAbstractId, Function.identity()));
@@ -134,7 +134,7 @@ public class TreeNodeUtil {
             return new ArrayList<>();
         }
         // 防止改变参数原来结构
-        list = CollectionUtil.depCopy(list);
+        list = BeanUtil.deepCopyList(list);
 
         Map<Serializable, T> idMap = valid(list);
 

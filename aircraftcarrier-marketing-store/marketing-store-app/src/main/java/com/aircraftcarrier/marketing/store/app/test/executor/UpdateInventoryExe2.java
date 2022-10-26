@@ -14,10 +14,10 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,28 +53,19 @@ public class UpdateInventoryExe2 {
     /**
      * threads
      */
-    private static final int N_THREADS = 2;
-
-    /**
-     * Pool
-     */
-    private static final ThreadPoolExecutor THREAD_POOL = ThreadPoolUtil.newFixedThreadPoolDiscardPolicy(N_THREADS, "merge");
-
-    /**
-     * 批量处理 可配置
-     */
-    private final int batchSize = 500;
-
-    /**
-     * waitTimeout 可配置
-     */
-    private final long waitTimeout = 20;
-
+    private static final int N_THREADS = 10;
     /**
      * REQUEST_QUEUE
      */
     private static final LinkedBlockingQueue<PromiseRequest> REQUEST_QUEUE = new LinkedBlockingQueue<>(50000);
-
+    /**
+     * 批量处理 可配置
+     */
+    private final int batchSize = 500;
+    /**
+     * waitTimeout 可配置
+     */
+    private final long waitTimeout = 20;
     /**
      * ProductGateway
      */
@@ -84,9 +75,7 @@ public class UpdateInventoryExe2 {
     @PostConstruct
     private void init() {
 //        init1();
-        for (int i = 0; i < N_THREADS; i++) {
-            init2();
-        }
+          init2();
     }
 
     /**
@@ -95,7 +84,7 @@ public class UpdateInventoryExe2 {
      * https://github.com/trunks2008/RequestMerge
      */
     private void init1() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(N_THREADS);
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             List<PromiseRequest> batchList = new ArrayList<>(batchSize);
             // empty wait put...
@@ -187,7 +176,7 @@ public class UpdateInventoryExe2 {
      */
     private void init2() {
         // mergeThread 合并用户请求
-        THREAD_POOL.execute(() -> {
+        Runnable runnable = () -> {
             while (true) {
                 List<PromiseRequest> batchList = new ArrayList<>(batchSize);
                 // empty wait put...
@@ -262,7 +251,7 @@ public class UpdateInventoryExe2 {
 
                     //返回请求
                     for (PromiseRequest request : batchList) {
-                        request.future.completeAsync(() -> SingleResponse.error("处理异常"));
+                        request.future.completeAsync(() -> SingleResponse.error(e.getMessage()));
                     }
 
                     try {
@@ -270,12 +259,16 @@ public class UpdateInventoryExe2 {
                         TimeUnit.MILLISECONDS.sleep(1000);
                     } catch (InterruptedException ignored) {
                     }
-
-
                 }
-            }
 
-        });
+            }
+        };
+
+        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPoolDiscard(N_THREADS, "merge");
+        for (int i = 0; i < N_THREADS; i++) {
+            executorService.execute(runnable);
+        }
+        executorService.shutdown();
     }
 
 

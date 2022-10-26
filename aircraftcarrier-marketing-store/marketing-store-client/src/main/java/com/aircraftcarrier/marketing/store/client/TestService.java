@@ -35,13 +35,6 @@ public interface TestService {
     String testLockKey(Serializable id);
 
     /**
-     * applyDiscount
-     *
-     * @param params params
-     */
-    void applyDiscount(Map<String, Object> params);
-
-    /**
      * 并发扣库存防止超卖
      *
      * @param goodsNo 商品编号

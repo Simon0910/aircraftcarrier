@@ -55,8 +55,7 @@ public interface BatchRowListener<T extends ExcelRow> {
      * @throws Exception
      */
     default void onException(Exception exception, AnalysisContext analysisContext) throws Exception {
-        if (exception instanceof ExcelDataConvertException) {
-            ExcelDataConvertException excelDataConvertException = (ExcelDataConvertException) exception;
+        if (exception instanceof ExcelDataConvertException excelDataConvertException) {
             logger.error("第{}行，第{}列解析异常", excelDataConvertException.getRowIndex(),
                     excelDataConvertException.getColumnIndex(), excelDataConvertException);
         } else {

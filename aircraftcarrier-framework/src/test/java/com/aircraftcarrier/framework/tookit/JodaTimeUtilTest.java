@@ -19,13 +19,13 @@ public class JodaTimeUtilTest {
     @Test
     public void testTimeExpired() {
         long time = new Date().getTime();
-        Boolean timeExpired = JodaTimeUtil.isTimeExpired(time);
+        Boolean timeExpired = DateTimeUtil.isTimeExpired(time);
         Assert.assertNotNull(timeExpired);
     }
 
     @Test
     public void testPlus() {
-        Date date = JodaTimeUtil.plusMinutes(new Date(), 60);
+        Date date = DateTimeUtil.plusMinutes(new Date(), 60);
         Assert.assertNotNull(date);
     }
 }

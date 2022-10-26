@@ -152,8 +152,7 @@ public class EasyExcelReadUtil {
 
             @Override
             public void onException(Exception exception, AnalysisContext analysisContext) throws Exception {
-                if (exception instanceof ExcelDataConvertException) {
-                    ExcelDataConvertException excelDataConvertException = (ExcelDataConvertException) exception;
+                if (exception instanceof ExcelDataConvertException excelDataConvertException) {
                     log.error("第{}行，第{}列解析异常", excelDataConvertException.getRowIndex(), excelDataConvertException.getColumnIndex(), excelDataConvertException);
                     errors.put(excelDataConvertException.getRowIndex(), MessageFormat.format("第{}行，第{}列解析异常", excelDataConvertException.getRowIndex(), excelDataConvertException.getColumnIndex()));
                 } else {

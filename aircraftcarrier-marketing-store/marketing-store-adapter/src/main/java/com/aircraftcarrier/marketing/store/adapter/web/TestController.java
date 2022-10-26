@@ -3,11 +3,13 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.scheduling.AbstractTask;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
+import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
 import com.alibaba.fastjson.JSON;
@@ -33,6 +35,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -76,12 +79,12 @@ public class TestController {
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {
         LoginUser loginUser = LoginUserUtil.getLoginUser();
-        log.info("LoginUser：{}", JsonUtil.obj2Json(loginUser));
+        log.info("LoginUser：{}", JsonUtil.toJson(loginUser));
 
         new Thread(new MdcRunnableDecorator(() -> {
             log.info("1-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
-            log.info("1-LoginUser：{}", JsonUtil.obj2Json(loginUser1));
+            log.info("1-LoginUser：{}", JsonUtil.toJson(loginUser1));
         })).start();
 
         testService.publishEvent();
@@ -89,7 +92,7 @@ public class TestController {
         threadPoolExecutor.execute(() -> {
             log.info("2-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
-            log.info("2-LoginUser：{}", JsonUtil.obj2Json(loginUser2));
+            log.info("2-LoginUser：{}", JsonUtil.toJson(loginUser2));
         });
 
         return SingleResponse.ok(null);
@@ -127,20 +130,12 @@ public class TestController {
         return SingleResponse.ok();
     }
 
-    @ApiOperationSupport(order = 35)
-    @ApiOperation(value = "Drools规则引擎测试")
-    @PostMapping("/testDrools")
-    public SingleResponse<String> testDrools(@RequestBody Map<String, Object> params) {
-        testService.applyDiscount(params);
-        return SingleResponse.ok();
-    }
-
     @ApiOperationSupport(order = 36)
     @ApiOperation(value = "并发扣库存防止超卖")
     @GetMapping("/deductionInventory")
     public SingleResponse<String> deductionInventory(@RequestParam Serializable goodsNo) {
         // jmeter 模拟测试
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 2; i++) {
             testService.deductionInventory(goodsNo);
         }
         return SingleResponse.ok();
@@ -267,4 +262,27 @@ public class TestController {
         testService.reentrantLock(key);
         return SingleResponse.ok("reentrantLock");
     }
+
+    private final Map<String, AbstractTask> taskTask = new ConcurrentHashMap<>();
+
+    @ApiOperationSupport(order = 52)
+    @ApiOperation(value = "引用测试")
+    @GetMapping("/reference")
+    public SingleResponse<String> reference() {
+        for (int i = 0; i < 10000; i++) {
+            PrintTimeTask task = new PrintTimeTask("cron");
+
+            taskTask.put(task.getTaskName(), task);
+//            task.holdTaskMap(taskTask);
+
+            threadPoolExecutor.execute(() -> {
+//                task.removeTask(task);
+            });
+
+            System.out.println(taskTask.size());
+            System.out.println();
+        }
+        return SingleResponse.ok("reference");
+    }
+
 }

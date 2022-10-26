@@ -215,8 +215,7 @@ public class MapperUtil {
         });
 
         for (Object obj : list) {
-            if (obj instanceof String) {
-                String str = (String) obj;
+            if (obj instanceof String str) {
                 if (str.startsWith("[")) {
                     json2ListRecursion(str, mapper);
                 } else if (obj.toString().startsWith("{")) {
@@ -246,8 +245,7 @@ public class MapperUtil {
 
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             Object obj = entry.getValue();
-            if (obj instanceof String) {
-                String str = ((String) obj);
+            if (obj instanceof String str) {
 
                 if (str.startsWith("[")) {
                     List<?> list = json2ListRecursion(str, mapper);

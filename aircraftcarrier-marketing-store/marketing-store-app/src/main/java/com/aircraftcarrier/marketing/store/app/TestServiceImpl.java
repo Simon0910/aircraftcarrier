@@ -17,13 +17,10 @@ import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
-import com.aircraftcarrier.marketing.store.domain.drools.KieTemplate;
-import com.aircraftcarrier.marketing.store.domain.drools.KieUtils;
 import com.aircraftcarrier.marketing.store.domain.event.AccountEvent;
 import com.aircraftcarrier.marketing.store.domain.model.test.Address;
 import com.aircraftcarrier.marketing.store.domain.model.test.Sale;
 import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
-import com.aircraftcarrier.marketing.store.infrastructure.config.reload.ReloadDroolsRules;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mybatisplus.DemoMybatisPlus;
@@ -65,10 +62,6 @@ public class TestServiceImpl implements TestService {
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
     private TransactionalExe transactionalExe;
-    @Resource
-    private KieTemplate kieTemplate;
-    @Resource
-    private ReloadDroolsRules reloadDroolsRules;
     @Resource
     DemoMapper demoMapper;
     @Resource
@@ -163,26 +156,6 @@ public class TestServiceImpl implements TestService {
         return "end";
     }
 
-    @Override
-    public void applyDiscount(Map<String, Object> params) {
-        Sale sale = BeanMapUtil.map2Obj(params, Sale.class);
-        kieTemplate.execute(sale);
-        log.info("执行规则后返回 sale: {}", JSON.toJSONString(sale));
-
-        Address address = BeanMapUtil.map2Obj(params, Address.class);
-        kieTemplate.execute(address);
-        log.info("执行规则后返回 address: {}", JSON.toJSONString(address));
-
-
-        KieUtils.updateToVersion(ReloadDroolsRules.content);
-
-        kieTemplate.execute(sale);
-        log.info("执行规则后返回 sale2: {}", JSON.toJSONString(sale));
-
-        kieTemplate.execute(address);
-        log.info("执行规则后返回 address2: {}", JSON.toJSONString(address));
-
-    }
 
     @Override
     public void deductionInventory(Serializable goodsNo) {
@@ -191,50 +164,54 @@ public class TestServiceImpl implements TestService {
         final AtomicInteger fail = new AtomicInteger();
 
         // 模拟多人抢购商品
-        int num = 1;
+        int num = 5000;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             int finalI = i;
-//            asyncBatchTasks.add(() -> {
-////                try {
-////                    // 间隔
-////                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1000,1500));
-////                } catch (InterruptedException ignored) {
-////                }
-//
-//                InventoryRequest inventoryRequest = new InventoryRequest();
-//                inventoryRequest.setGoodsNo((String) goodsNo);
-//                inventoryRequest.setUserId(String.valueOf(finalI));
-//                inventoryRequest.setOrderId(String.valueOf(finalI));
-//                inventoryRequest.setCount(1);
-//                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
-////                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
-//                if (response.success()) {
-//                    log.info("扣减库存 成功");
-//                    success.incrementAndGet();
-//                } else {
-//                    log.info("扣减库存 失败 〒_〒");
-//                    fail.incrementAndGet();
+
+            asyncBatchTasks.add(() -> {
+//                try {
+//                    // 间隔
+//                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1000,1500));
+//                } catch (InterruptedException ignored) {
 //                }
-//            });
-            InventoryRequest inventoryRequest = new InventoryRequest();
-            inventoryRequest.setGoodsNo((String) goodsNo);
-            inventoryRequest.setUserId(String.valueOf(finalI));
-            inventoryRequest.setOrderId(String.valueOf(finalI));
-            inventoryRequest.setCount(1);
-            SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+
+                InventoryRequest inventoryRequest = new InventoryRequest();
+                inventoryRequest.setGoodsNo((String) goodsNo);
+                inventoryRequest.setUserId(String.valueOf(finalI));
+                inventoryRequest.setOrderId(String.valueOf(finalI));
+                inventoryRequest.setCount(1);
+//                SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
+                SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
+                if (response.success()) {
+                    log.info("扣减库存 成功");
+                    success.incrementAndGet();
+                } else {
+                    log.info("扣减库存 失败 〒_〒");
+                    fail.incrementAndGet();
+                }
+            });
+
+//            InventoryRequest inventoryRequest = new InventoryRequest();
+//            inventoryRequest.setGoodsNo((String) goodsNo);
+//            inventoryRequest.setUserId(String.valueOf(finalI));
+//            inventoryRequest.setOrderId(String.valueOf(finalI));
+//            inventoryRequest.setCount(1);
+////            SingleResponse<Void> response = updateInventoryExe.deductionInventory(inventoryRequest);
 //            SingleResponse<Void> response = updateInventoryExe2.deductionInventory(inventoryRequest);
-            if (response.success()) {
-                log.info("扣减库存 成功");
-                success.incrementAndGet();
-            } else {
-                log.info("扣减库存 失败 〒_〒");
-                fail.incrementAndGet();
-            }
+//            if (response.success()) {
+//                log.info("扣减库存 成功");
+//                success.incrementAndGet();
+//            } else {
+//                log.info("扣减库存 失败 〒_〒");
+//                fail.incrementAndGet();
+//            }
 
         }
 
-        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+        // ForkJoinPool vs ThreadPoolExecutor
+//        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(asyncBatchTasks);
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 

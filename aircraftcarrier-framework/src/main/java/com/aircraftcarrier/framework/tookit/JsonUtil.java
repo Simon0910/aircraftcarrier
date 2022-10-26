@@ -2,7 +2,10 @@ package com.aircraftcarrier.framework.tookit;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,17 +14,32 @@ import java.util.Map;
  * @author lzp
  */
 public class JsonUtil {
+
+    private static final Gson GSON = new GsonBuilder().create();
+
     /**
      * JsonUtil
      */
     private JsonUtil() {
     }
 
-    public static String obj2Json(Object object) {
+    public static String toJson(Object object) {
+        return GSON.toJson(object);
+    }
+
+    public static <T> T fromJson(String json, Class<T> classOfT) {
+        return GSON.fromJson(json, classOfT);
+    }
+
+    public static <T> T fromJson(String json, Type typeOfT) {
+        return GSON.fromJson(json, typeOfT);
+    }
+
+    public static String toJsonString(Object object) {
         return JSON.toJSONString(object);
     }
 
-    public static <T> T json2Obj(String jsonStr, Class<T> targetClass) {
+    public static <T> T parseObj(String jsonStr, Class<T> targetClass) {
         return JSON.parseObject(jsonStr, targetClass);
     }
 
@@ -29,7 +47,7 @@ public class JsonUtil {
         if (null == object) {
             return MapUtil.newHashMap();
         }
-        return (Map<String, Object>) JSON.toJSON(object);
+        return (JSONObject) JSON.toJSON(object);
     }
 
     public static <T> T map2Obj(Map<String, Object> map, Class<T> targetClass) {
