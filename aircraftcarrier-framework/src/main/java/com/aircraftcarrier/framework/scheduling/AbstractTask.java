@@ -84,7 +84,10 @@ public abstract class AbstractTask implements Runnable {
                 // 断中完成，移除等待集合
                 // INTERRUPTED
                 updateState(State.INTERRUPTED);
-                dynamicTaskMap.remove(taskName);
+                AbstractTask abstractTask = dynamicTaskMap.get(taskName);
+                if (abstractTask == this) {
+                    dynamicTaskMap.remove(taskName);
+                }
             }
 
             // 释放锁

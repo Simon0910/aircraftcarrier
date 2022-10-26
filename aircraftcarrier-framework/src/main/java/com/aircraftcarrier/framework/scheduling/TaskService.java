@@ -147,6 +147,13 @@ public class TaskService {
         log.info("schedule canceled... {}", cancel);
         log.info("schedule is done: {}", scheduledFuture.isDone());
 
+        // 如果正在等待，需要手动移除
+        AbstractTask abstractTask = dynamicTaskMap.get(taskName);
+        if (abstractTask.isWaiting()) {
+            dynamicTaskMap.remove(taskName);
+        }
+        // 如果正在运行，任务自己移除
+        // dynamicTaskMap.remove(taskName);
         scheduledMap.remove(taskName);
         // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
         log.info("remove schedule task: {}", scheduledFuture);
@@ -241,8 +248,10 @@ public class TaskService {
     private void removeManualScheduler(Map<String, FutureTask<?>> manualFutureTaskMap, String taskName, Future<?> f, Consumer<Void> message) {
         synchronized (taskName.intern()) {
             if (f == manualFutureTaskMap.get(taskName)) {
-                message.accept(null);
+                // 任务自己移除
+                // manualDynamicTaskMap.remove(taskName);
                 manualFutureTaskMap.remove(taskName);
+                message.accept(null);
             }
         }
     }
