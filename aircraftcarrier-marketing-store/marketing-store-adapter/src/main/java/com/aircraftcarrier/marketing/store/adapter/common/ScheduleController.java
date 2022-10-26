@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * 定时任务
@@ -28,41 +27,32 @@ public class ScheduleController {
     TaskService dynamicTaskService;
 
     @GetMapping("/register")
-    public String register(String cron) {
+    public String register() {
         // "0/60 * * * * ?"
-        for (int i = 1; i <= 11; i++) {
-            if (i == 11) {
-                dynamicTaskService.register(new PrintTimeTask("task-" + i, "0/25 * * * * ?"));
-                break;
-            }
-            dynamicTaskService.register(new PrintTimeTask("task-" + i, "0/20 * * * * ?"));
-        }
+        dynamicTaskService.register(new PrintTimeTask());
         return "register";
     }
 
     @GetMapping("/cancel")
-    public String cancel(String taskName) {
-        dynamicTaskService.cancel(new PrintTimeTask(taskName, "null"));
+    public String cancel() {
+        dynamicTaskService.cancel(new PrintTimeTask());
         return "cancel";
     }
 
     @GetMapping("/executeOnceManual")
     public String executeOnceManual() {
-        for (int i = 1; i <= 13; i++) {
-            dynamicTaskService.executeOnceManual(new PrintTimeTask("task" + i, "null"));
-        }
+        dynamicTaskService.executeOnceManual(new PrintTimeTask());
         return "executeOnceManual";
     }
 
     @GetMapping("/cancelManual")
-    public String cancelManual(String taskName) {
-        dynamicTaskService.cancelManual(new PrintTimeTask(taskName, "null"));
+    public String cancelManual() {
+        dynamicTaskService.cancelManual(new PrintTimeTask());
         return "cancelManual";
     }
 
     @GetMapping("/monitor")
     public MultiResponse<TaskMonitorView> monitor() {
-        List<TaskMonitorView> taskList = dynamicTaskService.getTaskList();
-        return MultiResponse.ok(taskList);
+        return MultiResponse.ok(dynamicTaskService.getTaskList());
     }
 }

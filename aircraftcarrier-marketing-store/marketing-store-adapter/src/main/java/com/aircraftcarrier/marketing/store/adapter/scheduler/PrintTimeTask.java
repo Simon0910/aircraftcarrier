@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PrintTimeTask extends AbstractTask {
 
     private static final String TASK_NAME = "print";
-    private static final String CRON = "0/60 * * * * ?";
+    private static final String CRON = "0/20 * * * * ?";
 
     public PrintTimeTask() {
         this(CRON);

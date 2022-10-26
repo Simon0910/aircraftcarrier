@@ -242,9 +242,9 @@ public class TaskService {
     private void removeManualScheduler(Map<String, FutureTask<?>> manualFutureTaskMap, String taskName, Future<?> f, Consumer<Void> message) {
         synchronized (taskName.intern()) {
             if (f == manualFutureTaskMap.get(taskName)) {
-                message.accept(null);
                 manualDynamicTaskMap.remove(taskName);
                 manualFutureTaskMap.remove(taskName);
+                message.accept(null);
             }
         }
     }
