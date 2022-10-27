@@ -15,14 +15,14 @@ public class PrintTimeTask extends AbstractTask {
     private static final String CRON = "0/20 * * * * ?";
 
     public PrintTimeTask() {
-        this(CRON);
+        this(TASK_NAME, CRON);
     }
 
     public PrintTimeTask(String cron) {
         this(TASK_NAME, cron);
     }
 
-    public PrintTimeTask(String taskName, String cron) {
+    private PrintTimeTask(String taskName, String cron) {
         super(taskName, cron);
     }
 

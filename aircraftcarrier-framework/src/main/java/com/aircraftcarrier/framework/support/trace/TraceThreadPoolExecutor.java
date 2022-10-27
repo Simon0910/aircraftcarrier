@@ -2,13 +2,16 @@ package com.aircraftcarrier.framework.support.trace;
 
 import com.aircraftcarrier.framework.tookit.StringPool;
 import com.aircraftcarrier.framework.tookit.StringUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -43,13 +46,15 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public void execute(Runnable command) {
+        if (command instanceof Future) {
+            super.execute(command);
+            return;
+        }
+
         // 提交者的本地变量
         Map<String, String> contextMap = MDC.getCopyOfContextMap();
 
-        /**
-         *  new FutureTask 为了可以执行 {@link com.aircraftcarrier.framework.concurrent.MyDiscardPolicyRejectedExecutionHandler#rejectedExecution }
-         */
-        FutureTask<Void> f = new FutureTask<>(() -> {
+        super.execute(() -> {
             if (contextMap != null) {
                 // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
                 String traceId = contextMap.get(TraceIdUtil.TRACE_ID);
@@ -66,10 +71,35 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
                 // 任务执行完, 清除本地变量, 以防对后续任务有影响
                 MDC.clear();
             }
-        }, null);
-
-        super.execute(f);
+        });
     }
 
 
+    @NotNull
+    @Override
+    public Future<Void> submit(@NotNull Runnable task) {
+        // 提交者的本地变量
+        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+
+        RunnableFuture<Void> f = new FutureTask<>(() -> {
+            if (contextMap != null) {
+                // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
+                String traceId = contextMap.get(TraceIdUtil.TRACE_ID);
+                contextMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.genUuid(), StringPool.UNDERSCORE));
+                MDC.setContextMap(contextMap);
+            } else {
+                Map<String, String> newContextMap = new HashMap<>(16);
+                newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.genUuid());
+                MDC.setContextMap(newContextMap);
+            }
+            try {
+                task.run();
+            } finally {
+                // 任务执行完, 清除本地变量, 以防对后续任务有影响
+                MDC.clear();
+            }
+        }, null);
+        super.execute(f);
+        return f;
+    }
 }
