@@ -213,7 +213,7 @@ public class TaskService {
                 try {
                     while (!innerF.isDone()) {
                         SleepUtil.sleepSeconds(3);
-                        log.info("task is done ? ");
+                        log.info("task [{}] is done ? ", innerTask.getTaskName());
                         if (innerF.isCancelled()) {
                             break;
                         }
