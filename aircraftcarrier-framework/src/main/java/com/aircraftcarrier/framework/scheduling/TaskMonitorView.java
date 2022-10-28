@@ -1,7 +1,5 @@
 package com.aircraftcarrier.framework.scheduling;
 
-import org.springframework.scheduling.support.CronExpression;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +15,7 @@ public class TaskMonitorView implements Serializable {
     private String state;
     private int progress;
 
-    private String nextTime;
+    private LocalDateTime nextTime;
 
     public String getTaskName() {
         return taskName;
@@ -52,10 +50,14 @@ public class TaskMonitorView implements Serializable {
     }
 
     public String getNextTime() {
-        CronExpression cronExpression = CronExpression.parse(cron);
-        LocalDateTime dateTime = cronExpression.next(LocalDateTime.now());
-        assert dateTime != null;
-        return dateTime.format(FORMATTER);
+        if (nextTime == null) {
+            return "";
+        }
+        return nextTime.format(FORMATTER);
+    }
+
+    public void setNextTime(LocalDateTime nextTime) {
+        this.nextTime = nextTime;
     }
 
 

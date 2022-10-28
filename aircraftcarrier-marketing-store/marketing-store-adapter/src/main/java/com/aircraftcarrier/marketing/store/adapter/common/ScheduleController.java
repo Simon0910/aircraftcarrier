@@ -41,7 +41,7 @@ public class ScheduleController {
 
     @GetMapping("/executeOnceManual")
     public String executeOnceManual() {
-        dynamicTaskService.executeOnceManual(new PrintTimeTask());
+        dynamicTaskService.executeOnceManual(new PrintTimeTask(10000));
         return "executeOnceManual";
     }
 

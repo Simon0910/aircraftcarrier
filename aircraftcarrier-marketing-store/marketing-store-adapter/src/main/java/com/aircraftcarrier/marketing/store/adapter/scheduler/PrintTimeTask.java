@@ -15,15 +15,19 @@ public class PrintTimeTask extends AbstractTask {
     private static final String CRON = "0/20 * * * * ?";
 
     public PrintTimeTask() {
-        this(TASK_NAME, CRON);
+        this(TASK_NAME, CRON, 0);
     }
 
     public PrintTimeTask(String cron) {
-        this(TASK_NAME, cron);
+        this(TASK_NAME, cron, 0);
     }
 
-    private PrintTimeTask(String taskName, String cron) {
-        super(taskName, cron);
+    public PrintTimeTask(long delay) {
+        this(TASK_NAME, CRON, delay);
+    }
+
+    private PrintTimeTask(String taskName, String cron, long delay) {
+        super(taskName, cron, delay);
     }
 
     @Override

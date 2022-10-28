@@ -56,6 +56,7 @@ public class TaskService {
             monitorViewTask.setCron(asyncTask.getCron());
             monitorViewTask.setState(asyncTask.getState().toString());
             monitorViewTask.setProgress(asyncTask.getProgress());
+            monitorViewTask.setNextTime(asyncTask.getNextTime());
             results.add(monitorViewTask);
         }
         return results;
@@ -141,9 +142,7 @@ public class TaskService {
             return false;
         }
 
-        boolean cancel = scheduledFuture.cancel(true);
-        log.info("schedule canceled... {}", cancel);
-        log.info("schedule is done: {}", scheduledFuture.isDone());
+        scheduledFuture.cancel(true);
 
         // 如果正在等待，需要手动移除
         AbstractTask abstractTask = dynamicTaskMap.get(taskName);
@@ -187,7 +186,7 @@ public class TaskService {
             // 上一个手动任务还没取消
             Future<?> manualFuture;
             if (null != (manualFuture = manualFutureMap.get(task.getTaskName())) && !manualFuture.isDone()) {
-                log.error("manual Future [{}] has been register ! please cancel before register", task.getTaskName());
+                log.error("manual Future [{}] has been submit ! please cancel before manual", task.getTaskName());
                 return false;
             }
 
@@ -213,7 +212,7 @@ public class TaskService {
                 try {
                     while (!innerF.isDone()) {
                         SleepUtil.sleepSeconds(3);
-                        log.info("task [{}] is done ? ", innerTask.getTaskName());
+                        log.info("manual task [{}] is done ? ", innerTask.getTaskName());
                         if (innerF.isCancelled()) {
                             break;
                         }
@@ -244,9 +243,7 @@ public class TaskService {
             return false;
         }
 
-        boolean cancel = future.cancel(true);
-        log.info("manual future cancel... {}", cancel);
-        log.info("manual future is done: {}", future.isDone());
+        future.cancel(true);
 
         removeManualScheduler(manualFutureMap, taskName, future, (unused) -> log.info("remove manual future: {}", future));
         // scheduledFuture 中的 task.state = RUNNING 为什么不是INTERRUPTED？ cancel是在RUNNING时候异步设置
