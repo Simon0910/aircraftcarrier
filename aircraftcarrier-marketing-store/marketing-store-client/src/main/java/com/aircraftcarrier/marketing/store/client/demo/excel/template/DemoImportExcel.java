@@ -20,11 +20,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class DemoImportExcel extends ExcelRow {
-    /**
-     * id
-     */
-    @ExcelProperty(value = "主键")
-    private Long id;
 
     /**
      * 业务主键
