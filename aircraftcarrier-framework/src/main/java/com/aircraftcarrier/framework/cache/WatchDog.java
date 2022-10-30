@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 public class WatchDog {
     private static final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "watch-dog");
-    private Map<Serializable, Long> lockRecord;
+    private Map<Serializable, Thread> lockRecord;
     private RedisLockRenewal redisLockRenewal;
 
     private WatchDog() {
@@ -25,7 +25,7 @@ public class WatchDog {
         return WatchDog.Singleton.getInstance();
     }
 
-    void init(Map<Serializable, Long> lockRecord) {
+    void init(Map<Serializable, Thread> lockRecord) {
         this.lockRecord = lockRecord;
         if (!ApplicationContextUtil.contains("redisLockRenewal")) {
             log.error("need a bean, but not found bean name [redisLockRenewal]");
@@ -55,7 +55,11 @@ public class WatchDog {
                 return;
             }
 
-            lockRecord.forEach((key, threadId) -> redisLockRenewal.renewalKey(key, 30));
+            lockRecord.forEach((key, thread) -> {
+                if (thread.isAlive()) {
+                    redisLockRenewal.renewalKey(key, 30);
+                }
+            });
         }
 
     }
