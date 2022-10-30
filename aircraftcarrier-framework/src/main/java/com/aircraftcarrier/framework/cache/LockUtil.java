@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -25,7 +26,7 @@ public class LockUtil {
     private static final String DEFAULT_KEY = "block";
     private static final MyLockTemplate LOCK_TEMPLATE;
     private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
-    private static final Map<Serializable, Thread> LOCK_RECORD = new HashMap<>();
+    private static final Map<Serializable, Thread> LOCK_RECORD = new ConcurrentHashMap<>();
 
     static {
         LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);

@@ -6,6 +6,7 @@ import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -55,7 +56,9 @@ public class WatchDog {
                 return;
             }
 
-            lockRecord.forEach((key, thread) -> {
+            Map<Serializable, Thread> lockRecordCopy = new HashMap<>(lockRecord);
+
+            lockRecordCopy.forEach((key, thread) -> {
                 if (thread.isAlive()) {
                     redisLockRenewal.renewalKey(key, 30);
                 }
