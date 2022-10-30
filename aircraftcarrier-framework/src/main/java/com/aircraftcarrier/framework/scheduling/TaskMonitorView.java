@@ -16,6 +16,7 @@ public class TaskMonitorView implements Serializable {
     private int progress;
 
     private LocalDateTime nextTime;
+    private String delay;
 
     public String getTaskName() {
         return taskName;
@@ -60,5 +61,12 @@ public class TaskMonitorView implements Serializable {
         this.nextTime = nextTime;
     }
 
+    public void setDelay(long delay) {
+        // 小时｜分钟｜秒
+        this.delay = "延迟（小时｜分钟｜秒）：" + delay / 360000 + "｜" + delay / 60000 + "｜" + delay / 1000;
+    }
 
+    public String getDelay() {
+        return delay;
+    }
 }

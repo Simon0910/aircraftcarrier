@@ -29,7 +29,7 @@ public class ScheduleController {
     @GetMapping("/register")
     public String register() {
         // "0/60 * * * * ?"
-        dynamicTaskService.register(new PrintTimeTask());
+        dynamicTaskService.register(new PrintTimeTask(5000));
         return "register";
     }
 

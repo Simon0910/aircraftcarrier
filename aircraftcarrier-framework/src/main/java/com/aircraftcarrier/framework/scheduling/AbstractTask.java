@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.util.Assert;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Map;
 
 /**
@@ -43,6 +40,7 @@ public abstract class AbstractTask implements Runnable {
     public AbstractTask(String taskName, String cron, long delay) {
         Assert.hasText(taskName, "taskName must not be blank");
         Assert.hasText(cron, "cron must not be blank");
+        Assert.isTrue(CronExpression.isValidExpression(cron), "An invalid corn expression");
         Assert.isTrue(delay >= 0, "delay must not be >= 0");
         this.taskName = taskName;
         this.cron = cron;
@@ -216,24 +214,17 @@ public abstract class AbstractTask implements Runnable {
         CronExpression cronExpression = CronExpression.parse(cron);
         LocalDateTime nextTime = cronExpression.next(LocalDateTime.now());
         assert nextTime != null;
-
-        if (delay < 1) {
-            return nextTime;
-        }
-
-        long milliSecond = nextTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
-        long exeInMillis = milliSecond + delay;
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(exeInMillis), ZoneId.systemDefault());
+        return nextTime;
     }
-
-    enum State {
-        WAITING, RUNNING, FINALLY, INTERRUPTED, TERMINATED
-    }
-
 
     @Override
     public String toString() {
         return "AbstractAsyncTask{" + "taskName='" + taskName + '\'' + ", cron='" + cron + '\'' + ", state=" + state + '}';
+    }
+
+
+    enum State {
+        WAITING, RUNNING, FINALLY, INTERRUPTED, TERMINATED
     }
 
 

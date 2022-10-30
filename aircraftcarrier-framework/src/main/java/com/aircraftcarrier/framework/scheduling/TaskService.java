@@ -57,6 +57,7 @@ public class TaskService {
             monitorViewTask.setState(asyncTask.getState().toString());
             monitorViewTask.setProgress(asyncTask.getProgress());
             monitorViewTask.setNextTime(asyncTask.getNextTime());
+            monitorViewTask.setDelay(asyncTask.getDelay());
             results.add(monitorViewTask);
         }
         return results;
