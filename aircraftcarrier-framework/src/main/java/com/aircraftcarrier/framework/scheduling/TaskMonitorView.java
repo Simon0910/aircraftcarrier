@@ -18,6 +18,8 @@ public class TaskMonitorView implements Serializable {
     private LocalDateTime nextTime;
     private String delay;
 
+    private LocalDateTime nextRuntime;
+
     public String getTaskName() {
         return taskName;
     }
@@ -68,5 +70,13 @@ public class TaskMonitorView implements Serializable {
 
     public String getDelay() {
         return delay;
+    }
+
+    public LocalDateTime getNextRuntime() {
+        return nextRuntime;
+    }
+
+    public void setNextRuntime(LocalDateTime nextRuntime) {
+        this.nextRuntime = nextRuntime;
     }
 }

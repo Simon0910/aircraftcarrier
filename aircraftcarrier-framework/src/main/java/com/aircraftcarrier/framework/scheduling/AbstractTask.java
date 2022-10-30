@@ -6,7 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.util.Assert;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 /**
@@ -17,10 +20,15 @@ public abstract class AbstractTask implements Runnable {
 
     private final String taskName;
     private final String cron;
+
+    private final CronExpression cronExpression;
+
     /**
      * 延迟多久执行 毫秒
      */
     private final long delay;
+
+    private LocalDateTime nextRuntime;
 
     /**
      * state
@@ -44,9 +52,23 @@ public abstract class AbstractTask implements Runnable {
         Assert.isTrue(delay >= 0, "delay must not be >= 0");
         this.taskName = taskName;
         this.cron = cron;
+        this.cronExpression = CronExpression.parse(cron);
         this.delay = delay;
         this.state = State.WAITING;
         this.progress = 0;
+
+        calculateNextRuntime();
+    }
+
+    private void calculateNextRuntime() {
+        LocalDateTime nextTime = cronExpression.next(LocalDateTime.now());
+        if (delay == 0) {
+            nextRuntime = nextTime;
+        } else {
+            long milliSecond = nextTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+            long exeInMillis = milliSecond + delay;
+            nextRuntime = LocalDateTime.ofInstant(Instant.ofEpochMilli(exeInMillis), ZoneId.systemDefault());
+        }
     }
 
     @Override
@@ -54,6 +76,7 @@ public abstract class AbstractTask implements Runnable {
         try {
             // 延迟delay
             SleepUtil.sleepMilliseconds(delay);
+            calculateNextRuntime();
 
             // 任务执行前获取分布式锁， 保证一个任务执行 （注意：各个环境不要争抢同一个锁影响）
             if (!LockUtil.tryLock(getTaskName())) {
@@ -107,6 +130,7 @@ public abstract class AbstractTask implements Runnable {
                 }
             }
 
+            calculateNextRuntime();
             // 释放锁
             // 失败了怎么办？register时会判断!schedule.isDone() 所以不会重复注册
             // 直到下次可重入再次执行任务？下次执行还是同一个线程吗，不是的话LockUtil实现逻辑就不可重入了！！待验证
@@ -211,10 +235,11 @@ public abstract class AbstractTask implements Runnable {
      * <a href="https://www.concretepage.com/java/java-8/convert-between-java-localdatetime-instant#toInstant">...</a>
      */
     public final LocalDateTime getNextTime() {
-        CronExpression cronExpression = CronExpression.parse(cron);
-        LocalDateTime nextTime = cronExpression.next(LocalDateTime.now());
-        assert nextTime != null;
-        return nextTime;
+        return cronExpression.next(LocalDateTime.now());
+    }
+
+    public final LocalDateTime getNextRuntime() {
+        return nextRuntime;
     }
 
     @Override
