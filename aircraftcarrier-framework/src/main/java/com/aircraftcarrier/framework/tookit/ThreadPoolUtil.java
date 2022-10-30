@@ -40,28 +40,20 @@ import java.util.concurrent.TimeoutException;
 public class ThreadPoolUtil {
 
     /**
-     * cpu
-     */
-    public static final int CORE_SIZE = Runtime.getRuntime().availableProcessors();
-    /**
-     * 核心线程数
-     */
-    public static final int CORE_POOL_SIZE = CORE_SIZE * 2;
-
-    /**
-     * 线程池最大线程数
-     */
-    public static final int MAX_POOL_SIZE = CORE_SIZE * 4;
-    /**
      * 线程空闲时间
      */
-    public static final int KEEP_ALIVE_TIME = 60;
+    private static final int KEEP_ALIVE_TIME = 10;
+
+    /**
+     * 默认队列长度
+     */
+    private static final int QUEUE_SIZE = 1024;
+
     /**
      * 每个线程等待多久 （秒）
      */
-    public static int perWaitTimeout = 10;
+    private static final int perWaitTimeout = 10;
 
-    private static final int QUEUE_SIZE = 1024;
 
     /**
      * 默认守护线程，无需手动关闭
@@ -70,6 +62,7 @@ public class ThreadPoolUtil {
             Runtime.getRuntime().availableProcessors(),
             ForkJoinPool.defaultForkJoinWorkerThreadFactory,
             null, true);
+
 
     /**
      * 私有
@@ -83,11 +76,11 @@ public class ThreadPoolUtil {
      * @param pooName pooName
      * @return ThreadFactory
      */
-    private static ThreadFactory buildThreadFactory(String pooName) {
+    private static ThreadFactory buildThreadFactory(String pooName, String suffix) {
         return ThreadFactoryBuilder
                 .create()
                 .setDaemon(false)
-                .setNamePrefix(pooName + "-")
+                .setNamePrefix(pooName + suffix)
                 .build();
     }
 
@@ -111,7 +104,7 @@ public class ThreadPoolUtil {
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(QUEUE_SIZE),
-                buildThreadFactory("fix-caller-pool-" + pooName),
+                buildThreadFactory(pooName, "-fix-caller-pool-"),
                 // 其他请求同步请求
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
@@ -128,7 +121,7 @@ public class ThreadPoolUtil {
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                buildThreadFactory("fix-discard-pool-" + pooName),
+                buildThreadFactory(pooName, "-fix-discard-pool-"),
                 // 忽略其他请求
                 buildDiscardPolicy());
     }
@@ -144,9 +137,9 @@ public class ThreadPoolUtil {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 0, Integer.MAX_VALUE,
-                10L, TimeUnit.SECONDS,
+                KEEP_ALIVE_TIME, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                buildThreadFactory("cached-pool-" + pooName),
+                buildThreadFactory(pooName, "-cached-pool-"),
                 // 默认拒绝策略
                 new ThreadPoolExecutor.AbortPolicy());
     }
@@ -163,7 +156,7 @@ public class ThreadPoolUtil {
                 0, nThreads,
                 60L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                buildThreadFactory("cached-discard-pool-" + pooName),
+                buildThreadFactory(pooName, "-cached-discard-pool-"),
                 // 忽略其他请求
                 buildDiscardPolicy());
     }
@@ -178,7 +171,7 @@ public class ThreadPoolUtil {
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new LinkedBlockingQueue<>(QUEUE_SIZE))
-                .setThreadFactory(buildThreadFactory("single-caller-pool-" + pooName))
+                .setThreadFactory(buildThreadFactory(pooName, "-single-caller-pool-"))
                 .setHandler(new ThreadPoolExecutor.CallerRunsPolicy())
                 .buildFinalizable();
     }
@@ -192,7 +185,7 @@ public class ThreadPoolUtil {
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new SynchronousQueue<>())
-                .setThreadFactory(buildThreadFactory("single-discard-pool-" + pooName))
+                .setThreadFactory(buildThreadFactory(pooName, "-single-discard-pool-"))
                 .setHandler(buildDiscardPolicy())
                 .buildFinalizable();
     }
