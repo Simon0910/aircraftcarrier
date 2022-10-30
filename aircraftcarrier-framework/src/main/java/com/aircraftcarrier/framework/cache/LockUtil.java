@@ -25,6 +25,7 @@ public class LockUtil {
     private static final String DEFAULT_KEY = "block";
     private static final MyLockTemplate LOCK_TEMPLATE;
     private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
+    private static final Map<Serializable, Thread> LOCK_RECORD = new HashMap<>();
 
     static {
         LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
@@ -88,6 +89,15 @@ public class LockUtil {
             return true;
         }
 
+        Thread thread = LOCK_RECORD.get(key);
+        if (thread != null) {
+            // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证final要移除登记记录，宕机无需考虑）
+            if (isTry) {
+                return false;
+            }
+            throw new FrameworkException("系统繁忙,请稍后重试");
+        }
+
         // 新锁
         LockInfo newLock = LOCK_TEMPLATE.lock(String.valueOf(key), expire * 1000, acquireTimeout * 1000);
         if (null == newLock) {
@@ -96,6 +106,8 @@ public class LockUtil {
             }
             throw new FrameworkException("系统繁忙,请稍后重试");
         }
+        // 登记记录
+        LOCK_RECORD.put(key, Thread.currentThread());
         newLock.setAcquireCount(1);
 
         if (lockInfoMap != null) {
@@ -138,6 +150,11 @@ public class LockUtil {
         lockInfoMap.remove(lockKey);
         if (lockInfoMap.isEmpty()) {
             THREAD_LOCAL.remove();
+        }
+        // 移除登记记录，别的线程就可以从redis获取锁了
+        Thread thread = LOCK_RECORD.get(key);
+        if (Thread.currentThread() == thread) {
+            LOCK_RECORD.remove(key);
         }
 
         // 先执行一次，失败重试3次
