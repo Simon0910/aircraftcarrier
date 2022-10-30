@@ -1,12 +1,5 @@
 package com.aircraftcarrier.framework.support.trace;
 
-import com.aircraftcarrier.framework.tookit.StringPool;
-import com.aircraftcarrier.framework.tookit.StringUtil;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.MDC;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -46,60 +39,35 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public void execute(Runnable command) {
+        if (command == null) {
+            throw new NullPointerException();
+        }
         if (command instanceof Future) {
+            // 谁进入execute，谁就才有isCancel状态，为了使command有状态，所以没有装饰
+            // 1. 要么把有状态赋给command。2. 建议使用submit方法
             super.execute(command);
             return;
         }
-
-        // 提交者的本地变量
-        Map<String, String> contextMap = MDC.getCopyOfContextMap();
-
-        super.execute(() -> {
-            if (contextMap != null) {
-                // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
-                String traceId = contextMap.get(TraceIdUtil.TRACE_ID);
-                contextMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.genUuid(), StringPool.UNDERSCORE));
-                MDC.setContextMap(contextMap);
-            } else {
-                Map<String, String> newContextMap = new HashMap<>(16);
-                newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.genUuid());
-                MDC.setContextMap(newContextMap);
-            }
-            try {
-                command.run();
-            } finally {
-                // 任务执行完, 清除本地变量, 以防对后续任务有影响
-                MDC.clear();
-            }
-        });
+        super.execute(new MdcRunnableDecorator(command));
     }
 
-
-    @NotNull
     @Override
-    public Future<Void> submit(@NotNull Runnable task) {
-        // 提交者的本地变量
-        Map<String, String> contextMap = MDC.getCopyOfContextMap();
-
-        RunnableFuture<Void> f = new FutureTask<>(() -> {
-            if (contextMap != null) {
-                // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
-                String traceId = contextMap.get(TraceIdUtil.TRACE_ID);
-                contextMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.genUuid(), StringPool.UNDERSCORE));
-                MDC.setContextMap(contextMap);
-            } else {
-                Map<String, String> newContextMap = new HashMap<>(16);
-                newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.genUuid());
-                MDC.setContextMap(newContextMap);
-            }
-            try {
-                task.run();
-            } finally {
-                // 任务执行完, 清除本地变量, 以防对后续任务有影响
-                MDC.clear();
-            }
-        }, null);
-        super.execute(f);
-        return f;
+    public Future<?> submit(Runnable task) {
+        if (task == null) {
+            throw new NullPointerException();
+        }
+        if (task instanceof RunnableFuture) {
+            RunnableFuture<?> f = (RunnableFuture<?>) task;
+            super.execute(f);
+            return f;
+        }
+        RunnableFuture<Void> ftask = newTaskForTrace(task, null);
+        super.execute(ftask);
+        return ftask;
     }
+
+    protected <T> RunnableFuture<T> newTaskForTrace(Runnable runnable, T value) {
+        return new FutureTask<>(new MdcRunnableDecorator(runnable), value);
+    }
+
 }

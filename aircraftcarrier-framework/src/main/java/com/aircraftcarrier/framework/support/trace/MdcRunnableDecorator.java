@@ -1,7 +1,10 @@
 package com.aircraftcarrier.framework.support.trace;
 
+import com.aircraftcarrier.framework.tookit.StringPool;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import org.slf4j.MDC;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,25 +33,30 @@ public class MdcRunnableDecorator implements Runnable {
     /**
      * 保存当前主线程的MDC值
      */
-    private final Map<String, String> mainMdcMap;
+    private final Map<String, String> parentMdcMap;
     private final Runnable runnable;
 
     public MdcRunnableDecorator(Runnable runnable) {
         this.runnable = runnable;
-        this.mainMdcMap = MDC.getCopyOfContextMap();
+        this.parentMdcMap = MDC.getCopyOfContextMap();
     }
 
     @Override
     public void run() {
-        // 将父线程的MDC值赋给子线程
-        if (mainMdcMap != null) {
-            MDC.setContextMap(mainMdcMap);
+        if (parentMdcMap != null) {
+            // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
+            String traceId = parentMdcMap.get(TraceIdUtil.TRACE_ID);
+            parentMdcMap.put(TraceIdUtil.TRACE_ID, StringUtil.append(traceId, TraceIdUtil.genUuid(), StringPool.UNDERSCORE));
+            MDC.setContextMap(parentMdcMap);
+        } else {
+            Map<String, String> newContextMap = new HashMap<>(16);
+            newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.genUuid());
+            MDC.setContextMap(newContextMap);
         }
         try {
-            // 执行被装饰的线程run方法
             runnable.run();
         } finally {
-            // 执行结束移除MDC值
+            // 任务执行完, 清除本地变量, 以防对后续任务有影响
             MDC.clear();
         }
     }
