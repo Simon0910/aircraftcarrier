@@ -25,10 +25,11 @@ public class LockUtil {
     private static final String DEFAULT_KEY = "block";
     private static final MyLockTemplate LOCK_TEMPLATE;
     private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
-    private static final Map<Serializable, Thread> LOCK_RECORD = new HashMap<>();
+    private static final Map<Serializable, Long> LOCK_RECORD = new HashMap<>();
 
     static {
         LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
+        WatchDog.getInstance().init(LOCK_RECORD);
     }
 
     private LockUtil() {
@@ -89,8 +90,8 @@ public class LockUtil {
             return true;
         }
 
-        Thread thread = LOCK_RECORD.get(key);
-        if (thread != null) {
+        Long threadId = LOCK_RECORD.get(key);
+        if (threadId != null) {
             // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证final要移除登记记录，宕机无需考虑）
             if (isTry) {
                 return false;
@@ -107,7 +108,8 @@ public class LockUtil {
             throw new FrameworkException("系统繁忙,请稍后重试");
         }
         // 登记记录
-        LOCK_RECORD.put(key, Thread.currentThread());
+        LOCK_RECORD.put(key, Thread.currentThread().threadId());
+        WatchDog.getInstance().startUp();
         newLock.setAcquireCount(1);
 
         if (lockInfoMap != null) {
@@ -152,8 +154,8 @@ public class LockUtil {
             THREAD_LOCAL.remove();
         }
         // 移除登记记录，别的线程就可以从redis获取锁了
-        Thread thread = LOCK_RECORD.get(key);
-        if (Thread.currentThread() == thread) {
+        Long threadId = LOCK_RECORD.get(key);
+        if (Thread.currentThread().threadId() == threadId) {
             LOCK_RECORD.remove(key);
         }
 

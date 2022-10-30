@@ -19,6 +19,10 @@ public class ApplicationContextUtil {
         ApplicationContextUtil.applicationContext = applicationContext;
     }
 
+    public static boolean contains(String name) {
+        return applicationContext.containsBean(name);
+    }
+
     public static Object getBean(String name) {
         return applicationContext.getBean(name);
     }
