@@ -1,15 +1,16 @@
 package com.aircraftcarrier.marketing.store.adapter.web;
 
-import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
 import com.aircraftcarrier.framework.excel.util.EasyExcelWriteUtil;
+import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.model.response.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.client.DemoService;
-import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
+import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
+import com.aircraftcarrier.marketing.store.client.demo.excel.DemoImportExcelCmd;
 import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImportExcel;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoAdd;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoDetailQry;
@@ -17,7 +18,6 @@ import com.aircraftcarrier.marketing.store.client.demo.request.DemoPageQry;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoUpdate;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoPageVo;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoVo;
-import com.alibaba.fastjson.JSON;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -36,7 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -119,10 +118,7 @@ public class DemoController {
     @ApiImplicitParam(name = "file", dataType = "__File", value = "文件")
     @ApiOperation("导入")
     @PostMapping("import")
-    public SingleResponse<String> importExcel(@RequestParam("file") MultipartFile file) throws IOException {
-        EasyExcelReadUtil.checkExcelFile(file);
-        EasyExcelReadUtil.lambdaReadBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (rowList, analysisContext) -> System.out.println(JSON.toJSONString(rowList)));
-        //解析并保存到数据库
-        return SingleResponse.ok();
+    public SingleResponse<BatchResult> importExcel(@RequestParam("file") MultipartFile file) {
+        return demoService.importExcel(new DemoImportExcelCmd(file));
     }
 }
