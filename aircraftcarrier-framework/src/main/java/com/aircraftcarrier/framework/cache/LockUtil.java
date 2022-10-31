@@ -23,6 +23,16 @@ public class LockUtil {
      * 默认超时30s
      */
     private static final long EXPIRE = 30;
+
+    /**
+     * 等待多久 ms
+     */
+    private static final long ACQUIRE_TIMEOUT = 0;
+    /**
+     * 每次间隔时间 ms
+     * -1：不睡眠
+     */
+    private static final long RETRY_INTERVAL = -1;
     private static final String DEFAULT_KEY = "block";
     private static final MyLockTemplate LOCK_TEMPLATE;
     private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
@@ -37,24 +47,24 @@ public class LockUtil {
     }
 
     public static void lock() throws TimeoutException {
-        lock(DEFAULT_KEY, EXPIRE, -1);
+        lock(DEFAULT_KEY, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
     public static void lock(Serializable key) throws TimeoutException {
-        lock(key, EXPIRE, -1);
+        lock(key, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
     public static void lock(Serializable key, long expire) throws TimeoutException {
-        lock(key, expire, -1);
+        lock(key, expire, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lockTimeout(Serializable key, long acquireTimeout) throws TimeoutException {
-        lock(key, EXPIRE, acquireTimeout);
+    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) throws TimeoutException {
+        lock(key, EXPIRE, acquireTimeout, retryInterval);
     }
 
-    public static void lock(Serializable key, long expire, long acquireTimeout) throws TimeoutException {
+    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) throws TimeoutException {
         try {
-            doLock(key, expire, acquireTimeout, false);
+            doLock(key, expire, acquireTimeout, retryInterval, false);
         } catch (FrameworkException e) {
             throw new TimeoutException(e.getMessage());
         }
@@ -62,36 +72,27 @@ public class LockUtil {
     }
 
     public static Boolean tryLock() {
-        return tryLock(DEFAULT_KEY, EXPIRE, -1);
+        return tryLock(DEFAULT_KEY, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
     public static Boolean tryLock(Serializable key) {
-        return tryLock(key, EXPIRE, -1);
+        return tryLock(key, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
     public static Boolean tryLock(Serializable key, long expire) {
-        return tryLock(key, expire, -1);
+        return tryLock(key, expire, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static Boolean tryLockTimeout(Serializable key, long acquireTimeout) {
-        return tryLock(key, EXPIRE, acquireTimeout);
+    public static Boolean tryLockTimeout(Serializable key, long acquireTimeout, long retryInterval) {
+        return tryLock(key, EXPIRE, acquireTimeout, retryInterval);
     }
 
-    public static Boolean tryLock(Serializable key, long expire, long acquireTimeout) {
-        return doLock(key, expire, acquireTimeout, true);
+    public static Boolean tryLock(Serializable key, long expire, long acquireTimeout, long retryInterval) {
+        return doLock(key, expire, acquireTimeout, retryInterval, true);
     }
 
-    private static boolean doLock(Serializable key, long expire, long acquireTimeout, boolean isTry) {
+    private static boolean doLock(Serializable key, long expire, long acquireTimeout, long retryInterval, boolean isTry) {
         String lockKey = String.valueOf(key);
-
-        Thread thread = LOCK_RECORD.get(lockKey);
-        if (thread != null && thread != Thread.currentThread()) {
-            // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证final要移除登记记录，宕机无需考虑）
-            if (isTry) {
-                return false;
-            }
-            throw new FrameworkException("系统繁忙,请稍后重试");
-        }
 
         Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
         LockInfo lockInfo;
@@ -101,13 +102,25 @@ public class LockUtil {
             return true;
         }
 
+        Thread thread = LOCK_RECORD.get(lockKey);
+        if (thread != null && thread != Thread.currentThread()) {
+            // 不需要等待，不需要重试
+            if (acquireTimeout < 1) {
+                // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证finally要移除登记记录，宕机无需考虑）
+                if (isTry) {
+                    return false;
+                }
+                throw new FrameworkException("系统繁忙,请稍后重试");
+            }
+        }
+
         // 新锁
-        LockInfo newLock = LOCK_TEMPLATE.lock(lockKey, expire * 1000, acquireTimeout * 1000);
+        LockInfo newLock = LOCK_TEMPLATE.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
         if (null == newLock) {
             if (isTry) {
                 return false;
             }
-            throw new FrameworkException("系统繁忙,请稍后重试");
+            throw new FrameworkException("系统繁忙,请稍后重试...");
         }
         // 登记记录
         LOCK_RECORD.put(lockKey, Thread.currentThread());

@@ -5,8 +5,6 @@ import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
-import com.aircraftcarrier.framework.tookit.BeanMapUtil;
-import com.aircraftcarrier.framework.tookit.LockKeyUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
@@ -18,13 +16,10 @@ import com.aircraftcarrier.marketing.store.client.product.request.InventoryReque
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.aircraftcarrier.marketing.store.domain.event.AccountEvent;
-import com.aircraftcarrier.marketing.store.domain.model.test.Address;
-import com.aircraftcarrier.marketing.store.domain.model.test.Sale;
 import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mybatisplus.DemoMybatisPlus;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -34,7 +29,6 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -342,6 +336,7 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
+        // 相当于 num * 4 次请求LockUtil，预计请求redis = num * 2，相同的key可重入
         int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
@@ -349,10 +344,15 @@ public class TestServiceImpl implements TestService {
 
                 try {
                     System.out.println("第一次加锁");
-//                    LockUtil.lockTimeout(key, 30);
-//                    LockUtil.lockTimeout(key + "2", 30);
-                    LockKeyUtil.lock();
-                    LockKeyUtil.lock(key + "2");
+//                    LockUtil.lockTimeout(key, 5000, 1000);
+//                    LockUtil.lockTimeout(key + "2", 5000, 1000);
+
+                    LockUtil.lock(key);
+                    LockUtil.lock(key + "2");
+
+//                    LockKeyUtil.lock();
+//                    LockKeyUtil.lock(key + "2");
+
 //                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
                     reentrantLock2(key);
                 }
@@ -364,39 +364,39 @@ public class TestServiceImpl implements TestService {
 //                }
                 finally {
                     System.out.println("1解锁");
-//                    LockUtil.unLock(key + "2");
-//                    LockUtil.unLock(key);
-                    LockKeyUtil.unlock(key + "2");
-                    LockKeyUtil.unlock();
+                    LockUtil.unLock(key + "2");
+                    LockUtil.unLock(key);
+//                    LockKeyUtil.unlock(key + "2");
+//                    LockKeyUtil.unlock();
                 }
 
             });
         }
 
-        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+//        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
+        ThreadPoolUtil.invokeAllVoid(ThreadPoolUtil.newCachedThreadPool("测试redis锁"), asyncBatchTasks, true);
     }
 
     private void reentrantLock2(String key) {
         try {
             System.out.println("第二次加锁");
-//            LockUtil.lock(key);
-//            LockUtil.lock(key + "2");
-            LockKeyUtil.lock();
-            LockKeyUtil.lock(key + "2");
+            LockUtil.lock(key);
+            LockUtil.lock(key + "2");
+//            LockKeyUtil.lock();
+//            LockKeyUtil.lock(key + "2");
 //            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
         }
 //        catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-//        catch (TimeoutException e) {
-//            log.error(e.getMessage());
-//        }
-        finally {
+        catch (TimeoutException e) {
+            log.error(e.getMessage());
+        } finally {
             System.out.println("2解锁");
-//            LockUtil.unLock(key + "2");
-//            LockUtil.unLock(key);
-            LockKeyUtil.unlock(key + "2");
-            LockKeyUtil.unlock();
+            LockUtil.unLock(key + "2");
+            LockUtil.unLock(key);
+//            LockKeyUtil.unlock(key + "2");
+//            LockKeyUtil.unlock();
         }
     }
 }

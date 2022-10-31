@@ -47,13 +47,14 @@ public class WatchDog {
      * init
      */
     private void renewal() {
+        System.out.println("==========renewal start========");
         while (true) {
             // 10s
             SleepUtil.sleepSeconds(10);
 
             if (lockRecord.isEmpty()) {
                 log.info("lockRecord is empty!");
-                return;
+                break;
             }
 
             Map<Serializable, Thread> lockRecordCopy = new HashMap<>(lockRecord);
@@ -65,6 +66,7 @@ public class WatchDog {
             });
         }
 
+        System.out.println("==========renewal end========");
     }
 
     /**
