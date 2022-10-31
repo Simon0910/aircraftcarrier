@@ -47,7 +47,7 @@ public class WatchDog {
      * init
      */
     private void renewal() {
-        System.out.println("==========renewal start========");
+        log.info("periodic renewal start...");
         while (true) {
             // 10s
             SleepUtil.sleepSeconds(10);
@@ -65,8 +65,7 @@ public class WatchDog {
                 }
             });
         }
-
-        System.out.println("==========renewal end========");
+        log.info("periodic renewal end.");
     }
 
     /**
