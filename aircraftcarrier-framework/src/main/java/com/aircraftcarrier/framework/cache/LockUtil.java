@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.cache;
 import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
 import com.aircraftcarrier.framework.exception.FrameworkException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
+import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -94,24 +95,33 @@ public class LockUtil {
     private static boolean doLock(Serializable key, long expire, long acquireTimeout, long retryInterval, boolean isTry) {
         String lockKey = String.valueOf(key);
 
-        Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
-        LockInfo lockInfo;
-        if (lockInfoMap != null && (lockInfo = lockInfoMap.get(lockKey)) != null) {
-            // 可重入
-            lockInfo.setAcquireCount(lockInfo.getAcquireCount() + 1);
-            return true;
-        }
-
+        // 别的线程已经持有该锁，要重试吗？
         Thread thread = LOCK_RECORD.get(lockKey);
         if (thread != null && thread != Thread.currentThread()) {
-            // 不需要等待，不需要重试
-            if (acquireTimeout < 1) {
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < acquireTimeout) {
+                if (thread == null) {
+                    break;
+                }
+                SleepUtil.sleepMilliseconds(retryInterval);
+                thread = LOCK_RECORD.get(lockKey);
+            }
+            // 重试这么多次，还有别人持有该锁，就不请求redis了
+            if (thread != null) {
                 // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证finally要移除登记记录，宕机无需考虑）
                 if (isTry) {
                     return false;
                 }
                 throw new FrameworkException("系统繁忙,请稍后重试");
             }
+        }
+
+        Map<String, LockInfo> lockInfoMap = THREAD_LOCAL.get();
+        LockInfo lockInfo;
+        if (lockInfoMap != null && (lockInfo = lockInfoMap.get(lockKey)) != null) {
+            // 可重入
+            lockInfo.setAcquireCount(lockInfo.getAcquireCount() + 1);
+            return true;
         }
 
         // 新锁

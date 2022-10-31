@@ -2,13 +2,10 @@ package com.aircraftcarrier.framework.cache.suport;
 
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
-import com.baomidou.lock.exception.LockException;
 import com.baomidou.lock.executor.LockExecutor;
 import com.baomidou.lock.spring.boot.autoconfigure.Lock4jProperties;
 import com.baomidou.lock.util.LockUtil;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author lzp
@@ -37,29 +34,12 @@ public class MyLockTemplate extends LockTemplate {
         expire = expire == 0 ? properties.getExpire() : expire;
         // 防止无限制重试，固定重试3次，eg：等待3秒，每次睡眠1毫秒，count = 3000 / 1 = 3000次
         // 正常情况需要改造源码： 需要配合等待时间acquireTimeout，通过参数动态传递过来retryInterval
-
         LockExecutor<?> lockExecutor = obtainExecutor(executor);
         log.debug(String.format("use lock class: %s", lockExecutor.getClass()));
-        int acquireCount = 0;
         String value = LockUtil.simpleUUID();
-        long start = System.currentTimeMillis();
-        try {
-
-            do {
-                acquireCount++;
-                Object lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
-                if (null != lockInstance) {
-                    return new LockInfo(key, value, expire, acquireTimeout, acquireCount, lockInstance,
-                            lockExecutor);
-                }
-                TimeUnit.MILLISECONDS.sleep(retryInterval);
-            } while (System.currentTimeMillis() - start < acquireTimeout);
-
-        } catch (InterruptedException e) {
-            log.error("lock error", e);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-            throw new LockException();
+        Object lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
+        if (null != lockInstance) {
+            return new LockInfo(key, value, expire, acquireTimeout, 0, lockInstance, lockExecutor);
         }
         return null;
     }

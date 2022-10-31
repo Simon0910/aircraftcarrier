@@ -336,16 +336,16 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
-        // 相当于 num * 4 次请求LockUtil，预计请求redis = num * 2，相同的key可重入
+        // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
         int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             asyncBatchTasks.add(() -> {
-
                 try {
                     System.out.println("第一次加锁");
-//                    LockUtil.lockTimeout(key, 5000, 1000);
-//                    LockUtil.lockTimeout(key + "2", 5000, 1000);
+                    // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
+//                    LockUtil.lockTimeout(key, 1000, 100);
+//                    LockUtil.lockTimeout(key + "2", 1000, 100);
 
                     LockUtil.lock(key);
                     LockUtil.lock(key + "2");
@@ -355,6 +355,7 @@ public class TestServiceImpl implements TestService {
 
 //                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
                     reentrantLock2(key);
+                    log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                 }
 //                catch (InterruptedException e) {
 //                    e.printStackTrace();
