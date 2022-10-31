@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.scheduling;
 
-import com.aircraftcarrier.framework.concurrent.MyDiscardPolicyRejectedExecutionHandler;
+import com.aircraftcarrier.framework.concurrent.DiscardPolicyRejectedExecutionHandler;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -195,7 +195,7 @@ public class TaskService {
             Future<?> f = manualService.submit(task);
 
             /**
-             * {@link MyDiscardPolicyRejectedExecutionHandler#rejectedExecution(java.lang.Runnable, java.util.concurrent.ThreadPoolExecutor)}
+             * {@link DiscardPolicyRejectedExecutionHandler#rejectedExecution(java.lang.Runnable, java.util.concurrent.ThreadPoolExecutor)}
              */
             if (f.isCancelled()) {
                 // 大于manualService.最大线程数不执行

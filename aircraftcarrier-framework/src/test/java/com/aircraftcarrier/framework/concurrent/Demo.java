@@ -15,7 +15,7 @@ public class Demo {
             SleepUtil.sleepSeconds(1);
             /**
              * 配合
-             * {@link MyDiscardPolicyRejectedExecutionHandler#rejectedExecution(java.lang.Runnable, java.util.concurrent.ThreadPoolExecutor)}
+             * {@link DiscardPolicyRejectedExecutionHandler#rejectedExecution(java.lang.Runnable, java.util.concurrent.ThreadPoolExecutor)}
              */
             Future.State state = f.state();
             System.out.println(state);

@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.tookit;
 import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.thread.ThreadFactoryBuilder;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
-import com.aircraftcarrier.framework.concurrent.MyDiscardPolicyRejectedExecutionHandler;
+import com.aircraftcarrier.framework.concurrent.DiscardPolicyRejectedExecutionHandler;
 import com.aircraftcarrier.framework.exception.ThreadException;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,8 +87,8 @@ public class ThreadPoolUtil {
     /**
      * DiscardPolicy
      */
-    private static MyDiscardPolicyRejectedExecutionHandler buildDiscardPolicy() {
-        return new MyDiscardPolicyRejectedExecutionHandler();
+    private static DiscardPolicyRejectedExecutionHandler buildDiscardPolicy() {
+        return new DiscardPolicyRejectedExecutionHandler();
     }
 
 

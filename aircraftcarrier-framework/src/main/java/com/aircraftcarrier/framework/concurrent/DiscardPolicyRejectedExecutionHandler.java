@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * {@link ThreadPoolExecutor.DiscardPolicy}
  */
 @Slf4j
-public class MyDiscardPolicyRejectedExecutionHandler implements RejectedExecutionHandler {
+public class DiscardPolicyRejectedExecutionHandler implements RejectedExecutionHandler {
 
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
