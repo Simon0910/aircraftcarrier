@@ -81,7 +81,7 @@ public abstract class AbstractTask implements Runnable {
             // 任务执行前获取分布式锁， 保证一个任务执行 （注意：各个环境不要争抢同一个锁影响）
             if (!LockUtil.tryLock(getTaskName())) {
                 // 可能手动任务抢到了锁，定时任务被挤掉了，只能到一个周期了
-                log.info("task get lock fail");
+                log.info("task [{}] get lock fail", taskName);
                 return;
             }
 

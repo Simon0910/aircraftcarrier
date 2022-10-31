@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.scheduling;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -64,8 +65,9 @@ public class TaskMonitorView implements Serializable {
     }
 
     public void setDelay(long delay) {
+        Duration duration = Duration.ofMillis(delay);
         // 小时｜分钟｜秒
-        this.delay = "延迟（小时｜分钟｜秒）：" + delay / 360000 + "｜" + delay / 60000 + "｜" + delay / 1000;
+        this.delay = "延迟（小时:分钟:秒）- " + duration.toHoursPart() + ":" + duration.toMinutesPart() + ":" + duration.toSecondsPart();
     }
 
     public String getDelay() {
