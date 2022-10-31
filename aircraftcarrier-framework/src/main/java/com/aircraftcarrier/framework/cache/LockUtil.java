@@ -178,6 +178,7 @@ public class LockUtil {
         // 先执行一次，失败重试3次
         log.info("doUnLock key [{}]: Thread: {}", lockKey, Thread.currentThread().getName());
         if (!doUnLock(lockInfo, 3)) {
+            // 释放锁失败了，会停止续期吗？不会，因为已经移除登记记录
             throw new FrameworkException("释放锁异常");
         }
     }
