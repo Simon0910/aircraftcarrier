@@ -64,12 +64,9 @@ public class LockUtil {
     }
 
     public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) throws TimeoutException {
-        try {
-            doLock(key, expire, acquireTimeout, retryInterval, false);
-        } catch (FrameworkException e) {
-            throw new TimeoutException(e.getMessage());
+        if (!doLock(key, expire, acquireTimeout, retryInterval)) {
+            throw new RuntimeException("the redis distributed lock was not acquired");
         }
-
     }
 
     public static Boolean tryLock() {
@@ -89,10 +86,10 @@ public class LockUtil {
     }
 
     public static Boolean tryLock(Serializable key, long expire, long acquireTimeout, long retryInterval) {
-        return doLock(key, expire, acquireTimeout, retryInterval, true);
+        return doLock(key, expire, acquireTimeout, retryInterval);
     }
 
-    private static boolean doLock(Serializable key, long expire, long acquireTimeout, long retryInterval, boolean isTry) {
+    private static boolean doLock(Serializable key, long expire, long acquireTimeout, long retryInterval) {
         String lockKey = String.valueOf(key);
 
         // 别的线程已经持有该锁，要重试吗？
@@ -109,10 +106,7 @@ public class LockUtil {
             // 重试这么多次，还有别人持有该锁，就不请求redis了
             if (thread != null) {
                 // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证finally要移除登记记录，宕机无需考虑）
-                if (isTry) {
-                    return false;
-                }
-                throw new FrameworkException("系统繁忙,请稍后重试");
+                return false;
             }
         }
 
@@ -127,10 +121,7 @@ public class LockUtil {
         // 新锁
         LockInfo newLock = LOCK_TEMPLATE.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
         if (null == newLock) {
-            if (isTry) {
-                return false;
-            }
-            throw new FrameworkException("系统繁忙,请稍后重试...");
+            return false;
         }
         // 登记记录
         LOCK_RECORD.put(lockKey, Thread.currentThread());
@@ -185,6 +176,7 @@ public class LockUtil {
         }
 
         // 先执行一次，失败重试3次
+        log.info("doUnLock key [{}]: Thread: {}", lockKey, Thread.currentThread().getName());
         if (!doUnLock(lockInfo, 3)) {
             throw new FrameworkException("释放锁异常");
         }

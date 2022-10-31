@@ -5,6 +5,7 @@ import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
+import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
@@ -342,20 +343,21 @@ public class TestServiceImpl implements TestService {
         for (int i = 0; i < num; i++) {
             asyncBatchTasks.add(() -> {
                 try {
-                    System.out.println("第一次加锁");
+                    log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
-//                    LockUtil.lockTimeout(key, 1000, 100);
-//                    LockUtil.lockTimeout(key + "2", 1000, 100);
+                    LockUtil.lockTimeout(key, 1000, 100);
+                    LockUtil.lockTimeout(key + "2", 1000, 100);
 
-                    LockUtil.lock(key);
-                    LockUtil.lock(key + "2");
+//                    LockUtil.lock(key);
+//                    LockUtil.lock(key + "2");
 
 //                    LockKeyUtil.lock();
 //                    LockKeyUtil.lock(key + "2");
 
-//                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
                     reentrantLock2(key);
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
+                    // 执行业务逻辑
+                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(100, 200));
                 }
 //                catch (InterruptedException e) {
 //                    e.printStackTrace();
@@ -364,7 +366,7 @@ public class TestServiceImpl implements TestService {
 //                    log.error(e.getMessage());
 //                }
                 finally {
-                    System.out.println("1解锁");
+                    log.info("1解锁");
                     LockUtil.unLock(key + "2");
                     LockUtil.unLock(key);
 //                    LockKeyUtil.unlock(key + "2");
@@ -380,20 +382,19 @@ public class TestServiceImpl implements TestService {
 
     private void reentrantLock2(String key) {
         try {
-            System.out.println("第二次加锁");
+            log.info("第二次加锁");
             LockUtil.lock(key);
             LockUtil.lock(key + "2");
 //            LockKeyUtil.lock();
 //            LockKeyUtil.lock(key + "2");
-//            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 30));
-        }
-//        catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-        catch (TimeoutException e) {
+            // 执行业务逻辑
+            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(100, 200));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
             log.error(e.getMessage());
         } finally {
-            System.out.println("2解锁");
+            log.info("2解锁");
             LockUtil.unLock(key + "2");
             LockUtil.unLock(key);
 //            LockKeyUtil.unlock(key + "2");

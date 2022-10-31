@@ -39,6 +39,7 @@ public class MyLockTemplate extends LockTemplate {
         String value = LockUtil.simpleUUID();
         Object lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
         if (null != lockInstance) {
+            log.info("locked key [{}]: Thread: {}", key, Thread.currentThread().getName());
             return new LockInfo(key, value, expire, acquireTimeout, 0, lockInstance, lockExecutor);
         }
         return null;
