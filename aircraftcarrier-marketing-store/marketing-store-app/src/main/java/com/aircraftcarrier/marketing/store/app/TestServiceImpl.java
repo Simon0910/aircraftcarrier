@@ -2,6 +2,7 @@ package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
+import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
@@ -37,7 +38,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -95,7 +95,7 @@ public class TestServiceImpl implements TestService {
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
-        } catch (TimeoutException e) {
+        } catch (LockNotAcquiredException e) {
             log.error(e.getMessage());
         } finally {
             LockUtil.unLock(id);
@@ -391,7 +391,7 @@ public class TestServiceImpl implements TestService {
             TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(100, 200));
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (LockNotAcquiredException e) {
             log.error(e.getMessage());
         } finally {
             log.info("2解锁");

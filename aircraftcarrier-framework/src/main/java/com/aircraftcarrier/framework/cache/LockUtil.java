@@ -2,6 +2,7 @@ package com.aircraftcarrier.framework.cache;
 
 import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
 import com.aircraftcarrier.framework.exception.FrameworkException;
+import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.baomidou.lock.LockInfo;
@@ -13,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author lzp
@@ -47,25 +47,30 @@ public class LockUtil {
     private LockUtil() {
     }
 
-    public static void lock() throws TimeoutException {
+    public static void lock() throws LockNotAcquiredException {
         lock(DEFAULT_KEY, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lock(Serializable key) throws TimeoutException {
+    public static void lock(Serializable key) throws LockNotAcquiredException {
         lock(key, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lock(Serializable key, long expire) throws TimeoutException {
+    public static void lock(Serializable key, long expire) throws LockNotAcquiredException {
         lock(key, expire, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) throws TimeoutException {
+    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) throws LockNotAcquiredException {
         lock(key, EXPIRE, acquireTimeout, retryInterval);
     }
 
-    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) throws TimeoutException {
-        if (!doLock(key, expire, acquireTimeout, retryInterval)) {
-            throw new RuntimeException("the redis distributed lock was not acquired");
+    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) throws LockNotAcquiredException {
+        try {
+            if (!doLock(key, expire, acquireTimeout, retryInterval)) {
+                throw new LockNotAcquiredException("the redis distributed lock was not acquired");
+            }
+        } catch (Throwable t) {
+            // 网络异常等等
+            throw new LockNotAcquiredException(t);
         }
     }
 
