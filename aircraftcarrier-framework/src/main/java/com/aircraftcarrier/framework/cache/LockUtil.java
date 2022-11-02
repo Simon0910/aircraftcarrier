@@ -51,26 +51,21 @@ public class LockUtil {
         lock(DEFAULT_KEY, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lock(Serializable key) throws LockNotAcquiredException {
+    public static void lock(Serializable key) {
         lock(key, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lock(Serializable key, long expire) throws LockNotAcquiredException {
+    public static void lock(Serializable key, long expire) {
         lock(key, expire, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) throws LockNotAcquiredException {
+    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) {
         lock(key, EXPIRE, acquireTimeout, retryInterval);
     }
 
-    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) throws LockNotAcquiredException {
-        try {
-            if (!doLock(key, expire, acquireTimeout, retryInterval)) {
-                throw new LockNotAcquiredException("the redis distributed lock was not acquired");
-            }
-        } catch (Throwable t) {
-            // 网络异常等等
-            throw new LockNotAcquiredException(t);
+    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) {
+        if (!doLock(key, expire, acquireTimeout, retryInterval)) {
+            throw new LockNotAcquiredException("the redis distributed lock was not acquired");
         }
     }
 
