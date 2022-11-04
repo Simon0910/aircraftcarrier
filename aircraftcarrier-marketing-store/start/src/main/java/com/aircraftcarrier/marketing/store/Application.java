@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store;
 
+import cn.easyes.starter.register.EsMapperScan;
 import com.aircraftcarrier.framework.tookit.TimeLogUtil;
 import com.aircraftcarrier.framework.web.LocalDateTimeSerializerConfig;
 import com.aircraftcarrier.security.app.AuthServiceImpl;
@@ -32,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 //        , exclude = {SecurityAutoConfiguration.class}
 )
 @MapperScan("com.aircraftcarrier.marketing.store.infrastructure.repository")
+@EsMapperScan("com.aircraftcarrier.marketing.store.infrastructure.es")
 public class Application {
 
     public static void main(String[] args) {
