@@ -46,7 +46,13 @@ public class MdcRunnableDecorator implements Runnable {
         if (parentMdcMap != null) {
             // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
             String traceId = parentMdcMap.get(TraceIdUtil.TRACE_ID);
-            traceId = traceId != null ? StringUtil.append(traceId, TraceIdUtil.genUuid(), StringPool.UNDERSCORE) :  TraceIdUtil.genUuid();
+            if (traceId != null) {
+                String[] parentTraceId = traceId.split(StringPool.UNDERSCORE);
+                traceId = StringUtil.append(parentTraceId[parentTraceId.length - 1], TraceIdUtil.genUuid(), StringPool.UNDERSCORE);
+            } else {
+                traceId = TraceIdUtil.genUuid();
+            }
+
             parentMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
             MDC.setContextMap(parentMdcMap);
         } else {
