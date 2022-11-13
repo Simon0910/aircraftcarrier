@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.scheduling;
 
 import com.aircraftcarrier.framework.concurrent.DiscardPolicyRejectedExecutionHandler;
+import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -113,7 +114,7 @@ public class TaskService {
             }
 
             // taskScheduler
-            schedule = taskScheduler.schedule(task, triggerContext -> {
+            schedule = taskScheduler.schedule(new MdcRunnableDecorator(task), triggerContext -> {
                 // 使用CronTrigger触发器，可动态修改cron表达式来操作循环规则
                 Trigger trigger = new CronTrigger(task.getCron());
                 // 使用不同的触发器，为设置循环时间的关键，区别于CronTrigger触发器，该触发器可随意设置循环间隔时间，单位为毫秒
