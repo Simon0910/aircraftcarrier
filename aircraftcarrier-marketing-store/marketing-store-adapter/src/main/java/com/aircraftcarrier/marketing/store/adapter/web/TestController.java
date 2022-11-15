@@ -34,6 +34,8 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -109,8 +111,10 @@ public class TestController {
     @ApiOperationSupport(order = 25)
     @ApiOperation(value = "测试InEnum枚举注解")
     @PostMapping("/testInEnum")
-    public SingleResponse<DemoRequest> testInEnum(@RequestBody @Valid DemoRequest demoRequest) {
-        return SingleResponse.ok(demoRequest);
+    public SingleResponse<Map<String, Object>> testInEnum(@RequestBody @Valid DemoRequest demoRequest) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("response", demoRequest);
+        return SingleResponse.ok(map);
     }
 
     @ApiOperationSupport(order = 30)
