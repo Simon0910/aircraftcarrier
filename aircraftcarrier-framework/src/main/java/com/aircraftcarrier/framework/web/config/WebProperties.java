@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.web;
+package com.aircraftcarrier.framework.web.config;
 
 import lombok.Getter;
 import lombok.Setter;

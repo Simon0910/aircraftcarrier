@@ -1,7 +1,7 @@
 package com.aircraftcarrier.security.adapter.config;
 
 import com.aircraftcarrier.framework.security.core.service.SecurityAuthCustomizer;
-import com.aircraftcarrier.framework.web.WebProperties;
+import com.aircraftcarrier.framework.web.config.WebProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

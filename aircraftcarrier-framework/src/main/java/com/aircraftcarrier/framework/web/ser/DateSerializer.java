@@ -15,16 +15,21 @@ import java.util.Date;
  *
  * @author liuzhipeng
  */
-public class CustomDateSerializer extends JsonSerializer<Date> {
+public class DateSerializer extends JsonSerializer<Date> {
 
     DateTimeFormatter dateTimeFormatter;
 
-    public CustomDateSerializer(String pattern) {
+    public DateSerializer(String pattern) {
         this.dateTimeFormatter = DateTimeFormat.forPattern(pattern);
     }
 
-    public CustomDateSerializer(DateTimeFormatter dateTimeFormatter) {
+    public DateSerializer(DateTimeFormatter dateTimeFormatter) {
         this.dateTimeFormatter = dateTimeFormatter;
+    }
+
+    @Override
+    public Class<Date> handledType() {
+        return Date.class;
     }
 
     @Override

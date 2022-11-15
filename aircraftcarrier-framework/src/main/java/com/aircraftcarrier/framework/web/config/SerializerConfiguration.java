@@ -1,9 +1,13 @@
-package com.aircraftcarrier.framework.web;
+package com.aircraftcarrier.framework.web.config;
 
+import com.aircraftcarrier.framework.web.deser.DateDeserializer;
+import com.aircraftcarrier.framework.web.ser.DateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.joda.time.format.DateTimeFormat;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +21,12 @@ import java.time.format.DateTimeFormatter;
  * @author lzp
  */
 @Configuration
-public class LocalDateTimeSerializerConfig {
+public class SerializerConfiguration {
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
     private static final String DATE_PATTERN = "yyyy-MM-dd";
+
+    @Value("${spring.jackson.date-format:yyyy-MM-dd HH:mm:ss}")
+    private String pattern;
 
     /**
      * string ==> LocalDate
@@ -67,14 +74,18 @@ public class LocalDateTimeSerializerConfig {
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
-        JavaTimeModule module = new JavaTimeModule();
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
         LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        module.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
+        javaTimeModule.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
         return builder -> {
             builder.simpleDateFormat(DATE_TIME_PATTERN);
             builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_PATTERN)));
             builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
-            builder.modules(module);
+            // 序列化
+            builder.serializers(new DateSerializer(DateTimeFormat.forPattern(pattern)));
+            // 反序列化
+            builder.deserializers(new DateDeserializer(DateTimeFormat.forPattern(pattern)));
+            builder.modules(javaTimeModule);
         };
     }
 }

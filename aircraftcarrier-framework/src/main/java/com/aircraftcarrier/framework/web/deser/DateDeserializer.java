@@ -16,16 +16,21 @@ import java.util.Date;
  *
  * @author liuzhipeng
  */
-public class CustomDateDeserializer extends JsonDeserializer<Date> {
+public class DateDeserializer extends JsonDeserializer<Date> {
 
     DateTimeFormatter dateTimeFormatter;
 
-    public CustomDateDeserializer(String pattern) {
+    public DateDeserializer(String pattern) {
         this.dateTimeFormatter = DateTimeFormat.forPattern(pattern);
     }
 
-    public CustomDateDeserializer(DateTimeFormatter dateTimeFormatter) {
+    public DateDeserializer(DateTimeFormatter dateTimeFormatter) {
         this.dateTimeFormatter = dateTimeFormatter;
+    }
+
+    @Override
+    public Class<Date> handledType() {
+        return Date.class;
     }
 
     @Override

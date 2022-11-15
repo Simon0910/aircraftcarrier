@@ -1,8 +1,8 @@
 package com.aircraftcarrier.framework.web.client;
 
-import com.aircraftcarrier.framework.web.FrameworkWebAutoConfiguration;
 import com.aircraftcarrier.framework.web.client.model.GetTokenRequestSchema;
 import com.aircraftcarrier.framework.web.client.model.GetTokenResponseSchema;
+import com.aircraftcarrier.framework.web.config.FrameworkWebAutoConfiguration;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;

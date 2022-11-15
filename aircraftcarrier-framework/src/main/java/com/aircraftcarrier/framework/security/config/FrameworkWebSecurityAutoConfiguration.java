@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.security.config;
 import com.aircraftcarrier.framework.security.core.filter.JwtAuthenticationTokenFilter;
 import com.aircraftcarrier.framework.security.core.service.SecurityAuthCustomizer;
 import com.aircraftcarrier.framework.security.core.service.SecurityAuthFrameworkService;
-import com.aircraftcarrier.framework.web.WebProperties;
+import com.aircraftcarrier.framework.web.config.WebProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
