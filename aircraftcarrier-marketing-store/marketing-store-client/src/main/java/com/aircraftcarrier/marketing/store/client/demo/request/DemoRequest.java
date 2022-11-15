@@ -32,6 +32,7 @@ public class DemoRequest {
     /**
      * 全局默认
      * {@link SerializerConfiguration#jsonCustomizer() }
+     * {@link com.aircraftcarrier.marketing.store.adapter.config.WebMvcConfiguration#extendMessageConverters(java.util.List) }
      */
     private Date time3;
 }
