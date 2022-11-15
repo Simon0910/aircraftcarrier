@@ -112,6 +112,7 @@ public class TestController {
     @ApiOperation(value = "测试InEnum枚举注解")
     @PostMapping("/testInEnum")
     public SingleResponse<Map<String, Object>> testInEnum(@RequestBody @Valid DemoRequest demoRequest) {
+        log.info("==> {}", JSON.toJSONString(demoRequest));
         Map<String, Object> map = new HashMap<>();
         map.put("response", demoRequest);
         return SingleResponse.ok(map);
