@@ -20,6 +20,10 @@ public class DateDeserializer extends JsonDeserializer<Date> {
 
     DateTimeFormatter dateTimeFormatter;
 
+    public DateDeserializer() {
+        this.dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+    }
+
     public DateDeserializer(String pattern) {
         this.dateTimeFormatter = DateTimeFormat.forPattern(pattern);
     }

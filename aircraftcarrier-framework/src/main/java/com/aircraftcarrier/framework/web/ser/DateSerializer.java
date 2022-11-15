@@ -19,6 +19,10 @@ public class DateSerializer extends JsonSerializer<Date> {
 
     DateTimeFormatter dateTimeFormatter;
 
+    public DateSerializer() {
+        this.dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+    }
+
     public DateSerializer(String pattern) {
         this.dateTimeFormatter = DateTimeFormat.forPattern(pattern);
     }
