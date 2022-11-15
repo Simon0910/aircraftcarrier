@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store.adapter.config;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -32,7 +33,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
         for (HttpMessageConverter<?> converter : converters) {
             if (converter instanceof MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter) {
                 ObjectMapper objectMapper = mappingJackson2HttpMessageConverter.getObjectMapper();
-                objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+                objectMapper.setDateFormat(new SimpleDateFormat(DateTimeUtil.STANDARD_FORMAT));
             }
         }
     }

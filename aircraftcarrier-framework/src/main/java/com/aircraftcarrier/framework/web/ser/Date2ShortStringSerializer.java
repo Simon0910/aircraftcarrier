@@ -1,5 +1,7 @@
 package com.aircraftcarrier.framework.web.ser;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
+
 /**
  * Date2ShortSerializer
  *
@@ -7,6 +9,6 @@ package com.aircraftcarrier.framework.web.ser;
  */
 public class Date2ShortStringSerializer extends DateSerializer {
     public Date2ShortStringSerializer() {
-        super("yyyy-MM-dd");
+        super(DateTimeUtil.DATE_FORMAT);
     }
 }

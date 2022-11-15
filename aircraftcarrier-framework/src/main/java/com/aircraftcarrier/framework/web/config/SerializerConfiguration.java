@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.web.config;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,18 +15,6 @@ import java.time.format.DateTimeFormatter;
  */
 @Configuration
 public class SerializerConfiguration {
-    /**
-     * 默认日期时间格式
-     */
-    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    /**
-     * 默认日期格式
-     */
-    private static final String DATE_PATTERN = "yyyy-MM-dd";
-    /**
-     * 默认时间格式
-     */
-    private static final String TIME_PATTERN = "HH:mm:ss";
 
     @Value("${spring.jackson.date-format:yyyy-MM-dd HH:mm:ss}")
     private String pattern;
@@ -45,7 +34,7 @@ public class SerializerConfiguration {
                 try {
                     return LocalDate.parse(source);
                 } catch (Exception e) {
-                    return LocalDate.parse(source, DateTimeFormatter.ofPattern(DATE_PATTERN));
+                    return LocalDate.parse(source, DateTimeFormatter.ofPattern(DateTimeUtil.DATE_FORMAT));
                 }
             }
         };
@@ -67,7 +56,7 @@ public class SerializerConfiguration {
                 try {
                     return LocalDateTime.parse(source);
                 } catch (Exception e) {
-                    return LocalDateTime.parse(source, DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+                    return LocalDateTime.parse(source, DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT));
                 }
             }
         };
@@ -81,12 +70,12 @@ public class SerializerConfiguration {
 //    @Bean
 //    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
 //        JavaTimeModule javaTimeModule = new JavaTimeModule();
-//        LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//        LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT));
 //        javaTimeModule.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
 //        return builder -> {
-//            builder.simpleDateFormat(DATE_TIME_PATTERN);
-//            builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_PATTERN)));
-//            builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
+//            builder.simpleDateFormat(DateTimeUtil.STANDARD_FORMAT);
+//            builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(DateTimeUtil.DATE_FORMAT)));
+//            builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT)));
 //            // 序列化
 //            builder.serializers(new DateSerializer(DateTimeFormat.forPattern(pattern)));
 //            // 反序列化
@@ -108,19 +97,19 @@ public class SerializerConfiguration {
 //
 //        //LocalDateTime系列序列化和反序列化模块，继承自jsr310，我们在这里修改了日期格式
 //        JavaTimeModule javaTimeModule = new JavaTimeModule();
-//        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
-//        javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_PATTERN)));
-//        javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(TIME_PATTERN)));
-//        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
-//        javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern(DATE_PATTERN)));
-//        javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern(TIME_PATTERN)));
+//        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT)));
+//        javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern(DateTimeUtil.DATE_FORMAT)));
+//        javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(DateTimeUtil.TIME_FORMAT)));
+//        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT)));
+//        javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern(DateTimeUtil.DATE_FORMAT)));
+//        javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern(DateTimeUtil.TIME_FORMAT)));
 //
 //
 //        //Date序列化和反序列化
 //        javaTimeModule.addSerializer(Date.class, new JsonSerializer<>() {
 //            @Override
 //            public void serialize(Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-//                SimpleDateFormat formatter = new SimpleDateFormat(DATE_TIME_PATTERN);
+//                SimpleDateFormat formatter = new SimpleDateFormat(DateTimeUtil.STANDARD_FORMAT);
 //                String formattedDate = formatter.format(date);
 //                jsonGenerator.writeString(formattedDate);
 //            }
@@ -128,7 +117,7 @@ public class SerializerConfiguration {
 //        javaTimeModule.addDeserializer(Date.class, new JsonDeserializer<>() {
 //            @Override
 //            public Date deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-//                SimpleDateFormat format = new SimpleDateFormat(DATE_TIME_PATTERN);
+//                SimpleDateFormat format = new SimpleDateFormat(DateTimeUtil.STANDARD_FORMAT);
 //                String date = jsonParser.getText();
 //                try {
 //                    return format.parse(date);

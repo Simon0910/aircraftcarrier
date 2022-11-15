@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.web.deser;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -21,7 +22,7 @@ public class DateDeserializer extends JsonDeserializer<Date> {
     DateTimeFormatter dateTimeFormatter;
 
     public DateDeserializer() {
-        this.dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        this.dateTimeFormatter = DateTimeFormat.forPattern(DateTimeUtil.STANDARD_FORMAT);
     }
 
     public DateDeserializer(String pattern) {

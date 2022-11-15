@@ -1,6 +1,7 @@
 package com.aircraftcarrier.marketing.store.client.demo.request;
 
 import com.aircraftcarrier.framework.support.validation.InEnum;
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.aircraftcarrier.framework.web.config.SerializerConfiguration;
 import com.aircraftcarrier.framework.web.ser.Date2ShortStringSerializer;
 import com.aircraftcarrier.marketing.store.common.enums.DemoEnum;
@@ -22,7 +23,7 @@ public class DemoRequest {
     @InEnum(DemoEnum.class)
     private Integer demoEnum;
 
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JSONField(format = DateTimeUtil.STANDARD_FORMAT)
     @JsonFormat(pattern = "yyyy-MM", timezone = "GMT+8")
     private Date time;
 

@@ -1,5 +1,7 @@
 package com.aircraftcarrier.framework.scheduling;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
+
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -10,7 +12,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class TaskMonitorView implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT);
     private String taskName;
     private String cron;
     private String state;

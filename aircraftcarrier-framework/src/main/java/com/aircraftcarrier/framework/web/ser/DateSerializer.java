@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.web.ser;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -20,7 +21,7 @@ public class DateSerializer extends JsonSerializer<Date> {
     DateTimeFormatter dateTimeFormatter;
 
     public DateSerializer() {
-        this.dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        this.dateTimeFormatter = DateTimeFormat.forPattern(DateTimeUtil.STANDARD_FORMAT);
     }
 
     public DateSerializer(String pattern) {
