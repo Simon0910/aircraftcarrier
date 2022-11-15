@@ -3,10 +3,12 @@ package com.aircraftcarrier.marketing.store.client.demo.request;
 import com.aircraftcarrier.framework.support.validation.InEnum;
 import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import com.aircraftcarrier.framework.web.config.SerializerConfiguration;
+import com.aircraftcarrier.framework.web.deser.Timestamp2DateDeserializer;
 import com.aircraftcarrier.framework.web.ser.Date2ShortStringSerializer;
 import com.aircraftcarrier.marketing.store.common.enums.DemoEnum;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -28,6 +30,7 @@ public class DemoRequest {
     private Date time;
 
     @JsonSerialize(using = Date2ShortStringSerializer.class)
+    @JsonDeserialize(using = Timestamp2DateDeserializer.class)
     private Date time2;
 
     /**
