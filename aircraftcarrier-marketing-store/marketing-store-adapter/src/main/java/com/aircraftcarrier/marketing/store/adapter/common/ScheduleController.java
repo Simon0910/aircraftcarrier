@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 
 /**
  * 定时任务
@@ -29,7 +30,7 @@ public class ScheduleController {
     @GetMapping("/register")
     public String register() {
         // "0/60 * * * * ?"
-        dynamicTaskService.register(new PrintTimeTask());
+        dynamicTaskService.register(new PrintTimeTask(Duration.ofMinutes(1).plusSeconds(20)));
         return "register";
     }
 
@@ -41,7 +42,7 @@ public class ScheduleController {
 
     @GetMapping("/executeOnceManual")
     public String executeOnceManual() {
-        dynamicTaskService.executeOnceManual(new PrintTimeTask());
+        dynamicTaskService.executeOnceManual(new PrintTimeTask(10000));
         return "executeOnceManual";
     }
 

@@ -2,7 +2,6 @@ package com.aircraftcarrier.marketing.store.domain.redis;
 
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -19,6 +18,9 @@ public class JedisUtil implements ApplicationContextAware {
 
     private static JedisCluster jedisCluster;
 
+    public static long expire(final String key, final long seconds) {
+        return jedisCluster.expire(key, seconds);
+    }
 
     public static String set(final String key, final String value) {
         return jedisCluster.set(key, value);

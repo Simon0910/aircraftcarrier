@@ -5,6 +5,8 @@ import com.aircraftcarrier.framework.tookit.MathUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+
 /**
  * @author liuzhipeng
  */
@@ -15,15 +17,23 @@ public class PrintTimeTask extends AbstractTask {
     private static final String CRON = "0/20 * * * * ?";
 
     public PrintTimeTask() {
-        this(CRON);
+        this(TASK_NAME, CRON, 0);
     }
 
     public PrintTimeTask(String cron) {
-        this(TASK_NAME, cron);
+        this(TASK_NAME, cron, 0);
     }
 
-    public PrintTimeTask(String taskName, String cron) {
-        super(taskName, cron);
+    public PrintTimeTask(long delay) {
+        this(TASK_NAME, CRON, delay);
+    }
+
+    public PrintTimeTask(Duration delay) {
+        this(TASK_NAME, CRON, delay.toMillis());
+    }
+
+    private PrintTimeTask(String taskName, String cron, long delay) {
+        super(taskName, cron, delay);
     }
 
     @Override

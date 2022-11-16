@@ -28,8 +28,8 @@ public class MapperUtil {
         OBJECT_MAPPER.setSerializationInclusion(Include.NON_EMPTY);
         //取消默认转换timestamps形式
         OBJECT_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        //所有的日期格式都统一为以下的样式，即yyyy-MM-dd HH:mm:ss
-        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        //所有的日期格式都统一为以下的样式
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(DateTimeUtil.STANDARD_FORMAT));
         //忽略空Bean转json的错误
         OBJECT_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         //忽略 在json字符串中存在，但是在java对象中不存在对应属性的情况。防止错误

@@ -2,13 +2,10 @@ package com.aircraftcarrier.framework.cache.suport;
 
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
-import com.baomidou.lock.exception.LockException;
 import com.baomidou.lock.executor.LockExecutor;
 import com.baomidou.lock.spring.boot.autoconfigure.Lock4jProperties;
 import com.baomidou.lock.util.LockUtil;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author lzp
@@ -29,40 +26,21 @@ public class MyLockTemplate extends LockTemplate {
      * @param key            锁key 同一个key只能被一个客户端持有
      * @param expire         过期时间(ms) 防止死锁
      * @param acquireTimeout 尝试获取锁超时时间(ms)
+     * @param retryInterval  每次间隔时间(ms)
      * @param executor       执行器
      * @return 加锁成功返回锁信息 失败返回null
      */
-    @Override
-    public LockInfo lock(String key, long expire, long acquireTimeout, Class<? extends LockExecutor> executor) {
+    public LockInfo lockPlus(String key, long expire, long acquireTimeout, long retryInterval, Class<? extends LockExecutor> executor) {
         expire = expire == 0 ? properties.getExpire() : expire;
-        acquireTimeout = acquireTimeout <= 0 ? properties.getAcquireTimeout() : acquireTimeout;
-        long retryInterval = properties.getRetryInterval();
-        // 防止重试时间大于超时时间
-        if (retryInterval >= acquireTimeout) {
-            log.warn("retryInterval more than acquireTimeout,please check your configuration");
-        }
+        // 防止无限制重试，固定重试3次，eg：等待3秒，每次睡眠1毫秒，count = 3000 / 1 = 3000次
+        // 正常情况需要改造源码： 需要配合等待时间acquireTimeout，通过参数动态传递过来retryInterval
         LockExecutor<?> lockExecutor = obtainExecutor(executor);
         log.debug(String.format("use lock class: %s", lockExecutor.getClass()));
-        int acquireCount = 0;
         String value = LockUtil.simpleUUID();
-        long start = System.currentTimeMillis();
-        try {
-
-            do {
-                acquireCount++;
-                Object lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
-                if (null != lockInstance) {
-                    return new LockInfo(key, value, expire, acquireTimeout, acquireCount, lockInstance,
-                            lockExecutor);
-                }
-                TimeUnit.MILLISECONDS.sleep(retryInterval);
-            } while (System.currentTimeMillis() - start < acquireTimeout);
-
-        } catch (InterruptedException e) {
-            log.error("lock error", e);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-            throw new LockException();
+        Object lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
+        if (null != lockInstance) {
+            log.info("locked key [{}]: Thread: {}", key, Thread.currentThread().getName());
+            return new LockInfo(key, value, expire, acquireTimeout, 0, lockInstance, lockExecutor);
         }
         return null;
     }

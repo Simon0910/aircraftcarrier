@@ -70,4 +70,17 @@ public class DemoRepository {
         }
         return demoMybatisPlus.getById(id);
     }
+
+    /**
+     * saveBatch
+     *
+     * @param list list
+     */
+    public void saveBatch(List<DemoDo> list) {
+        if (list == null || list.isEmpty()) {
+            throw new SysException("saveBatch list must not be empty!");
+        }
+
+        demoMybatisPlus.saveBatch(list);
+    }
 }

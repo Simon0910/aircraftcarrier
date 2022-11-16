@@ -1,7 +1,8 @@
 package com.aircraftcarrier.marketing.store;
 
+import cn.easyes.starter.register.EsMapperScan;
 import com.aircraftcarrier.framework.tookit.TimeLogUtil;
-import com.aircraftcarrier.framework.web.LocalDateTimeSerializerConfig;
+import com.aircraftcarrier.framework.web.config.SerializerConfiguration;
 import com.aircraftcarrier.security.app.AuthServiceImpl;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Slf4j
 @EnableScheduling
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
-@Import(LocalDateTimeSerializerConfig.class)
+@Import(SerializerConfiguration.class)
 @PropertySource(value = {
         "project.properties",
         "jdbc.properties",
@@ -32,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 //        , exclude = {SecurityAutoConfiguration.class}
 )
 @MapperScan("com.aircraftcarrier.marketing.store.infrastructure.repository")
+@EsMapperScan("com.aircraftcarrier.marketing.store.infrastructure.es")
 public class Application {
 
     public static void main(String[] args) {

@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.data.plugins;
 
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.ParameterMode;
@@ -49,7 +50,7 @@ public class SqlUtil {
             if (propertyValue instanceof String) {
                 result = "'" + propertyValue + "'";
             } else if (propertyValue instanceof Date) {
-                result = "'" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(propertyValue) + "'";
+                result = "'" + new SimpleDateFormat(DateTimeUtil.STANDARD_FORMAT).format(propertyValue) + "'";
             } else {
                 result = propertyValue.toString();
             }

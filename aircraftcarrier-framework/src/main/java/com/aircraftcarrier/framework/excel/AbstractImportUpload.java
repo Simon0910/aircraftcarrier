@@ -14,37 +14,37 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
     /**
      * BATCH_CHECK_SIZE_LOWER
      */
-    public static final int BATCH_CHECK_SIZE_LOWER = 10;
+    protected static final int BATCH_CHECK_SIZE_LOWER = 10;
 
     /**
      * BATCH_INVOKE_SIZE_LOWER
      */
-    public static final int BATCH_INVOKE_SIZE_LOWER = 10;
+    protected static final int BATCH_INVOKE_SIZE_LOWER = 10;
 
     /**
      * Result
      */
-    public final BatchResult batchResult = new BatchResult();
+    protected final BatchResult batchResult = new BatchResult();
 
     /**
      * batch check size
      */
-    protected int batchCheckSize;
+    int batchCheckSize;
 
     /**
      * batch invoke size
      */
-    protected int batchInvokeSize;
+    int batchInvokeSize;
 
     /**
      * rows
      */
-    protected List<T> rowList;
+    List<T> rowList;
 
     /**
      * AbstractImportUpload
      */
-    protected AbstractImportUpload() {
+    AbstractImportUpload() {
         this(new ArrayList<>());
     }
 
@@ -54,7 +54,7 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
      *
      * @param list list
      */
-    protected AbstractImportUpload(List<T> list) {
+    AbstractImportUpload(List<T> list) {
         this(list, 100, 1000);
     }
 
@@ -66,7 +66,7 @@ public abstract class AbstractImportUpload<T extends ExcelRow> {
      * @param batchCheckSize  batchCheckSize
      * @param batchInvokeSize batchInvokeSize
      */
-    protected AbstractImportUpload(List<T> list, int batchCheckSize, int batchInvokeSize) {
+    AbstractImportUpload(List<T> list, int batchCheckSize, int batchInvokeSize) {
         if (list == null) {
             throw new IllegalArgumentException("list must not be null");
         }

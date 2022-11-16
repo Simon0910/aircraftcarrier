@@ -23,9 +23,9 @@ public class TheadPoolUtilTest {
      * 可根据批量消费消息个数设置
      */
     private static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
-            ThreadPoolUtil.CORE_POOL_SIZE,
-            ThreadPoolUtil.MAX_POOL_SIZE,
-            ThreadPoolUtil.KEEP_ALIVE_TIME,
+            4,
+            8,
+            10,
             TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(2048),
             new ThreadPoolExecutor.AbortPolicy());

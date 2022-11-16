@@ -1,18 +1,22 @@
 package com.aircraftcarrier.marketing.store.app;
 
+import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoAddExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoDeleteExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoUpdateExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.excel.DemoExportExe;
+import com.aircraftcarrier.marketing.store.app.demo.executor.excel.DemoImportCmdExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.query.DemoDetailQryCmdExe;
 import com.aircraftcarrier.marketing.store.app.demo.executor.query.DemoPageQryCmdExe;
 import com.aircraftcarrier.marketing.store.client.DemoService;
-import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
+import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDetailQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
+import com.aircraftcarrier.marketing.store.client.demo.excel.DemoImportExcelCmd;
 import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImportExcel;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoPageVo;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoVo;
@@ -47,6 +51,8 @@ public class DemoServiceImpl implements DemoService {
     private DemoAddExe demoAddExe;
     @Resource
     private DemoUpdateExe demoUpdateExe;
+    @Resource
+    private DemoImportCmdExe demoImportCmdExe;
 
     @Override
     public Page<DemoPageVo> pageList(DemoPageQryCmd pageQryCmd) {
@@ -84,6 +90,11 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public List<DemoImportExcel> export(DemoPageQryCmd pageQryCmd) {
         return demoExportExe.execute(pageQryCmd);
+    }
+
+    @Override
+    public SingleResponse<BatchResult> importExcel(DemoImportExcelCmd demoImportExcelCmd) {
+        return demoImportCmdExe.execute(demoImportExcelCmd);
     }
 
 

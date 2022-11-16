@@ -1,8 +1,9 @@
 package com.aircraftcarrier.framework.scheduling;
 
-import org.springframework.scheduling.support.CronExpression;
+import com.aircraftcarrier.framework.tookit.DateTimeUtil;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -11,13 +12,16 @@ import java.time.format.DateTimeFormatter;
  */
 public class TaskMonitorView implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtil.STANDARD_FORMAT);
     private String taskName;
     private String cron;
     private String state;
     private int progress;
 
-    private String nextTime;
+    private LocalDateTime nextTime;
+    private String delay;
+
+    private LocalDateTime nextRuntime;
 
     public String getTaskName() {
         return taskName;
@@ -52,11 +56,31 @@ public class TaskMonitorView implements Serializable {
     }
 
     public String getNextTime() {
-        CronExpression cronExpression = CronExpression.parse(cron);
-        LocalDateTime dateTime = cronExpression.next(LocalDateTime.now());
-        assert dateTime != null;
-        return dateTime.format(FORMATTER);
+        if (nextTime == null) {
+            return "";
+        }
+        return nextTime.format(FORMATTER);
     }
 
+    public void setNextTime(LocalDateTime nextTime) {
+        this.nextTime = nextTime;
+    }
 
+    public void setDelay(long delay) {
+        Duration duration = Duration.ofMillis(delay);
+        // 小时｜分钟｜秒
+        this.delay = "延迟（小时:分钟:秒）- " + duration.toHoursPart() + ":" + duration.toMinutesPart() + ":" + duration.toSecondsPart();
+    }
+
+    public String getDelay() {
+        return delay;
+    }
+
+    public LocalDateTime getNextRuntime() {
+        return nextRuntime;
+    }
+
+    public void setNextRuntime(LocalDateTime nextRuntime) {
+        this.nextRuntime = nextRuntime;
+    }
 }

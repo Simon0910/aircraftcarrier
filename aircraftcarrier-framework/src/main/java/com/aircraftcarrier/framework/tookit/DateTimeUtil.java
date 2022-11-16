@@ -12,13 +12,20 @@ import java.util.Date;
 public class DateTimeUtil {
 
     /**
-     * YYYY_MM_DD_FORMAT
-     */
-    public static final String YYYY_MM_DD = "yyyy-MM-dd";
-    /**
      * STANDARD_FORMAT
      */
-    private static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * DATE_FORMAT
+     */
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
+
+
+    /**
+     * DATE_FORMAT
+     */
+    public static final String TIME_FORMAT = "HH:mm:ss";
 
     /**
      * JodaTimeUtil
@@ -288,6 +295,52 @@ public class DateTimeUtil {
             dateTime = dateTime.plusSeconds(seconds);
         } else {
             dateTime = dateTime.minusSeconds(seconds);
+        }
+
+        return dateTime.toDate();
+    }
+
+    /**
+     * 日期加毫秒
+     *
+     * @param date   date
+     * @param millis millis
+     * @return Date
+     */
+    public static Date plusMillis(Date date, Integer millis) {
+        return plusOrMinusMillis(date, millis, 0);
+    }
+
+    /**
+     * 日期减毫秒
+     *
+     * @param date   date
+     * @param millis millis
+     * @return Date
+     */
+    public static Date minusMillis(Date date, Integer millis) {
+        return plusOrMinusMillis(date, millis, 1);
+    }
+
+    /**
+     * 加减毫秒
+     *
+     * @param date   date
+     * @param millis millis
+     * @param type   0:加毫秒 1:减毫秒
+     * @return Date
+     */
+    private static Date plusOrMinusMillis(Date date, Integer millis, Integer type) {
+        if (null == date) {
+            return null;
+        }
+        millis = null == millis ? 0 : millis;
+
+        DateTime dateTime = new DateTime(date);
+        if (type == 0) {
+            dateTime = dateTime.plusMillis(millis);
+        } else {
+            dateTime = dateTime.minusMillis(millis);
         }
 
         return dateTime.toDate();

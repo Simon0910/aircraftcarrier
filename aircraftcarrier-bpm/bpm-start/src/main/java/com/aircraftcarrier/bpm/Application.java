@@ -1,7 +1,7 @@
 package com.aircraftcarrier.bpm;
 
 import com.aircraftcarrier.framework.tookit.TimeLogUtil;
-import com.aircraftcarrier.framework.web.LocalDateTimeSerializerConfig;
+import com.aircraftcarrier.framework.web.config.SerializerConfiguration;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
@@ -18,7 +18,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Slf4j
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
-@Import(LocalDateTimeSerializerConfig.class)
+@Import(SerializerConfiguration.class)
 @PropertySource(value = {
         "project.properties"
 //        ,"jdbc.properties"
