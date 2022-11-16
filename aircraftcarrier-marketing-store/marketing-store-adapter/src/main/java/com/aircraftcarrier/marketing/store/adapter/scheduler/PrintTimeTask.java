@@ -28,8 +28,8 @@ public class PrintTimeTask extends AbstractTask {
         this(TASK_NAME, CRON, delay);
     }
 
-    public PrintTimeTask(Duration duration) {
-        this(TASK_NAME, CRON, duration.toMillis());
+    public PrintTimeTask(Duration delay) {
+        this(TASK_NAME, CRON, delay.toMillis());
     }
 
     private PrintTimeTask(String taskName, String cron, long delay) {
