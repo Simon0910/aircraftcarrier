@@ -76,11 +76,18 @@ public class TaskMonitorView implements Serializable {
         return delay;
     }
 
-    public LocalDateTime getNextRuntime() {
-        return nextRuntime;
+    public String getNextRuntime() {
+        if (nextRuntime == null) {
+            return "";
+        }
+        return nextRuntime.format(FORMATTER);
     }
 
     public void setNextRuntime(LocalDateTime nextRuntime) {
         this.nextRuntime = nextRuntime;
+    }
+
+    public String getServerNow() {
+        return "服务器时间：" + LocalDateTime.now().format(FORMATTER);
     }
 }
