@@ -28,13 +28,13 @@ import org.springframework.context.annotation.PropertySource;
 //        , exclude = {SecurityAutoConfiguration.class}
 )
 @MapperScan("com.aircraftcarrier.bpm.infrastructure.repository")
-public class Application {
+public class BpmApplication {
 
     public static void main(String[] args) {
         log.info("Begin to start Spring Boot Application");
         Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(BpmApplication.class, args);
 
         log.info("End starting Spring Boot Application, Time used: {}", TimeLogUtil.endStopwatchTime(stopwatch));
     }
