@@ -42,6 +42,7 @@ public class MapUtil {
      * @since 19
      */
     public static int calculateHashMapCapacity(int numMappings) {
+        // com.google.common.collect.Maps.capacity(int expectedSize)
         return (int) Math.ceil(numMappings / DEFAULT_LOAD_FACTOR);
     }
 }

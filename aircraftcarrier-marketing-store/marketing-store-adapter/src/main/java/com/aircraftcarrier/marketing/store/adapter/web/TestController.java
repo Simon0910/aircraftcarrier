@@ -9,6 +9,7 @@ import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
+import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
@@ -34,8 +35,10 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -290,4 +293,20 @@ public class TestController {
         return SingleResponse.ok("reference");
     }
 
+    @ApiOperationSupport(order = 53)
+    @ApiOperation(value = "隔离性")
+    @GetMapping("/isolation")
+    public SingleResponse<String> isolation(String param) {
+        List<Thread> threadList = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            threadList.add(new Thread(() -> {
+                testService.isolation(param);
+            }));
+        }
+        for (Thread thread : threadList) {
+            SleepUtil.sleepSeconds(3);
+            thread.start();
+        }
+        return SingleResponse.ok("isolation");
+    }
 }

@@ -75,4 +75,11 @@ public interface TestService {
      * @param key key
      */
     void reentrantLock(String key);
+
+    /**
+     * 隔离性
+     *
+     * @param param param
+     */
+    void isolation(String param);
 }

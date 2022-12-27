@@ -8,6 +8,7 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
+import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe2;
@@ -22,6 +23,8 @@ import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mybatisplus.DemoMybatisPlus;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -383,6 +386,49 @@ public class TestServiceImpl implements TestService {
 
 //        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
         ThreadPoolUtil.invokeAllVoid(ThreadPoolUtil.newCachedThreadPool("测试redis锁"), asyncBatchTasks, true);
+    }
+
+    /**
+     * https://www.cnblogs.com/hollischuang/p/15522907.html
+     *
+     * @param param param
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void isolation(String param) {
+        // 第2个线程可以看到第1个线程保存的数据吗？@Transactional会有影响吗？
+        LambdaQueryWrapper<DemoDo> queryWrapper = new LambdaQueryWrapper<DemoDo>()
+                .in(DemoDo::getSellerNo, param);
+        // 线程2可以看到线程1的新增的第一条记录?
+        List<DemoDo> list = demoMapper.selectList(queryWrapper);
+        log.info("第一次查询 list ==> {}", JSON.toJSONString(list));
+
+        DemoDo demoDo = new DemoDo();
+        demoDo.setBizNo("bizNo");
+        demoDo.setDescription("desc");
+        demoDo.setSellerNo(param);
+        demoDo.setSellerName("isolation");
+        demoDo.setDataType(DataTypeEnum.GENERAL);
+        demoMapper.insert(demoDo);
+        log.info("第1次新增成功");
+
+        // 线程2可以看到线程1的新增的第一条记录？
+        list = demoMapper.selectList(queryWrapper);
+        log.info("第二次查询 list ==> {}", JSON.toJSONString(list));
+
+        SleepUtil.sleepSeconds(5);
+
+        // 重置主键
+        demoDo.setId(null);
+        demoMapper.insert(demoDo);
+        log.info("第2次新增成功");
+
+        // 线程2可以看到线程1的新增的第二条记录？
+        list = demoMapper.selectList(queryWrapper);
+        log.info("第三次查询 list ==> {}", JSON.toJSONString(list));
+
+        SleepUtil.sleepSeconds(8);
+        System.out.println("end");
     }
 
     private void reentrantLock2(String key) {
