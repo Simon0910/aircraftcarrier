@@ -28,23 +28,35 @@ public class LockUtil {
     /**
      * 等待多久 ms
      */
-    private static final long ACQUIRE_TIMEOUT = 0;
+    private static final long ACQUIRE_TIMEOUT = -1;
     /**
      * 每次间隔时间 ms
      * -1：不睡眠
      */
     private static final long RETRY_INTERVAL = -1;
     private static final String DEFAULT_KEY = "block";
-    private static final MyLockTemplate LOCK_TEMPLATE;
     private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
     private static final Map<String, Thread> LOCK_RECORD = new ConcurrentHashMap<>();
 
+    private static volatile MyLockTemplate myLockTemplate;
+
     static {
-        LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
+        LockUtil.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
         WatchDog.getInstance().init(LOCK_RECORD);
     }
 
     private LockUtil() {
+    }
+
+    private static MyLockTemplate getMyLockTemplate() {
+        if (LockUtil.myLockTemplate == null) {
+            synchronized (LockUtil.class) {
+                if (LockUtil.myLockTemplate == null) {
+                    LockUtil.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
+                }
+            }
+        }
+        return LockUtil.myLockTemplate;
     }
 
     public static void lock() throws LockNotAcquiredException {
@@ -97,15 +109,17 @@ public class LockUtil {
         if (thread != null && thread != Thread.currentThread()) {
             long start = System.currentTimeMillis();
             while (System.currentTimeMillis() - start < acquireTimeout) {
+                thread = LOCK_RECORD.get(lockKey);
                 if (thread == null) {
                     break;
                 }
                 SleepUtil.sleepMilliseconds(retryInterval);
-                thread = LOCK_RECORD.get(lockKey);
             }
             // 重试这么多次，还有别人持有该锁，就不请求redis了
+            thread = LOCK_RECORD.get(lockKey);
             if (thread != null) {
                 // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证finally要移除登记记录，宕机无需考虑）
+                log.warn("wait other key [{}]: Thread: {}", key, Thread.currentThread().getName());
                 return false;
             }
         }
@@ -119,8 +133,9 @@ public class LockUtil {
         }
 
         // 新锁
-        LockInfo newLock = LOCK_TEMPLATE.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
+        LockInfo newLock = getMyLockTemplate().lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
         if (null == newLock) {
+            log.info("not lock key [{}]: Thread: {}", key, Thread.currentThread().getName());
             return false;
         }
         // 登记记录
@@ -186,7 +201,7 @@ public class LockUtil {
     private static boolean doUnLock(LockInfo lockInfo, int retry) {
         try {
             // 释放锁
-            LOCK_TEMPLATE.releaseLock(lockInfo);
+            getMyLockTemplate().releaseLock(lockInfo);
             return true;
         } catch (Exception e) {
             try {

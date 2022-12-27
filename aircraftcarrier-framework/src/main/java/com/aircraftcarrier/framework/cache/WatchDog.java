@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 public class WatchDog {
     private static final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "watch-dog");
     private Map<String, Thread> lockRecord;
-    private RedisLockRenewal redisLockRenewal;
+    private volatile RedisLockRenewal redisLockRenewal;
 
     private WatchDog() {
     }
@@ -27,18 +27,22 @@ public class WatchDog {
     }
 
     void init(Map<String, Thread> lockRecord) {
-        this.lockRecord = lockRecord;
-        if (!ApplicationContextUtil.contains("redisLockRenewal")) {
+        if (ApplicationContextUtil.notContains("redisLockRenewal")) {
             log.error("need a bean, but not found bean name [redisLockRenewal]");
             return;
         }
+
+        this.lockRecord = lockRecord;
         this.redisLockRenewal = ApplicationContextUtil.getBean(RedisLockRenewal.class);
     }
 
     void startUp() {
         if (redisLockRenewal == null) {
-            log.error("need a bean, but not found bean name [redisLockRenewal]");
-            return;
+            synchronized (WatchDog.class) {
+                if (redisLockRenewal == null) {
+                    this.redisLockRenewal = ApplicationContextUtil.getBean(RedisLockRenewal.class);
+                }
+            }
         }
         executorService.execute(this::renewal);
     }

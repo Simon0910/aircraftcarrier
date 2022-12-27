@@ -23,6 +23,10 @@ public class ApplicationContextUtil {
         return applicationContext.containsBean(name);
     }
 
+    public static boolean notContains(String name) {
+        return !contains(name);
+    }
+
     public static Object getBean(String name) {
         return applicationContext.getBean(name);
     }

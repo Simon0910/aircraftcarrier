@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
@@ -80,6 +81,10 @@ public class TestServiceImpl implements TestService {
     public String testLock(Serializable id) {
         JedisUtil.set((String) id, (String) id);
         String value = JedisUtil.get((String) id);
+        String test = JedisUtil.get("abc");
+        if (StringUtils.hasText(value)) {
+            JedisUtil.expire((String) id, 0);
+        }
         log.info("JedisUtil: " + value);
 
         try {
@@ -345,8 +350,8 @@ public class TestServiceImpl implements TestService {
                 try {
                     log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
-                    LockUtil.lockTimeout(key, 1000, 100);
-                    LockUtil.lockTimeout(key + "2", 1000, 100);
+                    LockUtil.lockTimeout(key, 5000, 1000);
+                    LockUtil.lockTimeout(key + "2", 5000, 1000);
 
 //                    LockUtil.lock(key);
 //                    LockUtil.lock(key + "2");
