@@ -109,14 +109,13 @@ public class LockUtil {
         if (thread != null && thread != Thread.currentThread()) {
             long start = System.currentTimeMillis();
             while (System.currentTimeMillis() - start < acquireTimeout) {
+                SleepUtil.sleepMilliseconds(retryInterval);
                 thread = LOCK_RECORD.get(lockKey);
                 if (thread == null) {
                     break;
                 }
-                SleepUtil.sleepMilliseconds(retryInterval);
             }
             // 重试这么多次，还有别人持有该锁，就不请求redis了
-            thread = LOCK_RECORD.get(lockKey);
             if (thread != null) {
                 // 已经有别的线程加上锁了，不用再请求redis了 （单机版即使redis锁key自动失效了，也不用续期锁的有效期了，保证finally要移除登记记录，宕机无需考虑）
                 log.warn("wait other key [{}]: Thread: {}", key, Thread.currentThread().getName());
@@ -135,7 +134,7 @@ public class LockUtil {
         // 新锁
         LockInfo newLock = getMyLockTemplate().lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
         if (null == newLock) {
-            log.info("not lock key [{}]: Thread: {}", key, Thread.currentThread().getName());
+            log.info("not lock redis key [{}]: Thread: {}", key, Thread.currentThread().getName());
             return false;
         }
         // 登记记录
@@ -184,15 +183,17 @@ public class LockUtil {
         if (lockInfoMap.isEmpty()) {
             THREAD_LOCAL.remove();
         }
+
+        // 先执行一次，失败重试3次
+        boolean unLocked = doUnLock(lockInfo, 3);
+        log.info("doUnLock key [{}]: Thread: {}", lockKey, Thread.currentThread().getName());
         // 移除登记记录，别的线程就可以从redis获取锁了
         Thread thread = LOCK_RECORD.get(lockKey);
         if (Thread.currentThread() == thread) {
             LOCK_RECORD.remove(lockKey);
         }
 
-        // 先执行一次，失败重试3次
-        log.info("doUnLock key [{}]: Thread: {}", lockKey, Thread.currentThread().getName());
-        if (!doUnLock(lockInfo, 3)) {
+        if (!unLocked) {
             // 释放锁失败了，会停止续期吗？不会，因为已经移除登记记录
             throw new FrameworkException("释放锁异常");
         }
