@@ -371,16 +371,42 @@ public class ThreadPoolUtil {
             for (int i = 0, size = futures.size(); i < size; i++) {
                 Future<T> f = futures.get(i);
                 try {
+                    /**
+                     * {@link org.elasticsearch.common.util.concurrent.FutureUtils.get(java.util.concurrent.Future<T>, long, java.util.concurrent.TimeUnit)}
+                     * {@link java.util.concurrent.AbstractExecutorService#invokeAll(java.util.Collection) }
+                     */
                     T result = f.get(perWaitTimeout, TimeUnit.SECONDS);
                     resultList.add(result);
-                } catch (CancellationException | ExecutionException | InterruptedException | TimeoutException e) {
+                } catch (CancellationException e) {
                     // CancellationException | ExecutionException： 子线程死了
                     // InterruptedException | TimeoutException：子线程还活着，子线程判断Thread.currentThread().isInterrupted()自己停止
                     f.cancel(true);
                     if (!ignoreFail) {
-                        throw new ThreadException("[" + i + "]: " + e);
+                        throw new ThreadException("Future got [" + i + "] CancellationException: " + e);
                     } else {
-                        log.error("get [{}] error: ", i, e);
+                        log.error("get [{}] CancellationException: ", i, e);
+                    }
+                } catch (ExecutionException e) {
+                    f.cancel(true);
+                    if (!ignoreFail) {
+                        throw new ThreadException("Future got [" + i + "] ExecutionException: ", e);
+                    } else {
+                        log.error("get [{}] ExecutionException ", i, e);
+                    }
+                } catch (TimeoutException e) {
+                    f.cancel(true);
+                    if (!ignoreFail) {
+                        throw new ThreadException("Future got  [" + i + "] TimeoutException: ", e);
+                    } else {
+                        log.error("get [{}] TimeoutException ", i, e);
+                    }
+                } catch (InterruptedException e) {
+                    f.cancel(true);
+                    Thread.currentThread().interrupt();
+                    if (!ignoreFail) {
+                        throw new ThreadException("Future got [" + i + "] InterruptedException: ", e);
+                    } else {
+                        log.error("get [{}] InterruptedException: ", i, e);
                     }
                 }
             }
