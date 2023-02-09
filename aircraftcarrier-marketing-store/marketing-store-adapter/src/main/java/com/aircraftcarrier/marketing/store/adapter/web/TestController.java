@@ -207,7 +207,11 @@ public class TestController {
     @GetMapping("/threadLocal")
     public SingleResponse<String> threadLocal(String value) {
         System.out.println("threadLocal");
-
+        // 1. 分别调用3次 打满核心线程，且每个线程保存 aaa,bbb,ccc
+        // 2. threadLocal = null; 接着gc();
+        // 3. 再次观察3个核心线程的 threadLocalMap 中 Entry（Entry是WeakReference）中的referent（referent是当前threadLocal引用）为null
+        // 4. referent为null的等待频繁的gc()回收调
+        // 5. 观察频繁的gc()后，是否真的被回收
         threadPoolExecutor.execute(() -> {
             threadLocal.set(value);
             String s = threadLocal.get();
