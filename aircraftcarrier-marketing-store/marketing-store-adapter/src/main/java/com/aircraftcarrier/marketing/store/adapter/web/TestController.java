@@ -201,6 +201,7 @@ public class TestController {
 
     /**
      * <a href="https://www.baeldung.com/java-memory-leaks">...</a>
+     * <a href="https://programmer.ink/think/java-multithreading-introduction-to-threadlocal-and-memory-leakage.html">...</a>
      */
     @ApiOperationSupport(order = 46)
     @ApiOperation(value = "threadLocal")
