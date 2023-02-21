@@ -144,6 +144,17 @@ public class ThreadPoolUtil {
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
+    public static ExecutorService newCachedThreadPoolMax(String pooName, int maxSize) {
+        return new TraceThreadPoolExecutor(
+                // 指定大小
+                0, maxSize,
+                KEEP_ALIVE_TIME, TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                buildThreadFactory(pooName, "-cached-pool-"),
+                // 默认拒绝策略
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
     /**
      * 缓存线程池 最大nThreads线程大小(防止无限创建缓存线程oom) 同步队列 多余的请求直接丢弃
      * <p>
@@ -334,7 +345,7 @@ public class ThreadPoolUtil {
     /**
      * execute
      */
-    public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, ExecutorService executor) {
+    public static <T, V> List<V> invokeTask(ExecutorService executor, CallApiParallelTask<T, V> task) {
         List<Callable<V>> taskList = task.getTaskList();
         return invokeAll(executor, taskList);
     }
@@ -344,7 +355,7 @@ public class ThreadPoolUtil {
      */
     public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, int parallelism, String taskName) {
         List<Callable<V>> taskList = task.getTaskList();
-        return invokeAll(ThreadPoolUtil.newWorkStealingPool(parallelism, taskName + "-parallelTask-pool"), taskList);
+        return invokeAll(ThreadPoolUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism), taskList);
     }
 
     /**

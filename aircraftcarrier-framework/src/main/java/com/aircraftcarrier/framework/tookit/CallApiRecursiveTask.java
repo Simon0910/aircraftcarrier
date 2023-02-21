@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
@@ -23,7 +22,9 @@ public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {
     private final Function<T, R> function;
 
     public CallApiRecursiveTask(Function<T, R> function, List<T> params) {
-        this(function, params, ForkJoinPool.commonPool().getParallelism());
+        this.function = function;
+        this.params = params;
+        this.granularity = 1;
     }
 
     public CallApiRecursiveTask(Function<T, R> function, List<T> params, int granularity) {
