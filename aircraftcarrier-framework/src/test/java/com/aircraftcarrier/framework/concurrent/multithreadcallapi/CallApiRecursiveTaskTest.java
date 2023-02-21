@@ -106,7 +106,7 @@ public class CallApiRecursiveTaskTest {
 
 //        List<Result> results = ThreadPoolUtil.invoke(task, 1000);
 
-        List<Result> results = ThreadPoolUtil.invoke(task);
+        List<Result> results = ThreadPoolUtil.invokeTask(task, 200, "call aa");
 
         System.out.println("RecursiveTask ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
@@ -125,10 +125,13 @@ public class CallApiRecursiveTaskTest {
             task.add(() -> callApiService.getResult(param));
         }
 
-        ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call-api");
+//        ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call-api");
 
 //        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
-        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task, true);
+//        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task, true);
+
+        List<Result> results = ThreadPoolUtil.invokeTask(new CallApiParallelTask<>((param) -> callApiService.getResult(param), params), 500, "call bb");
+
 
         System.out.println("ForkJoinPool ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
@@ -140,13 +143,15 @@ public class CallApiRecursiveTaskTest {
     public void testCall_ThreadPoolExecutor() {
         long l = TimeLogUtil.beginTime();
 
-        List<Callable<Result>> task = new ArrayList<>(num);
-        for (Param param : params) {
-            task.add(() -> callApiService.getResult(param));
-        }
+//        List<Callable<Result>> task = new ArrayList<>(num);
+//        for (Param param : params) {
+//            task.add(() -> callApiService.getResult(param));
+//        }
 
-        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool("call-api");
-        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
+        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool("call ccc");
+//        List<Result> results = ThreadPoolUtil.invokeAll(executorService, task);
+
+        List<Result> results = ThreadPoolUtil.invokeTask(new CallApiParallelTask<>((param) -> callApiService.getResult(param), params), executorService);
 
         System.out.println("ThreadPoolExecutor ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);

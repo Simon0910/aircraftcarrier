@@ -320,15 +320,31 @@ public class ThreadPoolUtil {
     /**
      * execute
      */
-    public static <V> V invoke(RecursiveTask<V> task) {
-        return DEFAULT_THREAD_POOL.invoke(task);
+    public static <V> V invokeTask(RecursiveTask<V> task, ForkJoinPool forkJoinPool) {
+        return forkJoinPool.invoke(task);
     }
 
     /**
      * execute
      */
-    public static <V> V invoke(RecursiveTask<V> task, int parallelism) {
-        return ThreadPoolUtil.newWorkStealingPool(parallelism, "recursiveTask-pool").invoke(task);
+    public static <V> V invokeTask(RecursiveTask<V> task, int parallelism, String taskName) {
+        return ThreadPoolUtil.newWorkStealingPool(parallelism, taskName + "-recursiveTask-pool").invoke(task);
+    }
+
+    /**
+     * execute
+     */
+    public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, ExecutorService executor) {
+        List<Callable<V>> taskList = task.getTaskList();
+        return invokeAll(executor, taskList);
+    }
+
+    /**
+     * execute
+     */
+    public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, int parallelism, String taskName) {
+        List<Callable<V>> taskList = task.getTaskList();
+        return invokeAll(ThreadPoolUtil.newWorkStealingPool(parallelism, taskName + "-parallelTask-pool"), taskList);
     }
 
     /**

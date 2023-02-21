@@ -3,12 +3,12 @@ package com.aircraftcarrier.framework.concurrent.multithreadcallapi;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -36,20 +36,15 @@ public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {
     @Override
     protected List<R> compute() {
         if (params.size() > granularity) {
-            List<List<R>> partitionResults = ForkJoinTask.invokeAll(createSubtasks()).stream().map(ForkJoinTask::join).collect(Collectors.toList());
-            Stream<R> headStream = Stream.empty();
-            for (List<R> partitionResult : partitionResults) {
-                headStream = Stream.concat(headStream, partitionResult.stream());
-            }
-            return headStream.collect(Collectors.toList());
+            return ForkJoinTask.invokeAll(createSubtasks()).stream().map(ForkJoinTask::join).flatMap(Collection::stream).toList();
         } else {
             return processing(params);
         }
     }
 
     private List<CallApiRecursiveTask<T, R>> createSubtasks() {
-        List<CallApiRecursiveTask<T, R>> callTasks = new ArrayList<>(granularity);
         List<List<T>> partition = Lists.partition(params, granularity);
+        List<CallApiRecursiveTask<T, R>> callTasks = new ArrayList<>(partition.size());
         for (List<T> partitionParams : partition) {
             callTasks.add(new CallApiRecursiveTask<>(function, partitionParams));
         }
