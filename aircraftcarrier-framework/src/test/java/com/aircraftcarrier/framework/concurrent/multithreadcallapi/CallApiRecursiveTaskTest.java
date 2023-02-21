@@ -120,10 +120,10 @@ public class CallApiRecursiveTaskTest {
         // ForkJoinPool 使用场景主要时为了解决流式处理，有依赖关系的操作避免队列引起的死循环 如stream底层，CompletableFuture底层
         long l = TimeLogUtil.beginTime();
 
-        List<Callable<Result>> task = new ArrayList<>(num);
-        for (Param param : params) {
-            task.add(() -> callApiService.getResult(param));
-        }
+//        List<Callable<Result>> task = new ArrayList<>(num);
+//        for (Param param : params) {
+//            task.add(() -> callApiService.getResult(param));
+//        }
 
 //        ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call-api");
 
