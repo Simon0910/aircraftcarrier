@@ -68,6 +68,11 @@ public class DemoRepository {
         if (id == null) {
             throw new SysException("id must not be null");
         }
+        // (String) id
+        // class java.lang.Integer cannot be cast to class java.lang.String
+//        if (NumberUtil.isLong(String.valueOf(id)) && Long.parseLong(String.valueOf(id)) < 1) {
+//            return null;
+//        }
         return demoMybatisPlus.getById(id);
     }
 
