@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +22,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -99,14 +101,7 @@ public class ThreadPoolUtil {
      * {@link java.util.concurrent.Executors#newFixedThreadPool(int)} }
      */
     public static ExecutorService newFixedThreadPool(int nThreads, String pooName) {
-        return new TraceThreadPoolExecutor(
-                // 固定大小
-                nThreads, nThreads,
-                0L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(QUEUE_SIZE),
-                buildThreadFactory(pooName, "-fix-caller-pool-"),
-                // 其他请求同步请求
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        return newFixedThreadPool(nThreads, pooName + "-caller", new LinkedBlockingQueue<>(QUEUE_SIZE), new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     /**
@@ -116,14 +111,17 @@ public class ThreadPoolUtil {
      * 1. newFixedThreadPool(1,"xxx-task"); // 开启一个后台监控任务
      */
     public static ExecutorService newFixedThreadPoolDiscard(int nThreads, String pooName) {
+        return newFixedThreadPool(nThreads, pooName + "-discard", new SynchronousQueue<>(), buildDiscardPolicy());
+    }
+
+    public static ExecutorService newFixedThreadPool(int nThreads, String pooName, BlockingQueue<Runnable> blockingQueue, RejectedExecutionHandler reject) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
-                buildThreadFactory(pooName, "-fix-discard-pool-"),
-                // 忽略其他请求
-                buildDiscardPolicy());
+                blockingQueue,
+                buildThreadFactory(pooName, "-fix-pool-"),
+                reject);
     }
 
     /**
@@ -134,25 +132,21 @@ public class ThreadPoolUtil {
      * {@link cn.hutool.core.thread.ExecutorBuilder#build(cn.hutool.core.thread.ExecutorBuilder) }
      */
     public static ExecutorService newCachedThreadPool(String pooName) {
-        return new TraceThreadPoolExecutor(
-                // 固定大小
-                0, Integer.MAX_VALUE,
-                KEEP_ALIVE_TIME, TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
-                buildThreadFactory(pooName, "-cached-pool-"),
-                // 默认拒绝策略
-                new ThreadPoolExecutor.AbortPolicy());
+        return newCachedThreadPoolMax(pooName, Integer.MAX_VALUE, new ThreadPoolExecutor.AbortPolicy());
     }
 
     public static ExecutorService newCachedThreadPoolMax(String pooName, int maxSize) {
+        return newCachedThreadPoolMax(pooName, maxSize, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newCachedThreadPoolMax(String pooName, int maxSize, RejectedExecutionHandler reject) {
         return new TraceThreadPoolExecutor(
                 // 指定大小
                 0, maxSize,
                 KEEP_ALIVE_TIME, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
                 buildThreadFactory(pooName, "-cached-pool-"),
-                // 默认拒绝策略
-                new ThreadPoolExecutor.AbortPolicy());
+                reject);
     }
 
     /**
@@ -355,7 +349,7 @@ public class ThreadPoolUtil {
      */
     public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, int parallelism, String taskName) {
         List<Callable<V>> taskList = task.getTaskList();
-        return invokeAll(ThreadPoolUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism), taskList);
+        return invokeAll(ThreadPoolUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism, new ThreadPoolExecutor.CallerRunsPolicy()), taskList);
     }
 
     /**
