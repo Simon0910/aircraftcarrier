@@ -54,7 +54,7 @@ public class ThreadPoolUtil {
     /**
      * 每个线程等待多久 （秒）
      */
-    private static final int perWaitTimeout = 10;
+    private static final int PER_WAIT_TIMEOUT = 10000;
 
 
     /**
@@ -252,7 +252,7 @@ public class ThreadPoolUtil {
      * executeVoid
      */
     public static void invokeVoid(CallableVoid callableVoid) {
-        invokeAllVoid(DEFAULT_THREAD_POOL, List.of(callableVoid));
+        invokeVoid(DEFAULT_THREAD_POOL, callableVoid);
     }
 
     /**
@@ -280,7 +280,7 @@ public class ThreadPoolUtil {
      * executeAllVoid
      */
     public static void invokeAllVoid(List<CallableVoid> asyncBatchTasks) {
-        invokeAllVoid(DEFAULT_THREAD_POOL, asyncBatchTasks, false);
+        invokeAllVoid(DEFAULT_THREAD_POOL, asyncBatchTasks);
     }
 
     /**
@@ -310,8 +310,7 @@ public class ThreadPoolUtil {
      * execute
      */
     public static <T> T invoke(Callable<T> callable) {
-        List<T> list = invokeAll(DEFAULT_THREAD_POOL, List.of(callable));
-        return list.get(0);
+        return invoke(DEFAULT_THREAD_POOL, callable);
     }
 
     /**
@@ -322,18 +321,37 @@ public class ThreadPoolUtil {
         return list.get(0);
     }
 
+    public static <T> T invokeTime(Callable<T> callable, long timeout) {
+        return invokeTimeout(DEFAULT_THREAD_POOL, callable, timeout);
+    }
+
+    public static <T> T invokeTimeout(ExecutorService executor, Callable<T> callable, long timeout) {
+        List<T> list = invokeAllTimeout(executor, List.of(callable), timeout);
+        return list.get(0);
+    }
+
+
     /**
      * execute
      */
-    public static <V> V invokeTask(RecursiveTask<V> task, ForkJoinPool forkJoinPool) {
+    public static <V> V invokeTask(RecursiveTask<V> task, int parallelism, String taskName) {
+        ForkJoinPool forkJoinPool = ThreadPoolUtil.newWorkStealingPool(parallelism, taskName + "-recursiveTask-pool");
+        return invokeTask(forkJoinPool, task);
+    }
+
+    /**
+     * execute
+     */
+    public static <V> V invokeTask(ForkJoinPool forkJoinPool, RecursiveTask<V> task) {
         return forkJoinPool.invoke(task);
     }
 
     /**
      * execute
      */
-    public static <V> V invokeTask(RecursiveTask<V> task, int parallelism, String taskName) {
-        return ThreadPoolUtil.newWorkStealingPool(parallelism, taskName + "-recursiveTask-pool").invoke(task);
+    public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, int parallelism, String taskName) {
+        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism, new ThreadPoolExecutor.CallerRunsPolicy());
+        return invokeTask(executorService, task);
     }
 
     /**
@@ -344,19 +362,22 @@ public class ThreadPoolUtil {
         return invokeAll(executor, taskList);
     }
 
-    /**
-     * execute
-     */
-    public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, int parallelism, String taskName) {
+    public static <T, V> List<V> invokeTaskTimeout(CallApiParallelTask<T, V> task, int parallelism, long timeout, String taskName) {
+        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism, new ThreadPoolExecutor.CallerRunsPolicy());
+        return invokeTaskTimeout(executorService, task, timeout);
+    }
+
+
+    public static <T, V> List<V> invokeTaskTimeout(ExecutorService executor, CallApiParallelTask<T, V> task, long timeout) {
         List<Callable<V>> taskList = task.getTaskList();
-        return invokeAll(ThreadPoolUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism, new ThreadPoolExecutor.CallerRunsPolicy()), taskList);
+        return invokeAllTimeout(executor, taskList, timeout);
     }
 
     /**
      * executeAll
      */
     public static <T> List<T> invokeAll(List<Callable<T>> asyncBatchTasks) {
-        return invokeAll(DEFAULT_THREAD_POOL, asyncBatchTasks, false);
+        return invokeAll(DEFAULT_THREAD_POOL, asyncBatchTasks);
     }
 
     /**
@@ -364,6 +385,21 @@ public class ThreadPoolUtil {
      */
     public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> asyncBatchTasks) {
         return invokeAll(executor, asyncBatchTasks, false);
+    }
+
+    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks, boolean ignoreFail) {
+        return invokeAllTimeout(executor, tasks, ignoreFail, Integer.MAX_VALUE);
+    }
+
+    /**
+     * executeAll
+     */
+    public static <T> List<T> invokeAllTimeout(List<Callable<T>> asyncBatchTasks, long timeout) {
+        return invokeAllTimeout(DEFAULT_THREAD_POOL, asyncBatchTasks, timeout);
+    }
+
+    public static <T> List<T> invokeAllTimeout(ExecutorService executor, List<Callable<T>> asyncBatchTasks, long timeout) {
+        return invokeAllTimeout(executor, asyncBatchTasks, false, timeout);
     }
 
     /**
@@ -376,11 +412,16 @@ public class ThreadPoolUtil {
      * I agree with Martin. The behavior matches the specifications
      * -- shutdownNow returns the list of tasks, that the user should cancel if appropriate (that's why they are returned).
      */
-    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks,
-                                        boolean ignoreFail) {
+    public static <T> List<T> invokeAllTimeout(ExecutorService executor, List<Callable<T>> tasks,
+                                               boolean ignoreFail, long timeout) {
         if (tasks == null) {
             throw new NullPointerException();
         }
+
+        if (timeout < 10) {
+            timeout = PER_WAIT_TIMEOUT;
+        }
+
         ArrayList<Future<T>> futures = new ArrayList<>(tasks.size());
         try {
             for (Callable<T> t : tasks) {
@@ -396,7 +437,7 @@ public class ThreadPoolUtil {
                      * {@link org.elasticsearch.common.util.concurrent.FutureUtils.get(java.util.concurrent.Future<T>, long, java.util.concurrent.TimeUnit)}
                      * {@link java.util.concurrent.AbstractExecutorService#invokeAll(java.util.Collection) }
                      */
-                    T result = f.get(perWaitTimeout, TimeUnit.SECONDS);
+                    T result = f.get(timeout, TimeUnit.MILLISECONDS);
                     resultList.add(result);
                 } catch (CancellationException e) {
                     // CancellationException | ExecutionException： 子线程死了

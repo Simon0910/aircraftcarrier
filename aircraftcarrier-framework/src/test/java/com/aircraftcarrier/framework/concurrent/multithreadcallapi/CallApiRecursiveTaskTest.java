@@ -128,7 +128,7 @@ public class CallApiRecursiveTaskTest {
         // example02
         CallApiParallelTask<Param, Result> parallelTask = new CallApiParallelTask<>((param) -> callApiService.getResult(param), params);
         ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call bbb");
-        List<Result> results = ThreadPoolUtil.invokeTask(executorService, parallelTask);
+        List<Result> results = ThreadPoolUtil.invokeTaskTimeout(executorService, parallelTask, 800);
 
         System.out.println("ForkJoinPool ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
@@ -155,7 +155,7 @@ public class CallApiRecursiveTaskTest {
 
         // example03
         CallApiParallelTask<Param, Result> parallelTask = new CallApiParallelTask<>((param) -> callApiService.getResult(param), params);
-        List<Result> results = ThreadPoolUtil.invokeTask(parallelTask, 1000, "call ccc");
+        List<Result> results = ThreadPoolUtil.invokeTaskTimeout(parallelTask, 1000, 20 * 1000, "call ccc");
 
         System.out.println("ThreadPoolExecutor ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);

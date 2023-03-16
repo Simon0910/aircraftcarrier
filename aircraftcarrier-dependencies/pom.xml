@@ -21,12 +21,12 @@
         <commons.beanutils.version>1.9.4</commons.beanutils.version>
         <easyexcel.version>3.0.5</easyexcel.version>
         <mybatisplus.version>3.5.2</mybatisplus.version>
-        <lock4j.version>2.2.1</lock4j.version>
+        <lock4j.version>2.2.4</lock4j.version>
         <guava.version>31.1-jre</guava.version>
         <mysql.version>8.0.21</mysql.version>
         <druid.version>1.2.8</druid.version>
         <reflections.version>0.9.12</reflections.version>
-        <pagehelper.version>1.4.1</pagehelper.version>
+        <pagehelper.version>1.4.6</pagehelper.version>
         <lmax.version>3.4.4</lmax.version>
         <modelmapper.version>2.4.4</modelmapper.version>
         <commons-lang.version>2.6</commons-lang.version>
@@ -81,6 +81,11 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>easyexcel</artifactId>
                 <version>${easyexcel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus</artifactId>
+                <version>${mybatisplus.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
