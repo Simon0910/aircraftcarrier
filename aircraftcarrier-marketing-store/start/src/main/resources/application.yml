@@ -22,7 +22,7 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: dev,extend
   messages:
     encoding: UTF-8
     basename: i18n/messages
