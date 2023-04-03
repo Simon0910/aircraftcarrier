@@ -312,7 +312,19 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
             }
             if (endSheetRowNo != null) {
                 // 结束行
-                return compareKey(key, endSheetRowNo) > 0;
+                if (compareKey(key, endSheetRowNo) > 0) {
+                    // execute
+                    if (!batchContainer.isEmpty()) {
+                        execute(batchContainer);
+                    }
+                    try {
+                        ThreadPoolUtil.sleepSeconds(1);
+                    } catch (InterruptedException ignore) {
+                        Thread.currentThread().interrupt();
+                    }
+                    throw new ExcelAnalysisStopException();
+                }
+                return false;
             }
             // 到达开始行
             log.info("开始读取新行 sheet.row: {}.{}", sheetNo, rowNo);

@@ -68,7 +68,9 @@ public class AutoCheckAbnormalScheduler {
     public void putAbnormal(String sheetNoRowNo) {
         threadPoolExecutor.execute(() -> {
             if (config.isEnableAbnormalAutoCheck()) {
-                abnormalMap.put(sheetNoRowNo, CharSequenceUtil.EMPTY);
+                synchronized (this) {
+                    abnormalMap.put(sheetNoRowNo, CharSequenceUtil.EMPTY);
+                }
             }
         });
     }
@@ -78,17 +80,20 @@ public class AutoCheckAbnormalScheduler {
      */
     private void autoCheckForAbnormal() {
         // 异常采样数
-        if (abnormalMap.size() < config.getAbnormalSampleSize()) {
+        int size = abnormalMap.size();
+        if (size < config.getAbnormalSampleSize()) {
             return;
         }
 
-        int[] arr = new int[abnormalMap.size()];
-        int i = 0;
-        for (String errorRecord : abnormalMap.keySet()) {
-            arr[i] = Integer.parseInt(errorRecord.split(StrPool.UNDERLINE)[1]);
-            i++;
+        int[] arr = new int[size];
+        synchronized (this) {
+            int i = 0;
+            for (String errorRecord : abnormalMap.keySet()) {
+                arr[i] = Integer.parseInt(errorRecord.split(StrPool.UNDERLINE)[1]);
+                i++;
+            }
+            abnormalMap.clear();
         }
-        abnormalMap.clear();
 
         Arrays.sort(arr);
 
