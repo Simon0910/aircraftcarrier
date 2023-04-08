@@ -53,19 +53,19 @@ public class LockUtil {
         lock(DEFAULT_KEY, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lock(Serializable key) {
+    public static void lock(Serializable key) throws LockNotAcquiredException {
         lock(key, EXPIRE, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lock(Serializable key, long expire) {
+    public static void lock(Serializable key, long expire) throws LockNotAcquiredException {
         lock(key, expire, ACQUIRE_TIMEOUT, RETRY_INTERVAL);
     }
 
-    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) {
+    public static void lockTimeout(Serializable key, long acquireTimeout, long retryInterval) throws LockNotAcquiredException {
         lock(key, EXPIRE, acquireTimeout, retryInterval);
     }
 
-    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) {
+    public static void lock(Serializable key, long expire, long acquireTimeout, long retryInterval) throws LockNotAcquiredException {
         if (!doLock(key, expire, acquireTimeout, retryInterval)) {
             throw new LockNotAcquiredException("the redis distributed lock was not acquired");
         }
@@ -121,11 +121,28 @@ public class LockUtil {
             return true;
         }
 
-        // 新锁
-        LockInfo newLock = getMyLockTemplate().lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
+        // 新锁 锁竞争激励并发下多个线程到达这里
+        MyLockTemplate myLockTemplate = getMyLockTemplate();
+        LockInfo newLock = myLockTemplate.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
         if (null == newLock) {
-            log.info("not lock redis key [{}]: Thread: {}", key, Thread.currentThread().getName());
-            return false;
+            // 并发下的重试
+            LockInfo retryNewLock = null;
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < acquireTimeout) {
+                SleepUtil.sleepMilliseconds(20);
+                thread = LOCK_RECORD.get(lockKey);
+                if (thread == null) {
+                    retryNewLock = myLockTemplate.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
+                    if (retryNewLock != null) {
+                        break;
+                    }
+                }
+            }
+            if (retryNewLock == null) {
+                log.info("not lock redis key [{}]: Thread: {}", key, Thread.currentThread().getName());
+                return false;
+            }
+            newLock = retryNewLock;
         }
         // 登记记录
         LOCK_RECORD.put(lockKey, Thread.currentThread());

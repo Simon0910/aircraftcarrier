@@ -43,6 +43,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author lzp
@@ -58,9 +59,9 @@ public class TestServiceImpl implements TestService {
     @Resource
     UpdateInventoryExe2 updateInventoryExe2;
     @Resource
-    private ApplicationEventPublisher applicationEventPublisher;
+    ApplicationEventPublisher applicationEventPublisher;
     @Resource
-    private TransactionalExe transactionalExe;
+    TransactionalExe transactionalExe;
     @Resource
     DemoMapper demoMapper;
     @Resource
@@ -312,7 +313,7 @@ public class TestServiceImpl implements TestService {
         log.info("fail: " + fail);
     }
 
-//    @Transactional(rollbackOn = Exception.class)
+    //    @Transactional(rollbackOn = Exception.class)
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void recursionTransactional(String str, int i) {
@@ -345,27 +346,33 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
+        long start = System.currentTimeMillis();
+        LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
         int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
+            String lockKey = String.valueOf(key);
+            // String lockKey = String.valueOf(i);
+            String lockKey2 = lockKey + "Two";
             asyncBatchTasks.add(() -> {
                 try {
                     log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
-//                    LockUtil.lockTimeout(key, 5000, 1000);
-//                    LockUtil.lockTimeout(key + "2", 5000, 1000);
+                    LockUtil.lockTimeout(lockKey, 3000, 10);
+                    LockUtil.lockTimeout(lockKey2, 3000, 10);
 
-                    LockUtil.lock(key);
-                    LockUtil.lock(key + "2");
+                    // LockUtil.lock(lockKey);
+                    // LockUtil.lock(lockKey2);
 
 //                    LockKeyUtil.lock();
-//                    LockKeyUtil.lock(key + "2");
+//                    LockKeyUtil.lock(lockKey2);
 
-                    reentrantLock2(key);
+                    reentrantLock2(lockKey, lockKey2);
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
-                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(100, 200));
+                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 20));
+                    success.increment();
                 }
 //                catch (InterruptedException e) {
 //                    e.printStackTrace();
@@ -373,11 +380,14 @@ public class TestServiceImpl implements TestService {
 //                catch (TimeoutException e) {
 //                    log.error(e.getMessage());
 //                }
+                catch (LockNotAcquiredException e) {
+                    log.error(e.getMessage());
+                }
                 finally {
                     log.info("1解锁");
-                    LockUtil.unLock(key + "2");
-                    LockUtil.unLock(key);
-//                    LockKeyUtil.unlock(key + "2");
+                    LockUtil.unLock(lockKey2);
+                    LockUtil.unLock(lockKey);
+//                    LockKeyUtil.unlock(lockKey2);
 //                    LockKeyUtil.unlock();
                 }
 
@@ -386,6 +396,7 @@ public class TestServiceImpl implements TestService {
 
 //        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
         ThreadPoolUtil.invokeAllVoid(ThreadPoolUtil.newCachedThreadPool("测试redis锁"), asyncBatchTasks, true);
+        log.info("success: {}, 耗时：{}", success, System.currentTimeMillis() - start);
     }
 
     /**
@@ -431,24 +442,24 @@ public class TestServiceImpl implements TestService {
         System.out.println("end");
     }
 
-    private void reentrantLock2(String key) {
+    private void reentrantLock2(String key, String key2) {
         try {
             log.info("第二次加锁");
             LockUtil.lock(key);
-            LockUtil.lock(key + "2");
+            LockUtil.lock(key2);
 //            LockKeyUtil.lock();
-//            LockKeyUtil.lock(key + "2");
+//            LockKeyUtil.lock(key2);
             // 执行业务逻辑
-            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(100, 200));
+            TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 20));
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (LockNotAcquiredException e) {
             log.error(e.getMessage());
         } finally {
             log.info("2解锁");
-            LockUtil.unLock(key + "2");
+            LockUtil.unLock(key2);
             LockUtil.unLock(key);
-//            LockKeyUtil.unlock(key + "2");
+//            LockKeyUtil.unlock(key2);
 //            LockKeyUtil.unlock();
         }
     }
