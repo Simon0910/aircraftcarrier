@@ -38,10 +38,7 @@ public class LockUtil {
     private static final ThreadLocal<Map<String, LockInfo>> THREAD_LOCAL = new ThreadLocal<>();
     private static final Map<String, Thread> LOCK_RECORD = new ConcurrentHashMap<>();
 
-    private static volatile MyLockTemplate myLockTemplate;
-
     static {
-        LockUtil.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
         WatchDog.getInstance().init(LOCK_RECORD);
     }
 
@@ -49,14 +46,7 @@ public class LockUtil {
     }
 
     private static MyLockTemplate getMyLockTemplate() {
-        if (LockUtil.myLockTemplate == null) {
-            synchronized (LockUtil.class) {
-                if (LockUtil.myLockTemplate == null) {
-                    LockUtil.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
-                }
-            }
-        }
-        return LockUtil.myLockTemplate;
+        return LockUtil.ResourceHolder.myLockTemplate;
     }
 
     public static void lock() throws LockNotAcquiredException {
@@ -217,5 +207,9 @@ public class LockUtil {
                 return false;
             }
         }
+    }
+
+    private static class ResourceHolder {
+        public static MyLockTemplate myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class); // This will be lazily initialised
     }
 }
