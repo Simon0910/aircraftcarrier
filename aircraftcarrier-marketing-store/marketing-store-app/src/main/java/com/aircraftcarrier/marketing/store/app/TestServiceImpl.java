@@ -1,6 +1,7 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
+import com.aircraftcarrier.framework.cache.LockUtils;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.exception.SysException;
@@ -352,23 +353,27 @@ public class TestServiceImpl implements TestService {
         int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            String lockKey = String.valueOf(key);
-            // String lockKey = String.valueOf(i);
+            // String lockKey = String.valueOf(key);
+            String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchTasks.add(() -> {
                 try {
                     log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
-                    LockUtil.lockTimeout(lockKey, 3000, 10);
-                    LockUtil.lockTimeout(lockKey2, 3000, 10);
+                    // LockUtil.lockTimeout(lockKey, 3000, 10);
+                    // LockUtil.lockTimeout(lockKey2, 3000, 10);
 
                     // LockUtil.lock(lockKey);
                     // LockUtil.lock(lockKey2);
+
+                    LockUtils.lock(lockKey, 30000, 3000);
+                    LockUtils.lock(lockKey2, 30000, 3000);
 
 //                    LockKeyUtil.lock();
 //                    LockKeyUtil.lock(lockKey2);
 
                     reentrantLock2(lockKey, lockKey2);
+
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
                     TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 20));
@@ -382,11 +387,12 @@ public class TestServiceImpl implements TestService {
 //                }
                 catch (LockNotAcquiredException e) {
                     log.error(e.getMessage());
-                }
-                finally {
+                } finally {
                     log.info("1解锁");
-                    LockUtil.unLock(lockKey2);
-                    LockUtil.unLock(lockKey);
+                    LockUtils.unLock(lockKey2);
+                    LockUtils.unLock(lockKey);
+                    // LockUtil.unLock(lockKey2);
+                    // LockUtil.unLock(lockKey);
 //                    LockKeyUtil.unlock(lockKey2);
 //                    LockKeyUtil.unlock();
                 }
@@ -445,8 +451,10 @@ public class TestServiceImpl implements TestService {
     private void reentrantLock2(String key, String key2) {
         try {
             log.info("第二次加锁");
-            LockUtil.lock(key);
-            LockUtil.lock(key2);
+            LockUtils.lock(key, 30000, 3000);
+            LockUtils.lock(key2, 30000, 3000);
+            // LockUtil.lock(key);
+            // LockUtil.lock(key2);
 //            LockKeyUtil.lock();
 //            LockKeyUtil.lock(key2);
             // 执行业务逻辑
@@ -457,8 +465,10 @@ public class TestServiceImpl implements TestService {
             log.error(e.getMessage());
         } finally {
             log.info("2解锁");
-            LockUtil.unLock(key2);
-            LockUtil.unLock(key);
+            LockUtils.unLock(key);
+            LockUtils.unLock(key2);
+            // LockUtil.unLock(key2);
+            // LockUtil.unLock(key);
 //            LockKeyUtil.unlock(key2);
 //            LockKeyUtil.unlock();
         }

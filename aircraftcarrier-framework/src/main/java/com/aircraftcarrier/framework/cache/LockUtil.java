@@ -39,7 +39,7 @@ public class LockUtil {
     private static final Map<String, Thread> LOCK_RECORD = new ConcurrentHashMap<>();
 
     static {
-        WatchDog.getInstance().init(LOCK_RECORD);
+        WatchDogWithLockUtil.getInstance().init(LOCK_RECORD);
     }
 
     private LockUtil() {
@@ -146,7 +146,7 @@ public class LockUtil {
         }
         // 登记记录
         LOCK_RECORD.put(lockKey, Thread.currentThread());
-        WatchDog.getInstance().startUp();
+        WatchDogWithLockUtil.getInstance().startUp();
         newLock.setAcquireCount(1);
 
         if (lockInfoMap != null) {

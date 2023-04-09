@@ -14,16 +14,16 @@ import java.util.concurrent.ExecutorService;
  * @author lzp
  */
 @Slf4j
-public class WatchDog {
+public class WatchDogWithLockUtils {
     private static final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "watch-dog");
     private Map<String, Thread> lockRecord;
     private volatile RedisLockRenewal redisLockRenewal;
 
-    private WatchDog() {
+    private WatchDogWithLockUtils() {
     }
 
-    public static WatchDog getInstance() {
-        return WatchDog.Singleton.getInstance();
+    public static WatchDogWithLockUtils getInstance() {
+        return WatchDogWithLockUtils.Singleton.getInstance();
     }
 
     void init(Map<String, Thread> lockRecord) {
@@ -38,7 +38,7 @@ public class WatchDog {
 
     void startUp() {
         if (redisLockRenewal == null) {
-            synchronized (WatchDog.class) {
+            synchronized (WatchDogWithLockUtils.class) {
                 if (redisLockRenewal == null) {
                     this.redisLockRenewal = ApplicationContextUtil.getBean(RedisLockRenewal.class);
                 }
@@ -79,10 +79,10 @@ public class WatchDog {
         /**
          * 实例
          */
-        private static final WatchDog INSTANCE;
+        private static final WatchDogWithLockUtils INSTANCE;
 
         static {
-            INSTANCE = new WatchDog();
+            INSTANCE = new WatchDogWithLockUtils();
         }
 
         /**
@@ -90,7 +90,7 @@ public class WatchDog {
          *
          * @return WatchDog
          */
-        public static WatchDog getInstance() {
+        public static WatchDogWithLockUtils getInstance() {
             return INSTANCE;
         }
     }
