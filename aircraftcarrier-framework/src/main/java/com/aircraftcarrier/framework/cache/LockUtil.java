@@ -215,6 +215,7 @@ public class LockUtil {
             try {
                 TimeUnit.MILLISECONDS.sleep(1000);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
             }
 
             if (retry > 0) {

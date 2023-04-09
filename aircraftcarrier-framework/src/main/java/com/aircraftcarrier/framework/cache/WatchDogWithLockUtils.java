@@ -17,13 +17,17 @@ import java.util.concurrent.ExecutorService;
 public class WatchDogWithLockUtils {
     private static final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "watch-dog");
     private Map<String, Thread> lockRecord;
-    private volatile RedisLockRenewal redisLockRenewal;
+    private RedisLockRenewal redisLockRenewal;
 
     private WatchDogWithLockUtils() {
     }
 
     public static WatchDogWithLockUtils getInstance() {
         return WatchDogWithLockUtils.Singleton.getInstance();
+    }
+
+    private static RedisLockRenewal getRedisLockRenewal() {
+        return WatchDogWithLockUtils.ResourceHolder.REDIS_LOCK_RENEWAL;
     }
 
     void init(Map<String, Thread> lockRecord) {
@@ -38,11 +42,7 @@ public class WatchDogWithLockUtils {
 
     void startUp() {
         if (redisLockRenewal == null) {
-            synchronized (WatchDogWithLockUtils.class) {
-                if (redisLockRenewal == null) {
-                    this.redisLockRenewal = ApplicationContextUtil.getBean(RedisLockRenewal.class);
-                }
-            }
+            redisLockRenewal = getRedisLockRenewal();
         }
         executorService.execute(this::renewal);
     }
@@ -93,6 +93,10 @@ public class WatchDogWithLockUtils {
         public static WatchDogWithLockUtils getInstance() {
             return INSTANCE;
         }
+    }
+
+    private static class ResourceHolder {
+        private static final RedisLockRenewal REDIS_LOCK_RENEWAL = ApplicationContextUtil.getBean(RedisLockRenewal.class); // This will be lazily initialised
     }
 
 }

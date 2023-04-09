@@ -34,7 +34,6 @@ public class LockUtils {
     private static final Map<String, SingularUpdateQueue<Request, Request>> KEY_QUEUE = MapUtil.newConcurrentHashMap(1000);
 
     private static final Map<String, Thread> LOCK_RECORD = new ConcurrentHashMap<>();
-    static SingularUpdateQueue<Request, Request> pkeyQueue;
 
     static {
         WatchDogWithLockUtils.getInstance().init(LOCK_RECORD);
@@ -181,6 +180,7 @@ public class LockUtils {
             try {
                 TimeUnit.MILLISECONDS.sleep(1000);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
             }
 
             if (retry > 0) {
