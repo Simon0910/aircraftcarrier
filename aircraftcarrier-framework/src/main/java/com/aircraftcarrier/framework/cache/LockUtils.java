@@ -120,6 +120,15 @@ public class LockUtils {
             return request;
         }
 
+        Map<String, Request> keyMap = THREAD_LOCAL.get(request.getRequestThread());
+        Request preRequest;
+        if (keyMap != null && (preRequest = keyMap.get(request.getLockKey())) != null) {
+            // 可重入
+            preRequest.incr();
+            // 返回带有已经加锁的 当前线程之前的request
+            return preRequest;
+        }
+
         try {
             LockInfo lockInfo = getMyLockTemplate().lock(request.getLockKey(), request.getExpire(), request.getTimeout());
             if (lockInfo == null) {
@@ -127,13 +136,15 @@ public class LockUtils {
                 return request;
             }
             request.setLockInfo(lockInfo);
-            Map<String, Request> keyMap = THREAD_LOCAL.computeIfAbsent(request.getRequestThread(), k -> new HashMap<>(16));
+
+            keyMap = THREAD_LOCAL.computeIfAbsent(request.getRequestThread(), k -> new HashMap<>(16));
             Request reentryRequest = keyMap.get(request.getLockKey());
             if (reentryRequest == null) {
                 keyMap.put(request.getLockKey(), request);
             } else {
                 reentryRequest.incr();
             }
+
             // 登记记录
             LOCK_RECORD.put(request.getLockKey(), request.getRequestThread());
             WatchDogWithLockUtils.getInstance().startUp();
