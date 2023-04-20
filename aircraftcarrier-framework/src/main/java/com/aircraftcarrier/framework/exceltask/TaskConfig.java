@@ -17,11 +17,6 @@ import java.io.IOException;
 public class TaskConfig {
     public static final String SUCCESS_MAP_FILENAME = "successMap.log";
     public static final String ERROR_MAP_FILENAME = "errorMap.log";
-
-    private boolean started = false;
-    private boolean stopped = false;
-
-    private Thread taskThread;
     private int threadNum;
     private String poolName;
     private String snapshotPath;

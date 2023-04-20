@@ -1,7 +1,9 @@
 package com.aircraftcarrier.marketing.store.adapter.exceltask.task01;
 
-import com.aircraftcarrier.framework.exceltask.Worker;
+import com.aircraftcarrier.framework.exceltask.AbstractWorker;
+import com.aircraftcarrier.framework.exceltask.TaskConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -11,7 +13,41 @@ import java.util.LinkedList;
  */
 @Component
 @Slf4j
-public class MyWorker implements Worker<MyExcelData> {
+public class MyWorker extends AbstractWorker<MyExcelData> {
+
+    @Value("${myExcelTask.switch.excelFileClassPath:}")
+    private String excelFileClassPath;
+    @Value("${myExcelTask.threadNum:1}")
+    private int threadNum;
+    @Value("${myExcelTask.poolName:default}")
+    private String poolName;
+    @Value("${myExcelTask.refresh.snapshot.period:1000}")
+    private long refreshSnapshotPeriod;
+    @Value("${myExcelTask.refresh.snapshot.path:./}")
+    private String snapshotPath;
+    @Value("${myExcelTask.batchSize:1}")
+    private int batchSize;
+    @Value("${myExcelTask.fromSheetRowNo:}")
+    private String fromSheetRowNo;
+    @Value("${myExcelTask.endSheetRowNo:}")
+    private String endSheetRowNo;
+
+    @Override
+    public TaskConfig config() {
+        return new TaskConfig.TaskConfigBuilder()
+                .excelFileClassPath(excelFileClassPath)
+                .threadNum(threadNum)
+                .poolName(poolName)
+                .refreshSnapshotPeriod(refreshSnapshotPeriod)
+                .snapshotPathPath(snapshotPath)
+                .batchSize(batchSize)
+                .fromSheetRowNo(fromSheetRowNo)
+                .endSheetRowNo(endSheetRowNo)
+                .enableAbnormalAutoCheck(true)
+                .abnormalSampleSize(200)
+                .consecutiveAbnormalNum(100)
+                .build(this);
+    }
 
     @Override
     public boolean check(MyExcelData myExcelData) {

@@ -7,6 +7,18 @@ import java.util.LinkedList;
  */
 public interface Worker<T> {
 
+    TaskConfig config();
+
+    boolean isStarted();
+
+    void setStarted(boolean started);
+
+    boolean isStopped();
+
+    void setStopped(boolean stopped);
+
+    void setTaskThread(Thread taskThread);
+
     /**
      * check
      *
@@ -24,4 +36,12 @@ public interface Worker<T> {
      * @param uploadDataList 一批数据
      */
     void doWorker(LinkedList<T> uploadDataList);
+
+    boolean isAlive();
+
+    boolean isInterrupted();
+
+    void interrupt();
+
+    void start();
 }

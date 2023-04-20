@@ -27,7 +27,7 @@ public class AutoCheckAbnormalScheduler {
     /**
      * config
      */
-    private final TaskConfig config;
+    private final Worker<?> worker;
     /**
      * 检测是否连续报错，则停止任务
      */
@@ -42,9 +42,9 @@ public class AutoCheckAbnormalScheduler {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 
-    public AutoCheckAbnormalScheduler(TaskConfig config) {
-        this.config = config;
-        this.abnormalMap = Maps.newHashMapWithExpectedSize(config.getAbnormalSampleSize());
+    public AutoCheckAbnormalScheduler(Worker<?> worker) {
+        this.worker = worker;
+        this.abnormalMap = Maps.newHashMapWithExpectedSize(worker.config().getAbnormalSampleSize());
     }
 
     /**
@@ -67,7 +67,7 @@ public class AutoCheckAbnormalScheduler {
 
     public void putAbnormal(String sheetNoRowNo) {
         threadPoolExecutor.execute(() -> {
-            if (config.isEnableAbnormalAutoCheck()) {
+            if (worker.config().isEnableAbnormalAutoCheck()) {
                 synchronized (this) {
                     abnormalMap.put(sheetNoRowNo, CharSequenceUtil.EMPTY);
                 }
@@ -81,7 +81,7 @@ public class AutoCheckAbnormalScheduler {
     private void autoCheckForAbnormal() {
         // 异常采样数
         int size = abnormalMap.size();
-        if (size < config.getAbnormalSampleSize()) {
+        if (size < worker.config().getAbnormalSampleSize()) {
             return;
         }
 
@@ -98,14 +98,14 @@ public class AutoCheckAbnormalScheduler {
         Arrays.sort(arr);
 
         // 是否100个以上连续报错
-        if (!hasConsecutiveElements(arr, config.getConsecutiveAbnormalNum())) {
+        if (!hasConsecutiveElements(arr, worker.config().getConsecutiveAbnormalNum())) {
             return;
         }
 
         // 100个以上连续报错，停止任务
-        log.info("AutoCheckTimer scheduler - 连续 {}个 报错，停止任务", config.getConsecutiveAbnormalNum());
-        if (config.getTaskThread().isAlive() && !config.getTaskThread().isInterrupted()) {
-            config.getTaskThread().interrupt();
+        log.info("AutoCheckTimer scheduler - 连续 {}个 报错，停止任务", worker.config().getConsecutiveAbnormalNum());
+        if (worker.isAlive() && !worker.isInterrupted()) {
+            worker.interrupt();
         }
     }
 
@@ -140,7 +140,7 @@ public class AutoCheckAbnormalScheduler {
                 log.error("AutoCheckTimer scheduler error: {}", e.getMessage(), e);
                 e.printStackTrace();
             }
-        }, 0, config.getAutoCheckForAbnormalPeriod(), TimeUnit.MILLISECONDS);
+        }, 0, worker.config().getAutoCheckForAbnormalPeriod(), TimeUnit.MILLISECONDS);
     }
 
     public void stop() {

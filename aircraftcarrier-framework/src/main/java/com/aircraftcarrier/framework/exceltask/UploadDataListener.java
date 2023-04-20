@@ -113,7 +113,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         this.successMap = Maps.newHashMapWithExpectedSize(config.getThreadNum());
         this.fromSheetRowNo = config.getFromSheetRowNo();
         this.endSheetRowNo = config.getEndSheetRowNo();
-        this.autoCheckTimer = new AutoCheckAbnormalScheduler(config);
+        this.autoCheckTimer = new AutoCheckAbnormalScheduler(worker);
         loadSnapshot();
         startRefreshSnapshot();
         startAutoCheckTimer();

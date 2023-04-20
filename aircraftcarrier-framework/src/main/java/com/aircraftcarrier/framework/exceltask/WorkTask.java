@@ -49,41 +49,41 @@ public class WorkTask {
     }
 
 
-    public <T extends AbstractUploadData> String start(Worker<T> worker, Class<T> modelClass, TaskConfig taskConfig) {
-        log.info("snapshotPath 位置：{}", taskConfig.getSnapshotPath());
-        if (taskConfig.isStarted()) {
+    public <T extends AbstractUploadData> String start(Worker<T> worker, Class<T> modelClass) {
+        log.info("snapshotPath 位置：{}", worker.config().getSnapshotPath());
+        if (worker.isStarted()) {
             return "task is started !";
         }
         synchronized (this) {
-            if (taskConfig.isStarted()) {
+            if (worker.isStarted()) {
                 return "task is started !";
             }
 
-            taskConfig.setTaskThread(new Thread(() -> {
+            worker.setTaskThread(new Thread(() -> {
                 try {
-                    doRead(worker, modelClass, taskConfig);
+                    doRead(worker, modelClass);
                 } catch (Exception e) {
                     log.error("doRead error: ", e);
                 } finally {
-                    taskConfig.setStarted(false);
+                    worker.setStarted(false);
                 }
             }));
 
-            taskConfig.setStopped(false);
-            taskConfig.setStarted(true);
+            worker.setStopped(false);
+            worker.setStarted(true);
             // 保证先 started = true 然后 started = false
-            taskConfig.getTaskThread().start();
+            worker.start();
             return "start...";
         }
     }
 
-    private <T extends AbstractUploadData> void doRead(Worker<T> worker, Class<T> modelClass, TaskConfig taskConfig) throws IOException {
+    private <T extends AbstractUploadData> void doRead(Worker<T> worker, Class<T> modelClass) throws IOException {
         long start = System.currentTimeMillis();
 
-        InputStream inputStream = getExcelFileInputStream(taskConfig);
+        InputStream inputStream = getExcelFileInputStream(worker.config());
         UploadDataListener<T> listener = null;
         try {
-            listener = new UploadDataListener<>(taskConfig, worker);
+            listener = new UploadDataListener<>(worker.config(), worker);
             listeners.add(listener);
             ExcelReader excelReader = EasyExcelFactory.read(inputStream, modelClass, listener).autoCloseStream(true).build();
             List<ReadSheet> readSheets = excelReader.excelExecutor().sheetList();
@@ -104,18 +104,18 @@ public class WorkTask {
     }
 
 
-    public String stop(TaskConfig taskConfig) {
-        if (taskConfig.isStopped()) {
+    public <T extends AbstractUploadData> String stop(Worker<T> worker) {
+        if (worker.isStopped()) {
             return "task already stopped";
         }
         synchronized (this) {
-            if (taskConfig.isStopped()) {
+            if (worker.isStopped()) {
                 return "task already stopped";
             }
 
-            if (taskConfig.getTaskThread() != null) {
-                taskConfig.getTaskThread().interrupt();
-                taskConfig.setStopped(true);
+            if (worker.isStarted()) {
+                worker.interrupt();
+                worker.setStopped(true);
                 return "stop...";
             }
             return "task not start";
@@ -124,12 +124,12 @@ public class WorkTask {
     }
 
 
-    public String reset(TaskConfig taskConfig) {
-        if (taskConfig.isStarted()) {
+    public <T extends AbstractUploadData> String reset(Worker<T> worker) {
+        if (worker.isStarted()) {
             return "already started";
         }
         synchronized (this) {
-            if (taskConfig.isStarted()) {
+            if (worker.isStarted()) {
                 return "already started";
             }
 
@@ -137,9 +137,9 @@ public class WorkTask {
             DateTimeFormatter dateTimeFormatter = dateTimeFormatterBuilder.toFormatter();
             String nowDatetime = LocalDateTime.now().format(dateTimeFormatter) + "_";
 
-            String successMapSnapshotFilePath = taskConfig.getSuccessMapSnapshotFilePath();
+            String successMapSnapshotFilePath = worker.config().getSuccessMapSnapshotFilePath();
             String newFilePath = successMapSnapshotFilePath.substring(0, successMapSnapshotFilePath.indexOf(TaskConfig.SUCCESS_MAP_FILENAME)) + nowDatetime + TaskConfig.SUCCESS_MAP_FILENAME;
-            File file = new File(taskConfig.getSuccessMapSnapshotFilePath());
+            File file = new File(worker.config().getSuccessMapSnapshotFilePath());
             file.setReadable(true);
             file.setWritable(true);
             File newFile = new File(newFilePath);
@@ -152,9 +152,9 @@ public class WorkTask {
                 log.error("Failed to rename SuccessMap file.");
             }
 
-            String errorMapSnapshotFilePath = taskConfig.getErrorMapSnapshotFilePath();
+            String errorMapSnapshotFilePath = worker.config().getErrorMapSnapshotFilePath();
             newFilePath = errorMapSnapshotFilePath.substring(0, errorMapSnapshotFilePath.indexOf(TaskConfig.ERROR_MAP_FILENAME)) + nowDatetime + TaskConfig.ERROR_MAP_FILENAME;
-            file = new File(taskConfig.getErrorMapSnapshotFilePath());
+            file = new File(worker.config().getErrorMapSnapshotFilePath());
             file.setReadable(true);
             file.setWritable(true);
             newFile = new File(newFilePath);
@@ -171,20 +171,20 @@ public class WorkTask {
     }
 
 
-    public String resetSuccessSheetRow(TaskConfig taskConfig, String maxSuccessSheetRow) throws IOException {
-        if (taskConfig.isStarted()) {
+    public <T extends AbstractUploadData> String resetSuccessSheetRow(Worker<T> worker, String maxSuccessSheetRow) throws IOException {
+        if (worker.isStarted()) {
             return "already started";
         }
         synchronized (this) {
-            if (taskConfig.isStarted()) {
+            if (worker.isStarted()) {
                 return "already started";
             }
 
             TaskConfig.checkSheetRow(maxSuccessSheetRow);
 
-            taskConfig.preCheckFile();
+            worker.config().preCheckFile();
 
-            try (BufferedWriter br = new BufferedWriter(new FileWriter(taskConfig.getSuccessMapSnapshotFilePath()))) {
+            try (BufferedWriter br = new BufferedWriter(new FileWriter(worker.config().getSuccessMapSnapshotFilePath()))) {
                 br.write(maxSuccessSheetRow);
                 br.flush();
             }
@@ -193,19 +193,19 @@ public class WorkTask {
     }
 
 
-    public String settingFromWithEnd(TaskConfig taskConfig, String fromSheetRow, String endSheetRow) {
-        if (taskConfig.isStarted()) {
+    public <T extends AbstractUploadData> String settingFromWithEnd(Worker<T> worker, String fromSheetRow, String endSheetRow) {
+        if (worker.isStarted()) {
             return "already started";
         }
         synchronized (this) {
-            if (taskConfig.isStarted()) {
+            if (worker.isStarted()) {
                 return "already started";
             }
 
             // set from
-            taskConfig.setFromSheetRowNo(fromSheetRow);
-            taskConfig.setEndSheetRowNo(endSheetRow);
-            taskConfig.doCheckConfig();
+            worker.config().setFromSheetRowNo(fromSheetRow);
+            worker.config().setEndSheetRowNo(endSheetRow);
+            worker.config().doCheckConfig();
             return "settingFromAndEnd ok";
         }
     }
