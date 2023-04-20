@@ -255,6 +255,24 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
     @Override
     public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
         log.info("start - invokeHead: {}", JSON.toJSONString(headMap));
+
+        // 防止第二个sheet第记录没有全部覆盖第一个sheet第日志导致格式错乱
+        // eg：1_10 不能覆盖 0_1234 ==> 1_10,4
+        try {
+            // 每个线程占位符 00_000000 第00个sheet第一百万行
+            String blank = "          ";
+            successRandomAccessFile.seek(0);
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < config.getThreadNum(); i++) {
+                builder.append(blank);
+            }
+            successRandomAccessFile.writeBytes(builder.toString());
+        } catch (IOException e) {
+            throw new ExcelTaskException("doRefreshSuccessMapSnapshot error", e);
+        } finally {
+            log.info("doRefresh successNum {}", successNum);
+        }
+
         ReadListener.super.invokeHead(headMap, context);
     }
 
