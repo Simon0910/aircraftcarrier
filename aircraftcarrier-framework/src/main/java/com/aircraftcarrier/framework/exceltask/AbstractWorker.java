@@ -8,11 +8,31 @@ package com.aircraftcarrier.framework.exceltask;
  * @since 1.0
  */
 public abstract class AbstractWorker<T> implements Worker<T> {
+    private volatile TaskConfig config;
+    private boolean started = false;
+    private boolean stopped = false;
 
-    boolean started = false;
-    boolean stopped = false;
+    private Thread taskThread;
 
-    Thread taskThread;
+    protected abstract TaskConfig taskConfig();
+
+    @Override
+    public TaskConfig config() {
+        // https://rules.sonarsource.com/java/RSPEC-2168
+        TaskConfig localConfig = config;
+        if (localConfig == null) {
+            synchronized (this) {
+                localConfig = config;
+                if (localConfig == null) {
+                    config = localConfig = taskConfig();
+                    if (localConfig == null) {
+                        config = localConfig = new TaskConfig.TaskConfigBuilder().build(this);
+                    }
+                }
+            }
+        }
+        return localConfig;
+    }
 
     @Override
     public boolean isStarted() {

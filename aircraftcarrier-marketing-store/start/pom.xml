@@ -42,11 +42,19 @@
                     <exclude>dev/*</exclude>
                     <exclude>uat/*</exclude>
                     <exclude>prod/*</exclude>
+                    <exclude>files/*.xlsx</exclude>
                 </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources/${env}</directory>
                 <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>files/*.xlsx</include>
+                </includes>
             </resource>
         </resources>
         <plugins>

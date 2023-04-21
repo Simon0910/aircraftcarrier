@@ -14,7 +14,6 @@ import java.util.LinkedList;
 @Component
 @Slf4j
 public class MyWorker extends AbstractWorker<MyExcelData> {
-
     @Value("${myExcelTask.switch.excelFileClassPath:}")
     private String excelFileClassPath;
     @Value("${myExcelTask.threadNum:1}")
@@ -33,7 +32,7 @@ public class MyWorker extends AbstractWorker<MyExcelData> {
     private String endSheetRowNo;
 
     @Override
-    public TaskConfig config() {
+    public TaskConfig taskConfig() {
         return new TaskConfig.TaskConfigBuilder()
                 .excelFileClassPath(excelFileClassPath)
                 .threadNum(threadNum)
@@ -65,6 +64,13 @@ public class MyWorker extends AbstractWorker<MyExcelData> {
         MyExcelData first = threadBatchList.getFirst();
         MyExcelData last = threadBatchList.getLast();
         log.info("MyWorker [{} - {}] start", first.getRowNo(), last.getRowNo());
+        for (MyExcelData myExcelData : threadBatchList) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }
