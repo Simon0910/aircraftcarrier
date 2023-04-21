@@ -29,6 +29,7 @@ public class SingularUpdateQueue<R, S> extends Thread {
     public CompletableFuture<S> submit(R request) throws InterruptedException {
         var requestWrapper = new RequestWrapper<R, S>(request);
         workQueue.put(requestWrapper);
+        start();
         return requestWrapper.getFuture();
     }
 
@@ -36,6 +37,7 @@ public class SingularUpdateQueue<R, S> extends Thread {
         var requestWrapper = new RequestWrapper<R, S>(request);
         boolean offer = workQueue.offer(requestWrapper, timeout, unit);
         if (offer) {
+            start();
             return requestWrapper.getFuture();
         }
         CompletableFuture<S> completableFuture = new CompletableFuture<>();

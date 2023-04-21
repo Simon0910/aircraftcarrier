@@ -91,7 +91,6 @@ public class LockUtils {
 
         try {
             CompletableFuture<Request> f = keyQueue.submit(request, timeout, TimeUnit.MILLISECONDS);
-            keyQueue.start();
 
             Request getRequest = f.get();
             if (getRequest == null) {
