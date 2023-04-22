@@ -185,7 +185,7 @@ public class WorkTask {
             worker.config().preCheckFile();
 
             try (BufferedWriter br = new BufferedWriter(new FileWriter(worker.config().getSuccessMapSnapshotFilePath()))) {
-                br.write(maxSuccessSheetRow);
+                br.write(maxSuccessSheetRow + TaskConfig.END);
                 br.flush();
             }
             return "resetSuccessSheetRow ok";

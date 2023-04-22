@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.LongAdder;
 @Slf4j
 public class UploadDataListener<T extends AbstractUploadData> implements ReadListener<T> {
 
-    private static final String END = "$";
     /**
      * config
      */
@@ -152,7 +151,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         if (CharSequenceUtil.isNotBlank(successStr)) {
             successStr = successStr.trim();
             // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
-            successStr = successStr.substring(0, successStr.indexOf(END));
+            successStr = successStr.substring(0, successStr.indexOf(TaskConfig.END));
             for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr)) {
                 if (compareKey(max, next) < 0) {
                     max = maxSuccessSnapshotElement = next;
@@ -199,7 +198,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         int placeholderNum = 8;
         try (RandomAccessFile successRandomAccessFile = new RandomAccessFile(config.getSuccessMapSnapshotFilePath(), "rw")) {
             FileChannel fileChannel = successRandomAccessFile.getChannel();
-            byteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, (long) config.getThreadNum() * placeholderNum + END.length());
+            byteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, (long) config.getThreadNum() * placeholderNum + TaskConfig.END.length());
         }
         scheduler.scheduleAtFixedRate(() -> {
             try {
@@ -496,7 +495,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
             for (String sheetRow : successMap.values()) {
                 builder.append(sheetRow).append(StrPool.COMMA);
             }
-            builder.append(END);
+            builder.append(TaskConfig.END);
             byteBuffer.put(builder.toString().getBytes());
         } catch (Exception e) {
             throw new ExcelTaskException("doRefreshSuccessMapSnapshot error", e);
