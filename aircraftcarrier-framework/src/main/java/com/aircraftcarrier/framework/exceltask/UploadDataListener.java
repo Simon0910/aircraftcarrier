@@ -43,11 +43,11 @@ import java.util.concurrent.atomic.LongAdder;
 @Slf4j
 public class UploadDataListener<T extends AbstractUploadData> implements ReadListener<T> {
 
+    private static final String END = "$";
     /**
      * config
      */
     private final TaskConfig config;
-
     /**
      * 统计处理成功的总数
      */
@@ -87,8 +87,6 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
      */
     private final String endSheetRowNo;
     private final AutoCheckAbnormalScheduler autoCheckTimer;
-    // 最大行数个数 + 一位逗号
-    private final int placeholderNum = 8;
     /**
      * totalReadNum
      */
@@ -106,12 +104,8 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
      */
     private boolean isNewRow = false;
     private BufferedWriter errorBufferedWriter;
-    private RandomAccessFile successRandomAccessFile;
-    private FileChannel fileChannel;
     // https://cloud.tencent.com/developer/news/783592
     private MappedByteBuffer byteBuffer;
-    // 用于覆盖历史日志
-    private String placeholderComplete = "";
 
     public UploadDataListener(TaskConfig config, Worker<T> worker) throws IOException {
         this.config = config;
@@ -157,6 +151,8 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         String max = "0_0";
         if (CharSequenceUtil.isNotBlank(successStr)) {
             successStr = successStr.trim();
+            // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
+            successStr = successStr.substring(0, successStr.indexOf(END));
             for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr)) {
                 if (compareKey(max, next) < 0) {
                     max = maxSuccessSnapshotElement = next;
@@ -197,21 +193,14 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
     }
 
     private void startRefreshSnapshot() throws IOException {
+        errorBufferedWriter = new BufferedWriter(new FileWriter(config.getErrorMapSnapshotFilePath(), true));
         // 单个sheet 行数最大1048576（7个占位符） 列数最大16384
         // 7位 + 一个逗号 = 8位空
-        String placeholder = "";
-        for (int i = 0; i < placeholderNum; i++) {
-            placeholder += CharSequenceUtil.SPACE;
+        int placeholderNum = 8;
+        try (RandomAccessFile successRandomAccessFile = new RandomAccessFile(config.getSuccessMapSnapshotFilePath(), "rw")) {
+            FileChannel fileChannel = successRandomAccessFile.getChannel();
+            byteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, (long) config.getThreadNum() * placeholderNum + END.length());
         }
-        for (int i = 0; i < config.getThreadNum(); i++) {
-            placeholderComplete += placeholder;
-        }
-
-        errorBufferedWriter = new BufferedWriter(new FileWriter(config.getErrorMapSnapshotFilePath(), true));
-        successRandomAccessFile = new RandomAccessFile(config.getSuccessMapSnapshotFilePath(), "rw");
-        fileChannel = successRandomAccessFile.getChannel();
-        byteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, (long) config.getThreadNum() * placeholderNum + placeholderComplete.length());
-
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 // 刷新错误记录
@@ -454,26 +443,10 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
             doRefreshSuccessMapSnapshot();
             log.info("finish shutdown - doRefresh totalReadNum: {} - successNum: {}, - failNum: {} = other: {}", totalReadNum, successNum, failNum, totalReadNum - successNum.intValue() - failNum);
         } finally {
-            byteBuffer.force();
-            byteBuffer.clear();
-            byteBuffer = null;
-            // fileChannel
-            if (fileChannel != null) {
-                try {
-                    fileChannel.close();
-                } catch (IOException e) {
-                    fileChannel = null;
-                    log.error("close fileChannel error ", e);
-                }
-            }
-            // 关闭 successBufferedWriter
-            if (successRandomAccessFile != null) {
-                try {
-                    successRandomAccessFile.close();
-                } catch (IOException ex) {
-                    successRandomAccessFile = null;
-                    log.error("close successRandomAccessFile error ", ex);
-                }
+            if (byteBuffer != null) {
+                byteBuffer.force();
+                byteBuffer.clear();
+                byteBuffer = null;
             }
             if (errorBufferedWriter != null) {
                 try {
@@ -518,17 +491,12 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
             return;
         }
         try {
-            // successRandomAccessFile.seek(0);
             byteBuffer.position(0);
             StringBuilder builder = new StringBuilder();
             for (String sheetRow : successMap.values()) {
                 builder.append(sheetRow).append(StrPool.COMMA);
             }
-            // 防止 1_10,1_11 不能覆盖 0_1000,0_1001 ==> 1_10,1_111001 (格式错误)
-            // 加上占位符：1_10,1_11,空空空空空空空空空空空空空空空空 覆盖 0_1000,0_1001,空空空空空空空空空空空空空空空空
-            // ==> 1_10,1_11,空空空空空空空空空空空空空空空空空空空空
-            builder.append(placeholderComplete);
-            // successRandomAccessFile.writeBytes(builder.toString());
+            builder.append(END);
             byteBuffer.put(builder.toString().getBytes());
         } catch (Exception e) {
             throw new ExcelTaskException("doRefreshSuccessMapSnapshot error", e);
