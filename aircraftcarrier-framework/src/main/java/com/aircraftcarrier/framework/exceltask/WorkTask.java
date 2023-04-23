@@ -5,9 +5,10 @@ import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.exception.ExcelAnalysisStopException;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.util.ResourceUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -22,24 +23,14 @@ import java.util.List;
 
 
 /**
+ * <a href="https://blog.csdn.net/qq271859852/article/details/107442161">...</a>
+ *
  * @author zhipengliu
  */
 @Slf4j
-public class WorkTask {
+public class WorkTask implements ApplicationListener<ContextClosedEvent> {
 
-    private final List<UploadDataListener<?>> listeners = new ArrayList<>();
-
-    @PostConstruct
-    public void init() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("shutdown hook, jvm runtime hook, listeners size {} ...", listeners.size());
-            for (UploadDataListener<?> listener : listeners) {
-                log.info("listener shutdown...");
-                listener.shutdown();
-            }
-            log.info("shutdown hook, jvm runtime hook end.");
-        }));
-    }
+    private static final List<UploadDataListener<?>> listeners = new ArrayList<>();
 
     private InputStream getExcelFileInputStream(TaskConfig taskConfig) throws IOException {
         // 获取流
@@ -211,4 +202,19 @@ public class WorkTask {
     }
 
 
+    /**
+     * <a href="https://blog.csdn.net/qq271859852/article/details/107442161">...</a>
+     *
+     * @param event event
+     */
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        // https://blog.csdn.net/qq271859852/article/details/107442161
+        log.info("shutdown hook, jvm runtime hook, listeners size {} ...", listeners.size());
+        for (UploadDataListener<?> listener : listeners) {
+            log.info("listener shutdown...");
+            listener.shutdown();
+        }
+        log.info("shutdown hook, jvm runtime hook end.");
+    }
 }
