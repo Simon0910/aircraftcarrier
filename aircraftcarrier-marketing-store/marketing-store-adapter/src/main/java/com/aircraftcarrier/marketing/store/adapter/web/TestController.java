@@ -2,12 +2,12 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
+import com.aircraftcarrier.framework.concurrent.TraceRunnable;
+import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.scheduling.AbstractTask;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
-import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
-import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,14 +55,12 @@ import java.util.concurrent.TimeUnit;
 public class TestController {
 
     private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(3, 3, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private final Map<String, AbstractTask> taskTask = new ConcurrentHashMap<>();
     private ThreadLocal<String> threadLocal = new ThreadLocal<>();
     @Value("classpath:demo.json")
     private org.springframework.core.io.Resource demoResource;
-
-
     @Resource
     private TestService testService;
-
 
     @ApiOperationSupport(order = -1)
     @ApiOperation("hello")
@@ -86,7 +83,7 @@ public class TestController {
         LoginUser loginUser = LoginUserUtil.getLoginUser();
         log.info("LoginUser：{}", JsonUtil.toJson(loginUser));
 
-        new Thread(new MdcRunnableDecorator(() -> {
+        new Thread(new TraceRunnable(() -> {
             log.info("1-获取主线程的MDC上下文,例如traceId");
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
             log.info("1-LoginUser：{}", JsonUtil.toJson(loginUser1));
@@ -275,8 +272,6 @@ public class TestController {
         testService.reentrantLock(key);
         return SingleResponse.ok("reentrantLock");
     }
-
-    private final Map<String, AbstractTask> taskTask = new ConcurrentHashMap<>();
 
     @ApiOperationSupport(order = 52)
     @ApiOperation(value = "引用测试")

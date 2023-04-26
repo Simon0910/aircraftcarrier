@@ -1,5 +1,6 @@
-package com.aircraftcarrier.framework.support.trace;
+package com.aircraftcarrier.framework.concurrent;
 
+import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.StringPool;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import org.slf4j.MDC;
@@ -28,7 +29,7 @@ import java.util.Map;
  * @author lzp
  * @since 2021-12-2
  */
-public class MdcRunnableDecorator implements Runnable {
+public class TraceRunnable implements Runnable {
 
     /**
      * 保存当前主线程的MDC值
@@ -36,7 +37,7 @@ public class MdcRunnableDecorator implements Runnable {
     private final Map<String, String> parentMdcMap;
     private final Runnable runnable;
 
-    public MdcRunnableDecorator(Runnable runnable) {
+    public TraceRunnable(Runnable runnable) {
         this.runnable = runnable;
         Map<String, String> parentContext = MDC.getCopyOfContextMap();
         if (parentContext == null) {

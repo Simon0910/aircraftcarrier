@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.support.config;
 
-import com.aircraftcarrier.framework.support.trace.MdcRunnableDecorator;
+import com.aircraftcarrier.framework.concurrent.TraceRunnable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +43,7 @@ public class TraceAsyncAutoConfiguration implements AsyncConfigurer {
     public static class MdcTaskDecorator implements TaskDecorator {
         @Override
         public Runnable decorate(Runnable runnable) {
-            return new MdcRunnableDecorator(runnable);
+            return new TraceRunnable(runnable);
         }
     }
 }

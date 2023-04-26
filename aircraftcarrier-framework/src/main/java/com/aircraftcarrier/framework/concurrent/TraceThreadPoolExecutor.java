@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.support.trace;
+package com.aircraftcarrier.framework.concurrent;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
@@ -48,7 +48,7 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
             super.execute(command);
             return;
         }
-        super.execute(new MdcRunnableDecorator(command));
+        super.execute(new TraceRunnable(command));
     }
 
     @Override
@@ -56,8 +56,7 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
         if (task == null) {
             throw new NullPointerException();
         }
-        if (task instanceof RunnableFuture) {
-            RunnableFuture<?> f = (RunnableFuture<?>) task;
+        if (task instanceof RunnableFuture<?> f) {
             super.execute(f);
             return f;
         }
@@ -67,7 +66,7 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     protected <T> RunnableFuture<T> newTaskForTrace(Runnable runnable, T value) {
-        return new FutureTask<>(new MdcRunnableDecorator(runnable), value);
+        return new FutureTask<>(new TraceRunnable(runnable), value);
     }
 
 }

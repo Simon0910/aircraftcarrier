@@ -4,9 +4,9 @@ import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.thread.ThreadFactoryBuilder;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.concurrent.DiscardPolicyNew;
-import com.aircraftcarrier.framework.concurrent.TraceNamedThreadFactory;
+import com.aircraftcarrier.framework.concurrent.NamedThreadFactory;
+import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.exception.ThreadException;
-import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class ThreadPoolUtil {
      * @return ThreadFactory
      */
     private static ThreadFactory buildThreadFactory(String pooName, String suffix) {
-        return new TraceNamedThreadFactory(pooName + suffix);
+        return new NamedThreadFactory(pooName + suffix);
     }
 
     /**
