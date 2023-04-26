@@ -3,7 +3,8 @@ package com.aircraftcarrier.framework.tookit;
 import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.thread.ThreadFactoryBuilder;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
-import com.aircraftcarrier.framework.concurrent.DiscardPolicyRejectedExecutionHandler;
+import com.aircraftcarrier.framework.concurrent.DiscardPolicyNew;
+import com.aircraftcarrier.framework.concurrent.NamedThreadFactory;
 import com.aircraftcarrier.framework.exception.ThreadException;
 import com.aircraftcarrier.framework.support.trace.TraceThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,22 +76,23 @@ public class ThreadPoolUtil {
     /**
      * buildThreadFactory
      *
+     * {@link ThreadFactoryBuilder#create()
+     *                 .setDaemon(false)
+     *                 .setNamePrefix(pooName + suffix)
+     *                 .build();}
+     *
      * @param pooName pooName
      * @return ThreadFactory
      */
     private static ThreadFactory buildThreadFactory(String pooName, String suffix) {
-        return ThreadFactoryBuilder
-                .create()
-                .setDaemon(false)
-                .setNamePrefix(pooName + suffix)
-                .build();
+        return new NamedThreadFactory(pooName + suffix);
     }
 
     /**
      * DiscardPolicy
      */
-    private static DiscardPolicyRejectedExecutionHandler buildDiscardPolicy() {
-        return new DiscardPolicyRejectedExecutionHandler();
+    private static DiscardPolicyNew buildDiscardPolicyNew() {
+        return new DiscardPolicyNew();
     }
 
 
@@ -111,7 +113,7 @@ public class ThreadPoolUtil {
      * 1. newFixedThreadPool(1,"xxx-task"); // 开启一个后台监控任务
      */
     public static ExecutorService newFixedThreadPoolDiscard(int nThreads, String pooName) {
-        return newFixedThreadPool(nThreads, pooName + "-discard", new SynchronousQueue<>(), buildDiscardPolicy());
+        return newFixedThreadPool(nThreads, pooName + "-discard", new SynchronousQueue<>(), buildDiscardPolicyNew());
     }
 
     public static ExecutorService newFixedThreadPool(int nThreads, String pooName, BlockingQueue<Runnable> blockingQueue, RejectedExecutionHandler reject) {
@@ -163,7 +165,7 @@ public class ThreadPoolUtil {
                 new SynchronousQueue<>(),
                 buildThreadFactory(pooName, "-cached-discard-pool-"),
                 // 忽略其他请求
-                buildDiscardPolicy());
+                buildDiscardPolicyNew());
     }
 
     /**
@@ -191,7 +193,7 @@ public class ThreadPoolUtil {
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new SynchronousQueue<>())
                 .setThreadFactory(buildThreadFactory(pooName, "-single-discard-pool-"))
-                .setHandler(buildDiscardPolicy())
+                .setHandler(buildDiscardPolicyNew())
                 .buildFinalizable();
     }
 

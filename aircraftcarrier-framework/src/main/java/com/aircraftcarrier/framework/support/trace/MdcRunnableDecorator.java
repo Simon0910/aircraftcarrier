@@ -38,28 +38,32 @@ public class MdcRunnableDecorator implements Runnable {
 
     public MdcRunnableDecorator(Runnable runnable) {
         this.runnable = runnable;
-        this.parentMdcMap = MDC.getCopyOfContextMap();
+        Map<String, String> parentContext = MDC.getCopyOfContextMap();
+        if (parentContext == null) {
+            parentContext = new HashMap<>();
+        }
+        this.parentMdcMap = parentContext;
     }
 
     @Override
     public void run() {
-        if (parentMdcMap != null) {
-            // 如果提交者有本地变量, 任务执行之前放入当前任务所在的线程的本地变量中
-            String traceId = parentMdcMap.get(TraceIdUtil.TRACE_ID);
-            if (traceId != null) {
-                String[] parentTraceId = traceId.split(StringPool.UNDERSCORE);
-                traceId = StringUtil.append(parentTraceId[parentTraceId.length - 1], TraceIdUtil.genUuid(), StringPool.UNDERSCORE);
-            } else {
-                traceId = TraceIdUtil.genUuid();
-            }
-
-            parentMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
-            MDC.setContextMap(parentMdcMap);
-        } else {
-            Map<String, String> newContextMap = new HashMap<>(16);
-            newContextMap.put(TraceIdUtil.TRACE_ID, TraceIdUtil.genUuid());
-            MDC.setContextMap(newContextMap);
+        // 传递context
+        Map<String, String> curMdcMap = MDC.getCopyOfContextMap();
+        if (curMdcMap == null) {
+            curMdcMap = new HashMap<>();
         }
+        curMdcMap.putAll(parentMdcMap);
+
+        // 传递traceId
+        String traceId = parentMdcMap.get(TraceIdUtil.TRACE_ID);
+        if (traceId != null) {
+            String[] parentTraceId = traceId.split(StringPool.UNDERSCORE);
+            traceId = StringUtil.append(parentTraceId[parentTraceId.length - 1], TraceIdUtil.genUuid(), StringPool.UNDERSCORE);
+        } else {
+            traceId = TraceIdUtil.genUuid();
+        }
+        curMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
+
         try {
             runnable.run();
         } finally {
