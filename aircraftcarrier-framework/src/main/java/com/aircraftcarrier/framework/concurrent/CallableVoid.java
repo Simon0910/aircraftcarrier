@@ -1,7 +1,9 @@
 package com.aircraftcarrier.framework.concurrent;
 
 /**
- * @author zhipengliu
+ * CallApiParallelTask
+ *
+ * @author liuzhipeng
  */
 @FunctionalInterface
 public interface CallableVoid {

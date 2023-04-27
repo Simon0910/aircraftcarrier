@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 并发执行工具
+ * ExecutorUtil
  *
  * @author zhipengliu
  * @date 2022/8/19

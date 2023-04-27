@@ -10,6 +10,10 @@ import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 
 /**
+ * CallApiParallelTask
+ *
+ * @param <T>
+ * @param <R>
  * @author liuzhipeng
  */
 public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {

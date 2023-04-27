@@ -5,6 +5,13 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
+/**
+ * CallApiParallelTask
+ *
+ * @param <T>
+ * @param <R>
+ * @author zhipengliu
+ */
 public class CallApiParallelTask<T, R> {
 
     /**

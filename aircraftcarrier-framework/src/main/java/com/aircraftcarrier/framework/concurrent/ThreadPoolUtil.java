@@ -24,8 +24,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @author ext.liuzhipeng12
- * @date: 2023/04/27 12:24
+ * ThreadPoolUtil
+ *
+ * @author liuzhipeng
  */
 @Slf4j
 public class ThreadPoolUtil {
@@ -34,7 +35,6 @@ public class ThreadPoolUtil {
      * 每个线程等待多久 （秒）
      */
     private static final int PER_WAIT_TIMEOUT = 10000;
-
     /**
      * 默认守护线程，无需手动关闭
      */
@@ -42,6 +42,9 @@ public class ThreadPoolUtil {
             Runtime.getRuntime().availableProcessors(),
             ForkJoinPool.defaultForkJoinWorkerThreadFactory,
             null, true);
+
+    private ThreadPoolUtil() {
+    }
 
     public static NamedThreadFactory newThreadFactory(String poolName) {
         return new NamedThreadFactory(poolName);

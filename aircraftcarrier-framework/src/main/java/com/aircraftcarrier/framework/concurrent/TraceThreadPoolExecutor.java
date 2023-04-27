@@ -56,10 +56,6 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
         if (task == null) {
             throw new NullPointerException();
         }
-        if (task instanceof RunnableFuture<?> f) {
-            super.execute(f);
-            return f;
-        }
         RunnableFuture<Void> ftask = newTaskForTrace(task, null);
         super.execute(ftask);
         return ftask;

@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * ThreadUtil
+ *
  * @author zhipengliu
  */
 @Slf4j
