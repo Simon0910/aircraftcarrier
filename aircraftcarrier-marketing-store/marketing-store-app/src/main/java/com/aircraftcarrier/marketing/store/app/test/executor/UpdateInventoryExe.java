@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.domain.gateway.ProductGateway;
 import com.aircraftcarrier.marketing.store.infrastructure.gateway.ProductGatewayImpl;
@@ -82,7 +82,7 @@ public class UpdateInventoryExe {
      */
 //    @PostConstruct
     private void init() {
-        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPoolDiscard(2, "merge");
+        ExecutorService executorService = ExecutorUtil.newFixedThreadPoolDiscard(2, "merge");
 
         final ReentrantLock takeLock = new ReentrantLock();
         final Condition notEmpty = takeLock.newCondition();
@@ -165,7 +165,7 @@ public class UpdateInventoryExe {
                         int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
                         SingleResponse<Void> batchResponse = productGateway.deductionInventory(goodsNo, totalDeductionNum);
                         if (batchResponse.success()) {
-                            //返回请求
+                            // 返回请求
                             for (RequestPromise request : batchList) {
                                 request.getFuture().completeAsync(() -> batchResponse);
                             }
@@ -181,7 +181,7 @@ public class UpdateInventoryExe {
                     } catch (Throwable e) {
                         log.error("mergeThread error: ", e);
 
-                        //返回请求
+                        // 返回请求
                         for (RequestPromise request : batchList) {
                             request.getFuture().completeAsync(() -> SingleResponse.error(e.getMessage()));
                         }

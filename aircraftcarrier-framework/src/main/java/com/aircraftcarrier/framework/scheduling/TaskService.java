@@ -1,9 +1,8 @@
 package com.aircraftcarrier.framework.scheduling;
 
-import com.aircraftcarrier.framework.concurrent.DiscardPolicyNew;
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.TraceRunnable;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
-import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
@@ -28,14 +27,14 @@ public class TaskService {
 
     private final Map<String, AbstractTask> dynamicTaskMap = new ConcurrentHashMap<>();
     private final Map<String, AbstractTask> manualDynamicTaskMap = new ConcurrentHashMap<>();
-    private final ExecutorService manualService = ThreadPoolUtil.newCachedThreadPoolDiscard(100, "manual-schedule");
+    private final ExecutorService manualService = ExecutorUtil.newCachedThreadPoolDiscard(100, "manual-schedule");
     /**
      * executeOnceManual::for->13, manualService.nThreads = 10, selfCancelService.nThreads = 12。 manualService形成3个触发拒绝，selfCancelService形成1个触发CallerRunsPolicy
      * 此时只要是触发了1个CallerRunsPolicy就形成无限阻塞了
      * 解决1： selfCancelService.nThreads >= for.size ( ThreadPoolUtil.newCachedThreadPool(>=for.size, "self-cancel"); )
      * 解决2： 使用jdk默认的 newCachedThreadPool
      */
-    private final ExecutorService selfCancelService = ThreadPoolUtil.newCachedThreadPool("self-cancel");
+    private final ExecutorService selfCancelService = ExecutorUtil.newCachedThreadPool("self-cancel");
     private final Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
     private final Map<String, Future<?>> manualFutureMap = new ConcurrentHashMap<>();
     private final ConcurrentTaskScheduler taskScheduler;

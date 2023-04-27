@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.domain.gateway.ProductGateway;
 import com.aircraftcarrier.marketing.store.infrastructure.gateway.ProductGatewayImpl;
@@ -75,7 +75,7 @@ public class UpdateInventoryExe2 {
     @PostConstruct
     private void init() {
 //        init1();
-          init2();
+        init2();
     }
 
     /**
@@ -141,7 +141,7 @@ public class UpdateInventoryExe2 {
 
                 SingleResponse<Void> batchResponse = productGateway.deductionInventory(batchList.get(0).getInventoryRequest().getGoodsNo(), totalDeductionNum);
                 if (batchResponse.success()) {
-                    //返回请求
+                    // 返回请求
                     for (PromiseRequest request : batchList) {
                         request.future.completeAsync(() -> batchResponse);
                     }
@@ -156,7 +156,7 @@ public class UpdateInventoryExe2 {
             } catch (Throwable e) {
                 log.error("mergeThread error: ", e);
 
-                //返回请求
+                // 返回请求
                 for (PromiseRequest request : batchList) {
                     request.future.completeAsync(() -> SingleResponse.error("处理异常"));
                 }
@@ -233,7 +233,7 @@ public class UpdateInventoryExe2 {
                     int totalDeductionNum = batchList.stream().mapToInt(e -> e.getInventoryRequest().getCount()).sum();
                     SingleResponse<Void> batchResponse = productGateway.deductionInventory(goodsNo, totalDeductionNum);
                     if (batchResponse.success()) {
-                        //返回请求
+                        // 返回请求
                         for (PromiseRequest request : batchList) {
                             request.future.completeAsync(() -> batchResponse);
                         }
@@ -249,7 +249,7 @@ public class UpdateInventoryExe2 {
                 } catch (Throwable e) {
                     log.error("mergeThread error: ", e);
 
-                    //返回请求
+                    // 返回请求
                     for (PromiseRequest request : batchList) {
                         request.future.completeAsync(() -> SingleResponse.error(e.getMessage()));
                     }
@@ -264,7 +264,7 @@ public class UpdateInventoryExe2 {
             }
         };
 
-        ExecutorService executorService = ThreadPoolUtil.newFixedThreadPoolDiscard(N_THREADS, "merge");
+        ExecutorService executorService = ExecutorUtil.newFixedThreadPoolDiscard(N_THREADS, "merge");
         for (int i = 0; i < N_THREADS; i++) {
             executorService.execute(runnable);
         }

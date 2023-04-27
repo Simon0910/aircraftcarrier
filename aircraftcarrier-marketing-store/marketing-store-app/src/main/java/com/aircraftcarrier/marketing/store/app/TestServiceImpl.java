@@ -3,6 +3,8 @@ package com.aircraftcarrier.marketing.store.app;
 import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.cache.LockUtils;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
+import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
 import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.exception.SysException;
@@ -10,7 +12,6 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
-import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe;
 import com.aircraftcarrier.marketing.store.app.test.executor.TransactionalExe2;
 import com.aircraftcarrier.marketing.store.app.test.executor.UpdateInventoryExe;
@@ -401,7 +402,7 @@ public class TestServiceImpl implements TestService {
         }
 
 //        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
-        ThreadPoolUtil.invokeAllVoid(ThreadPoolUtil.newCachedThreadPool("测试redis锁"), asyncBatchTasks, true);
+        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPool("测试redis锁"), asyncBatchTasks, true);
         log.info("success: {}, 耗时：{}", success, System.currentTimeMillis() - start);
     }
 

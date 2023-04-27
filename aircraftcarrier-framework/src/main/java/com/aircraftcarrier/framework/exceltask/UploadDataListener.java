@@ -2,6 +2,8 @@ package com.aircraftcarrier.framework.exceltask;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
+import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
+import com.aircraftcarrier.framework.concurrent.ThreadUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.exception.ExcelAnalysisStopException;
 import com.alibaba.excel.metadata.data.ReadCellData;
@@ -119,10 +121,6 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         loadSnapshot();
         startRefreshSnapshot();
         startAutoCheckTimer();
-    }
-
-    private static String getThreadNo() {
-        return Thread.currentThread().getName().substring(Thread.currentThread().getName().lastIndexOf("-") + 1);
     }
 
     private void startAutoCheckTimer() {
@@ -328,7 +326,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
                         execute(batchContainer);
                     }
                     try {
-                        ThreadPoolUtil.sleepSeconds(1);
+                        ThreadUtil.sleepSeconds(1);
                     } catch (InterruptedException ignore) {
                         Thread.currentThread().interrupt();
                     }
@@ -399,10 +397,11 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         String firstKey = getKey(first.getSheetNo(), first.getRowNo());
         String lastKey = getKey(last.getSheetNo(), last.getRowNo());
         log.info("doWorker - threadBatchList [{}~{}]", firstKey, lastKey);
+        String threadNo = ThreadUtil.getThreadNo();
         try {
             worker.doWorker(threadBatchList);
             // 记录最大行号
-            successMap.put(getThreadNo(), lastKey);
+            successMap.put(threadNo, lastKey);
             successNum.add(size);
         } catch (Exception e) {
             log.error("doWork error - threadBatchList [{}~{}]", firstKey, lastKey);
@@ -417,7 +416,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
                     LinkedList<T> singeList = new LinkedList<>();
                     singeList.add(singeData);
                     worker.doWorker(singeList);
-                    successMap.put(getThreadNo(), singeKey);
+                    successMap.put(threadNo, singeKey);
                     successNum.increment();
                 } catch (Exception ex) {
                     recordErrorMap(singeKey);

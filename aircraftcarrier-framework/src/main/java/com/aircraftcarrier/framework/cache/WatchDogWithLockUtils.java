@@ -1,8 +1,8 @@
 package com.aircraftcarrier.framework.cache;
 
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
-import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
  */
 @Slf4j
 public class WatchDogWithLockUtils {
-    private static final ExecutorService executorService = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "watch-dog");
+    private static final ExecutorService executorService = ExecutorUtil.newCachedThreadPoolDiscard(1, "watch-dog");
     private Map<String, Thread> lockRecord;
     private RedisLockRenewal redisLockRenewal;
 

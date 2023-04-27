@@ -1,7 +1,5 @@
-package com.aircraftcarrier.framework.exceltask;
+package com.aircraftcarrier.framework.concurrent;
 
-import com.aircraftcarrier.framework.concurrent.BlockPolicy;
-import com.aircraftcarrier.framework.concurrent.NamedThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -10,17 +8,9 @@ import java.util.concurrent.TimeUnit;
  * @author zhipengliu
  */
 @Slf4j
-public class ThreadPoolUtil {
+public class ThreadUtil {
 
-    private ThreadPoolUtil() {
-    }
-
-    public static NamedThreadFactory newThreadFactory(String poolName) {
-        return new NamedThreadFactory(poolName);
-    }
-
-    public static BlockPolicy newBlockPolicy() {
-        return new BlockPolicy();
+    private ThreadUtil() {
     }
 
     /**

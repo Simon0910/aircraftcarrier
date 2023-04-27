@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.concurrent.threadpool;
 
-import com.aircraftcarrier.framework.tookit.ThreadPoolUtil;
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -18,7 +18,7 @@ public class ThreadPoolTest {
     /**
      * 只需要一个线程去刷新，多余的请求丢弃忽略
      */
-    private static final ExecutorService THREAD_POOL = ThreadPoolUtil.newCachedThreadPoolDiscard(1, "accessToken");
+    private static final ExecutorService THREAD_POOL = ExecutorUtil.newCachedThreadPoolDiscard(1, "accessToken");
 
     @Test
     public void synchronousQueueTest() throws InterruptedException {
