@@ -16,7 +16,7 @@ import java.util.function.Function;
  * @param <R>
  * @author liuzhipeng
  */
-public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {
+public class CallRecursiveTask<T, R> extends RecursiveTask<List<R>> {
 
     /**
      * 切分粒度
@@ -25,13 +25,13 @@ public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {
     private final List<T> params;
     private final Function<T, R> function;
 
-    public CallApiRecursiveTask(Function<T, R> function, List<T> params) {
+    public CallRecursiveTask(Function<T, R> function, List<T> params) {
         this.function = function;
         this.params = params;
         this.granularity = 1;
     }
 
-    public CallApiRecursiveTask(Function<T, R> function, List<T> params, int granularity) {
+    public CallRecursiveTask(Function<T, R> function, List<T> params, int granularity) {
         this.function = function;
         this.params = params;
         this.granularity = granularity;
@@ -46,11 +46,11 @@ public class CallApiRecursiveTask<T, R> extends RecursiveTask<List<R>> {
         }
     }
 
-    private List<CallApiRecursiveTask<T, R>> createSubtasks() {
+    private List<CallRecursiveTask<T, R>> createSubtasks() {
         List<List<T>> partition = Lists.partition(params, granularity);
-        List<CallApiRecursiveTask<T, R>> callTasks = new ArrayList<>(partition.size());
+        List<CallRecursiveTask<T, R>> callTasks = new ArrayList<>(partition.size());
         for (List<T> partitionParams : partition) {
-            callTasks.add(new CallApiRecursiveTask<>(function, partitionParams));
+            callTasks.add(new CallRecursiveTask<>(function, partitionParams));
         }
         return callTasks;
     }

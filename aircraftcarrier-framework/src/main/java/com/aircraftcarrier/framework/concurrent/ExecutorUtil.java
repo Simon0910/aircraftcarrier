@@ -97,7 +97,7 @@ public class ExecutorUtil {
                 0, maxSize,
                 10, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                buildThreadFactory(pooName, "-cached-pool-"),
+                buildThreadFactory(pooName, "-cached"),
                 reject);
     }
 

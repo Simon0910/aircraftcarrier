@@ -12,7 +12,7 @@ import java.util.function.Function;
  * @param <R>
  * @author zhipengliu
  */
-public class CallApiParallelTask<T, R> {
+public class CallParallelTask<T, R> {
 
     /**
      * 切分粒度
@@ -21,13 +21,13 @@ public class CallApiParallelTask<T, R> {
     private final List<T> params;
     private final Function<T, R> function;
 
-    public CallApiParallelTask(Function<T, R> function, List<T> params) {
+    public CallParallelTask(Function<T, R> function, List<T> params) {
         this.function = function;
         this.params = params;
         this.granularity = 1;
     }
 
-    public CallApiParallelTask(Function<T, R> function, List<T> params, int granularity) {
+    public CallParallelTask(Function<T, R> function, List<T> params, int granularity) {
         this.function = function;
         this.params = params;
         this.granularity = granularity;

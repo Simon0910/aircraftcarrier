@@ -1,8 +1,7 @@
 package com.aircraftcarrier.framework.concurrent.multithreadcallapi;
 
-import com.aircraftcarrier.framework.concurrent.CallApiParallelTask;
-import com.aircraftcarrier.framework.concurrent.CallApiRecursiveTask;
-import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
+import com.aircraftcarrier.framework.concurrent.CallParallelTask;
+import com.aircraftcarrier.framework.concurrent.CallRecursiveTask;
 import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.TimeLogUtil;
@@ -15,7 +14,6 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
@@ -98,12 +96,12 @@ public class CallApiRecursiveTaskTest {
     public void testCall_RecursiveTask() {
         // 底层使用默认 ForkJoinPool.commonPool()
         long l = TimeLogUtil.beginTime();
-        CallApiRecursiveTask<Param, Result> task = new CallApiRecursiveTask<>((param) -> callApiService.getResult(param), params);
+        CallRecursiveTask<Param, Result> task = new CallRecursiveTask<>((param) -> callApiService.getResult(param), params);
 
 //        task.fork();
 //        List<Result> results = task.join();
 
-        List<Result> results = ThreadPoolUtil.invokeTask(task, 500, "call aa");
+        List<Result> results = ThreadPoolUtil.invoke(task, 500);
 
         System.out.println("RecursiveTask ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
@@ -118,18 +116,16 @@ public class CallApiRecursiveTaskTest {
         long l = TimeLogUtil.beginTime();
 
         // example01
-        /*List<Callable<Result>> taskList = new ArrayList<>(num);
-        for (Param param : params) {
-            taskList.add(() -> callApiService.getResult(param));
-        }
-        ExecutorService executorService = ThreadPoolUtil.newWorkStealingPool(1000, "call bbb");
-        List<Result> results = ThreadPoolUtil.invokeAll(executorService, taskList);
-//        List<Result> results = ThreadPoolUtil.invokeAll(executorService, taskList, true);*/
+        // List<Callable<Result>> taskList = new ArrayList<>(num);
+        // for (Param param : params) {
+        //     taskList.add(() -> callApiService.getResult(param));
+        // }
+        // ExecutorService executorService = ExecutorUtil.newWorkStealingPool(1000, "call bbb");
+        // List<Result> results = ThreadPoolUtil.invokeAll(executorService, taskList);
 
         // example02
-        CallApiParallelTask<Param, Result> parallelTask = new CallApiParallelTask<>((param) -> callApiService.getResult(param), params);
-        ExecutorService executorService = ExecutorUtil.newWorkStealingPool(1000, "call bbb");
-        List<Result> results = ThreadPoolUtil.invokeTaskTimeout(executorService, parallelTask, 800);
+        CallParallelTask<Param, Result> parallelTask = new CallParallelTask<>((param) -> callApiService.getResult(param), params);
+        List<Result> results = ThreadPoolUtil.invokeTask(parallelTask, 500);
 
         System.out.println("ForkJoinPool ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);
@@ -142,21 +138,16 @@ public class CallApiRecursiveTaskTest {
         long l = TimeLogUtil.beginTime();
 
         // example01
-        /*List<Callable<Result>> taskList = new ArrayList<>(num);
-        for (Param param : params) {
-            taskList.add(() -> callApiService.getResult(param));
-        }
-        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool("call ccc");
-        List<Result> results = ThreadPoolUtil.invokeAll(executorService, taskList);*/
-
-        // example02
-//        CallApiParallelTask<Param, Result> parallelTask = new CallApiParallelTask<>((param) -> callApiService.getResult(param), params);
-//        ExecutorService executorService = ThreadPoolUtil.newCachedThreadPool("call ccc");
-//        List<Result> results = ThreadPoolUtil.invokeTask(executorService, parallelTask);
+        // List<Callable<Result>> taskList = new ArrayList<>(num);
+        // for (Param param : params) {
+        //     taskList.add(() -> callApiService.getResult(param));
+        // }
+        // ExecutorService executorService = ExecutorUtil.newCachedThreadPool("call ccc");
+        // List<Result> results = ThreadPoolUtil.invokeAll(executorService, taskList);
 
         // example03
-        CallApiParallelTask<Param, Result> parallelTask = new CallApiParallelTask<>((param) -> callApiService.getResult(param), params);
-        List<Result> results = ThreadPoolUtil.invokeTaskTimeout(parallelTask, 1000, 20 * 1000, "call ccc");
+        CallParallelTask<Param, Result> parallelTask = new CallParallelTask<>((param) -> callApiService.getResult(param), params);
+        List<Result> results = ThreadPoolUtil.invokeTask(parallelTask, 1000, "call ccc");
 
         System.out.println("ThreadPoolExecutor ===> " + results.size());
         TimeLogUtil.endTimePrintln(l);

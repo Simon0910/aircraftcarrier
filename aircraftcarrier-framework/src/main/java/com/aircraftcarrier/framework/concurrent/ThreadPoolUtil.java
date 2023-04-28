@@ -4,11 +4,14 @@ import com.aircraftcarrier.framework.exception.ThreadException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -16,12 +19,13 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * ThreadPoolUtil
@@ -32,20 +36,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ThreadPoolUtil {
 
     /**
-     * 每个线程等待多久 （秒）
+     * 私有
      */
-    private static final int PER_WAIT_TIMEOUT = 10000;
-    /**
-     * 默认守护线程，无需手动关闭
-     */
-    private static final ForkJoinPool DEFAULT_THREAD_POOL = new ForkJoinPool(
-            Runtime.getRuntime().availableProcessors(),
-            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-            null, true);
-
     private ThreadPoolUtil() {
     }
 
+    /**
+     * 默认守护线程，无需手动关闭
+     * {@link ForkJoinPool#commonPool(); }
+     * {@link Executors#newWorkStealingPool(int) }
+     */
+    private static ForkJoinPool newDefaultExecutorService() {
+        return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                null, true);
+    }
+
+    /**
+     * newThreadFactory
+     *
+     * @param poolName poolName
+     * @return NamedThreadFactory
+     */
     public static NamedThreadFactory newThreadFactory(String poolName) {
         return new NamedThreadFactory(poolName);
     }
@@ -68,63 +80,119 @@ public class ThreadPoolUtil {
     }
 
     /**
-     * DiscardPolicy
+     * newDiscardPolicyPlus
+     *
+     * @return DiscardPolicyPlus
      */
     public static DiscardPolicyPlus newDiscardPolicyPlus() {
         return new DiscardPolicyPlus();
     }
 
-    public static ThreadPoolUtil.BlockPolicy newBlockPolicy() {
+    /**
+     * newBlockPolicy
+     *
+     * @return BlockPolicy
+     */
+    public static BlockPolicy newBlockPolicy() {
         return new ThreadPoolUtil.BlockPolicy();
     }
 
     /**
-     * executeVoid
+     * submit
+     *
+     * @param executor executor
+     * @param task     task
+     * @return Future<?>
      */
-    public static void invokeVoid(CallableVoid callableVoid) {
-        invokeVoid(DEFAULT_THREAD_POOL, callableVoid);
+    public static Future<?> submit(ExecutorService executor, Runnable task) {
+        return executor.submit(task);
     }
 
     /**
+     * submit
+     *
+     * @param executor executor
+     * @param task     task
+     * @param <T>      T
+     * @return Future<T>
+     */
+    public static <T> Future<T> submit(ExecutorService executor, Callable<T> task) {
+        return executor.submit(task);
+    }
+
+
+    // =========================invoke action==============================
+
+    /**
+     * executeAllVoid
+     *
+     * @param action action
+     */
+    public static void invokeVoid(RecursiveAction action) {
+        invokeVoid(newDefaultExecutorService(), action);
+    }
+
+
+    /**
+     * executeAllVoid
+     *
+     * @param action      action
+     * @param parallelism parallelism
+     */
+    public static void invokeVoid(RecursiveAction action, int parallelism) {
+        invokeVoid(ExecutorUtil.newWorkStealingPool(parallelism, "action"), action);
+    }
+
+
+    /**
+     * executeAllVoid
+     *
+     * @param forkJoinPool forkJoinPool
+     * @param action       action
+     */
+    public static void invokeVoid(ForkJoinPool forkJoinPool, RecursiveAction action) {
+        forkJoinPool.invoke(action);
+    }
+
+
+    /**
      * executeVoid
+     *
+     * @param callableVoid callableVoid
+     */
+    public static void invokeVoid(CallableVoid callableVoid) {
+        invokeVoid(newDefaultExecutorService(), callableVoid);
+    }
+
+
+    /**
+     * executeVoid
+     *
+     * @param executor     executor
+     * @param callableVoid callableVoid
      */
     public static void invokeVoid(ExecutorService executor, CallableVoid callableVoid) {
         invokeAllVoid(executor, List.of(callableVoid));
     }
 
-    /**
-     * executeAllVoid
-     */
-    public static void invokeVoid(RecursiveAction task) {
-        DEFAULT_THREAD_POOL.invoke(task);
-    }
 
     /**
-     * executeAllVoid
-     */
-    public static void invokeVoid(RecursiveAction task, int parallelism) {
-        ExecutorUtil.newWorkStealingPool(parallelism, "recursiveAction-pool").invoke(task);
-    }
-
-    /**
-     * executeAllVoid
+     * invokeAllVoid
+     *
+     * @param asyncBatchTasks asyncBatchTasks
      */
     public static void invokeAllVoid(List<CallableVoid> asyncBatchTasks) {
-        invokeAllVoid(DEFAULT_THREAD_POOL, asyncBatchTasks);
+        invokeAllVoid(newDefaultExecutorService(), asyncBatchTasks);
     }
+
 
     /**
      * executeAllVoid
+     *
+     * @param executor        executor
+     * @param asyncBatchTasks asyncBatchTasks
      */
     public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks) {
-        invokeAllVoid(executor, asyncBatchTasks, false);
-    }
-
-    /**
-     * executeAllVoid ignoreFail
-     */
-    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks,
-                                     boolean ignoreFail) {
         List<Callable<Void>> callables = new ArrayList<>(asyncBatchTasks.size());
         for (CallableVoid task : asyncBatchTasks) {
             callables.add(() -> {
@@ -133,105 +201,153 @@ public class ThreadPoolUtil {
             });
         }
 
-        invokeAll(executor, callables, ignoreFail);
+        invokeAll(executor, callables);
     }
 
+
+    // =========================invoke task==============================
+
     /**
-     * execute
+     * invoke
+     *
+     * @param task task
+     * @param <V>  V
+     * @return V
+     */
+    public static <V> V invoke(RecursiveTask<V> task) {
+        return invoke(newDefaultExecutorService(), task);
+    }
+
+
+    /**
+     * invoke
+     *
+     * @param task        task
+     * @param parallelism parallelism
+     * @param <V>         V
+     * @return V
+     */
+    public static <V> V invoke(RecursiveTask<V> task, int parallelism) {
+        return invoke(ExecutorUtil.newWorkStealingPool(parallelism, "task"), task);
+    }
+
+
+    /**
+     * invoke
+     *
+     * @param forkJoinPool forkJoinPool
+     * @param task         task
+     * @param <V>          V
+     * @return V
+     */
+    public static <V> V invoke(ForkJoinPool forkJoinPool, RecursiveTask<V> task) {
+        return forkJoinPool.invoke(task);
+    }
+
+
+    /**
+     * invoke
+     *
+     * @param callable callable
+     * @param <T>      T
+     * @return T
      */
     public static <T> T invoke(Callable<T> callable) {
-        return invoke(DEFAULT_THREAD_POOL, callable);
+        return invoke(newDefaultExecutorService(), callable);
     }
 
+
     /**
-     * execute
+     * invoke
+     *
+     * @param executor executor
+     * @param callable callable
+     * @param <T>      T
+     * @return T
      */
     public static <T> T invoke(ExecutorService executor, Callable<T> callable) {
         List<T> list = invokeAll(executor, List.of(callable));
         return list.get(0);
     }
 
-    public static <T> T invokeTime(Callable<T> callable, long timeout) {
-        return invokeTimeout(DEFAULT_THREAD_POOL, callable, timeout);
-    }
-
-    public static <T> T invokeTimeout(ExecutorService executor, Callable<T> callable, long timeout) {
-        List<T> list = invokeAllTimeout(executor, List.of(callable), timeout);
-        return list.get(0);
-    }
 
     /**
-     * execute
+     * invokeTask
+     *
+     * @param callParallelTask callParallelTask
+     * @param parallelism      parallelism
+     * @param <T>              T
+     * @param <V>              V
+     * @return List<V>
      */
-    public static <V> V invokeTask(RecursiveTask<V> task, int parallelism, String taskName) {
-        ForkJoinPool forkJoinPool = ExecutorUtil.newWorkStealingPool(parallelism, taskName + "-recursiveTask-pool");
-        return invokeTask(forkJoinPool, task);
+    public static <T, V> List<V> invokeTask(CallParallelTask<T, V> callParallelTask, int parallelism) {
+        ExecutorService executor = ExecutorUtil.newWorkStealingPool(parallelism, "callParallelTask");
+        return invokeTask(executor, callParallelTask);
     }
 
+
     /**
-     * execute
+     * invokeTask
+     *
+     * @param callParallelTask callParallelTask
+     * @param parallelism      parallelism
+     * @param taskName         taskName
+     * @param <T>              T
+     * @param <V>              V
+     * @return List<V>
      */
-    public static <V> V invokeTask(ForkJoinPool forkJoinPool, RecursiveTask<V> task) {
-        return forkJoinPool.invoke(task);
+    public static <T, V> List<V> invokeTask(CallParallelTask<T, V> callParallelTask, int parallelism, String taskName) {
+        ExecutorService executor = ExecutorUtil.newCachedThreadPoolMax("callParallelTask-" + taskName, parallelism, newBlockPolicy());
+        return invokeTask(executor, callParallelTask);
     }
 
+
     /**
-     * execute
+     * invokeTask
+     *
+     * @param executor         executor
+     * @param callParallelTask callParallelTask
+     * @param <T>              T
+     * @param <V>              V
+     * @return List<V>
      */
-    public static <T, V> List<V> invokeTask(CallApiParallelTask<T, V> task, int parallelism, String taskName) {
-        ExecutorService executorService = ExecutorUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism, new ThreadPoolExecutor.CallerRunsPolicy());
-        return invokeTask(executorService, task);
+    public static <T, V> List<V> invokeTask(ExecutorService executor, CallParallelTask<T, V> callParallelTask) {
+        return invokeAll(executor, callParallelTask.getTaskList());
     }
 
+
     /**
-     * execute
+     * invokeAll
+     *
+     * @param callables callables
+     * @param <T>       T
+     * @return List<T>
      */
-    public static <T, V> List<V> invokeTask(ExecutorService executor, CallApiParallelTask<T, V> task) {
-        List<Callable<V>> taskList = task.getTaskList();
-        return invokeAll(executor, taskList);
+    public static <T> List<T> invokeAll(List<Callable<T>> callables) {
+        return invokeAll(newDefaultExecutorService(), callables);
     }
 
-    public static <T, V> List<V> invokeTaskTimeout(CallApiParallelTask<T, V> task, int parallelism, long timeout, String taskName) {
-        ExecutorService executorService = ExecutorUtil.newCachedThreadPoolMax(taskName + "-parallelTask", parallelism, new ThreadPoolExecutor.CallerRunsPolicy());
-        return invokeTaskTimeout(executorService, task, timeout);
-    }
-
-    public static <T, V> List<V> invokeTaskTimeout(ExecutorService executor, CallApiParallelTask<T, V> task, long timeout) {
-        List<Callable<V>> taskList = task.getTaskList();
-        return invokeAllTimeout(executor, taskList, timeout);
-    }
 
     /**
-     * executeAll
+     * invokeAll
+     *
+     * @param executor  executor
+     * @param callables callables
+     * @param <T>       T
+     * @return List<T>
      */
-    public static <T> List<T> invokeAll(List<Callable<T>> asyncBatchTasks) {
-        return invokeAll(DEFAULT_THREAD_POOL, asyncBatchTasks);
+    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> callables) {
+        return invokeAllTimeout(executor, callables, false, Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
+
 
     /**
-     * executeAll
-     */
-    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> asyncBatchTasks) {
-        return invokeAll(executor, asyncBatchTasks, false);
-    }
-
-    public static <T> List<T> invokeAll(ExecutorService executor, List<Callable<T>> tasks, boolean ignoreFail) {
-        return invokeAllTimeout(executor, tasks, ignoreFail, Integer.MAX_VALUE);
-    }
-
-    /**
-     * executeAll
-     */
-    public static <T> List<T> invokeAllTimeout(List<Callable<T>> asyncBatchTasks, long timeout) {
-        return invokeAllTimeout(DEFAULT_THREAD_POOL, asyncBatchTasks, timeout);
-    }
-
-    public static <T> List<T> invokeAllTimeout(ExecutorService executor, List<Callable<T>> asyncBatchTasks, long timeout) {
-        return invokeAllTimeout(executor, asyncBatchTasks, false, timeout);
-    }
-
-    /**
-     * executeAll Ignore Fail
+     * invokeAllTimeout
+     * 适合并行查询，不适合并行更新（因为无法控制多个线程在一个事务）
+     *
+     * <p>
+     * jdk19: {@link AbstractExecutorService#invokeAll(Collection, long, TimeUnit)}
+     *
      * <a href="https://cloud.tencent.com/developer/article/1330450">...</a>
      * <a href="https://bugs.openjdk.org/browse/JDK-8286463">...</a>
      * <a href="https://bugs.openjdk.org/browse/JDK-8160037?focusedCommentId=13964474&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-13964474">...</a>
@@ -240,85 +356,107 @@ public class ThreadPoolUtil {
      * I agree with Martin. The behavior matches the specifications
      * -- shutdownNow returns the list of tasks, that the user should cancel if appropriate (that's why they are returned).
      */
-    public static <T> List<T> invokeAllTimeout(ExecutorService executor, List<Callable<T>> tasks,
-                                               boolean ignoreFail, long timeout) {
+    public static <T> List<T> invokeAllTimeout(ExecutorService executor,
+                                               List<Callable<T>> tasks,
+                                               boolean ignoreException,
+                                               long timeout, TimeUnit unit) {
         if (tasks == null) {
             throw new NullPointerException();
         }
 
-        if (timeout < 10) {
-            timeout = PER_WAIT_TIMEOUT;
-        }
-
+        final long nanos = unit.toNanos(timeout);
+        final long deadline = System.nanoTime() + nanos;
         ArrayList<Future<T>> futures = new ArrayList<>(tasks.size());
+        List<T> resultList = new ArrayList<>(tasks.size());
+        RuntimeException runtimeException;
+        int j = 0;
+        breakOut:
         try {
             for (Callable<T> t : tasks) {
-                RunnableFuture<T> f = new FutureTask<>(t);
-                futures.add(f);
-                executor.execute(f);
+                futures.add(new FutureTask<>(t));
             }
-            List<T> resultList = new ArrayList<>(futures.size());
-            for (int i = 0, size = futures.size(); i < size; i++) {
-                Future<T> f = futures.get(i);
+
+            final int size = futures.size();
+
+            // Interleave time checks and calls to execute in case
+            // executor doesn't have any/much parallelism.
+            for (int i = 0; i < size; i++) {
+                if (((i == 0) ? nanos : deadline - System.nanoTime()) <= 0L) {
+                    runtimeException = new ThreadException("execute [" + i + "] TimeoutException ");
+                    break breakOut;
+                }
+                executor.execute((Runnable) futures.get(i));
+            }
+
+            for (; j < size; j++) {
+                Future<T> f = futures.get(j);
                 try {
-                    /**
-                     * {@link org.elasticsearch.common.util.concurrent.FutureUtils.get(java.util.concurrent.Future<T>, long, java.util.concurrent.TimeUnit)}
-                     * {@link java.util.concurrent.AbstractExecutorService#invokeAll(java.util.Collection) }
-                     */
-                    T result = f.get(timeout, TimeUnit.MILLISECONDS);
+                    T result = f.get(deadline - System.nanoTime(), NANOSECONDS);
                     resultList.add(result);
-                } catch (CancellationException e) {
-                    // CancellationException | ExecutionException： 子线程死了
-                    // InterruptedException | TimeoutException：子线程还活着，子线程判断Thread.currentThread().isInterrupted()自己停止
-                    f.cancel(true);
-                    if (!ignoreFail) {
-                        throw new ThreadException("Future got [" + i + "] CancellationException: " + e);
-                    } else {
-                        log.error("get [{}] CancellationException: ", i, e);
-                    }
-                } catch (ExecutionException e) {
-                    f.cancel(true);
-                    if (!ignoreFail) {
-                        throw new ThreadException("Future got [" + i + "] ExecutionException: ", e);
-                    } else {
-                        log.error("get [{}] ExecutionException ", i, e);
-                    }
                 } catch (TimeoutException e) {
+                    // TimeoutException | InterruptedException ：子线程还活着，子线程判断Thread.currentThread().isInterrupted()自己停止
+                    log.error("Future got [{}] TimeoutException ", j, e);
                     f.cancel(true);
-                    if (!ignoreFail) {
-                        throw new ThreadException("Future got  [" + i + "] TimeoutException: ", e);
-                    } else {
-                        log.error("get [{}] TimeoutException ", i, e);
+                    if (!ignoreException) {
+                        runtimeException = new ThreadException("Future got [" + j + "] TimeoutException ");
+                        break breakOut;
                     }
                 } catch (InterruptedException e) {
+                    log.error("Future got [{}] InterruptedException. ", j, e);
                     f.cancel(true);
                     Thread.currentThread().interrupt();
-                    if (!ignoreFail) {
-                        throw new ThreadException("Future got [" + i + "] InterruptedException: ", e);
-                    } else {
-                        log.error("get [{}] InterruptedException: ", i, e);
+                    if (!ignoreException) {
+                        runtimeException = new ThreadException("Future got [" + j + "] InterruptedException ");
+                        break breakOut;
+                    }
+                } catch (CancellationException e) {
+                    // CancellationException | ExecutionException： 子线程死了
+                    log.error("Future got [{}] CancellationException.", j, e);
+                    if (!ignoreException) {
+                        runtimeException = new ThreadException("Future got [" + j + "] CancellationException ");
+                        break breakOut;
+                    }
+                } catch (ExecutionException e) {
+                    log.error("Future got [{}] ExecutionException. ", j, e);
+                    if (!ignoreException) {
+                        runtimeException = new ThreadException("Future got [" + j + "] ExecutionException ");
+                        break breakOut;
                     }
                 }
             }
             return resultList;
         } catch (Throwable t) {
-            log.error("invokeAll error: ", t);
-            for (Future<T> future : futures) {
-                future.cancel(true);
-            }
+            log.error("invokeAllTimeout error: ", t);
+            cancelAll(futures);
             throw t;
         }
-
+        // Timed out before all the tasks could be completed; cancel remaining
+        cancelAll(futures, j);
+        if (!ignoreException) {
+            throw runtimeException;
+        }
+        return resultList;
     }
 
-    public static Future<?> submit(ExecutorService executor, Runnable task) {
-        return executor.submit(task);
+
+    // ======================private==============================
+
+    private static <T> void cancelAll(ArrayList<Future<T>> futures) {
+        cancelAll(futures, 0);
     }
 
-    public static <T> Future<T> submit(ExecutorService executor, Callable<T> task) {
-        return executor.submit(task);
+    /**
+     * Cancels all futures with index at least j.
+     */
+    private static <T> void cancelAll(ArrayList<Future<T>> futures, int j) {
+        for (int size = futures.size(); j < size; j++) {
+            futures.get(j).cancel(true);
+        }
     }
 
+    /**
+     * NamedThreadFactory
+     */
     private static class NamedThreadFactory implements ThreadFactory {
         private static final AtomicInteger poolNumber = new AtomicInteger(1);
         private final ThreadGroup group;
@@ -345,8 +483,10 @@ public class ThreadPoolUtil {
         }
     }
 
+    /**
+     * DiscardPolicyPlus
+     */
     private static class DiscardPolicyPlus implements RejectedExecutionHandler {
-
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             if (executor.isShutdown()) {
@@ -359,9 +499,11 @@ public class ThreadPoolUtil {
                 ((Future<?>) r).cancel(true);
             }
         }
-
     }
 
+    /**
+     * BlockPolicy
+     */
     private static class BlockPolicy implements RejectedExecutionHandler {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
