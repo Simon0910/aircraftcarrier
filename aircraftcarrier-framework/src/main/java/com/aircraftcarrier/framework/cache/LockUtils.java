@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.cache;
 
 import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
-import com.aircraftcarrier.framework.concurrent.SingularUpdateQueue;
+import com.aircraftcarrier.framework.concurrent.PluralUpdateQueue;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.aircraftcarrier.framework.tookit.MapUtil;
@@ -36,7 +36,7 @@ public class LockUtils {
     /**
      * KEY_QUEUE
      */
-    private static final SingularUpdateQueue<Request, Request> KEY_QUEUE = new SingularUpdateQueue<>(LockUtils::doRedisLock);
+    private static final PluralUpdateQueue<Request, Request> KEY_QUEUE = new PluralUpdateQueue<>(LockUtils::doRedisLock);
 
 
     static {
