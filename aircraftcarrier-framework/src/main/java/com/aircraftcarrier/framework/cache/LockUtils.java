@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.cache;
 
 import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
+import com.aircraftcarrier.framework.concurrent.SingularUpdateQueue;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.aircraftcarrier.framework.tookit.MapUtil;
@@ -9,7 +10,6 @@ import com.baomidou.lock.LockTemplate;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,16 +24,20 @@ import java.util.concurrent.TimeUnit;
 public class LockUtils {
 
     /**
-     * key: request
+     * Thread: key：request
      */
     private static final Map<Thread, Map<String, Request>> THREAD_LOCAL = MapUtil.newConcurrentHashMap(1000);
 
     /**
-     * key: queue
+     * key：Thread
      */
-    private static final Map<String, SingularUpdateQueue<Request, Request>> KEY_QUEUE = MapUtil.newConcurrentHashMap(1000);
-
     private static final Map<String, Thread> LOCK_RECORD = new ConcurrentHashMap<>();
+
+    /**
+     * KEY_QUEUE
+     */
+    private static final SingularUpdateQueue<Request, Request> KEY_QUEUE = new SingularUpdateQueue<>(LockUtils::doRedisLock);
+
 
     static {
         WatchDogWithLockUtils.getInstance().init(LOCK_RECORD);
@@ -42,27 +46,11 @@ public class LockUtils {
     private LockUtils() {
     }
 
+
     private static MyLockTemplate getMyLockTemplate() {
         return LockUtils.ResourceHolder.MY_LOCK_TEMPLATE;
     }
 
-    @NotNull
-    private static SingularUpdateQueue<Request, Request> getQueue(String key) {
-        return KEY_QUEUE.compute(key, (k, v) -> v == null ? new SingularUpdateQueue<>(LockUtils::doRedisLock) : v);
-    }
-
-    private static SingularUpdateQueue<Request, Request> getNewQueue(String key) {
-        SingularUpdateQueue<Request, Request> oldV = KEY_QUEUE.get(key);
-        synchronized (LockUtils.class) {
-            SingularUpdateQueue<Request, Request> cur = KEY_QUEUE.get(key);
-            if (cur != oldV) {
-                return cur;
-            }
-            SingularUpdateQueue<Request, Request> newV = new SingularUpdateQueue<>(LockUtils::doRedisLock);
-            KEY_QUEUE.put(key, newV);
-            return newV;
-        }
-    }
 
     public static void lock(String key, long expire, long timeout) throws LockNotAcquiredException {
         if (!doLock(key, expire, timeout)) {
@@ -84,15 +72,11 @@ public class LockUtils {
         }
 
         Request request = new Request(key, expire, timeout);
-        SingularUpdateQueue<Request, Request> keyQueue = getQueue(key);
-        if (!keyQueue.isAlive()) {
-            keyQueue = getNewQueue(key);
-        }
 
         try {
-            CompletableFuture<Request> f = keyQueue.submit(request, timeout, TimeUnit.MILLISECONDS);
-
+            CompletableFuture<Request> f = KEY_QUEUE.submit(request, timeout, TimeUnit.MILLISECONDS);
             Request getRequest = f.get();
+
             if (getRequest == null) {
                 log.error("submit timeout");
                 return false;
@@ -242,4 +226,6 @@ public class LockUtils {
     private static class ResourceHolder {
         private static final MyLockTemplate MY_LOCK_TEMPLATE = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class); // This will be lazily initialised
     }
+
+
 }

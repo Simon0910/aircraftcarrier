@@ -1,10 +1,11 @@
-package com.aircraftcarrier.framework.cache;
+package com.aircraftcarrier.framework.concurrent;
 
 import jdk.internal.misc.Unsafe;
 
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -13,12 +14,13 @@ import java.util.function.Function;
  *
  * @author zhipengliu
  */
-public class SingularUpdateQueue<R, S> extends Thread {
+public class SingularUpdateQueue<R, S> {
 
     private static final Unsafe U = Unsafe.getUnsafe();
     private static final long STATE = U.objectFieldOffset(SingularUpdateQueue.class, "state");
     private final ArrayBlockingQueue<RequestWrapper<R, S>> workQueue = new ArrayBlockingQueue<>(1000);
     private final Function<R, S> handler;
+    private final ExecutorService executorService = ExecutorUtil.newCachedThreadPoolBlock(1, "singular");
     private volatile int state;
     private volatile boolean isRunning = false;
 
@@ -45,14 +47,13 @@ public class SingularUpdateQueue<R, S> extends Thread {
         return completableFuture;
     }
 
-    @Override
     public void start() {
         if (!isRunning() && compareAndSetState(0, 1)) {
-            super.start();
+            // 此时前一个while死循环可能还没死好, 所以本次while采用Block策略
+            executorService.submit(this::run);
         }
     }
 
-    @Override
     public void run() {
         isRunning = true;
         while (isRunning) {

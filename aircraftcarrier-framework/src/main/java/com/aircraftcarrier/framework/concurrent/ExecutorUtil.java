@@ -31,6 +31,7 @@ public class ExecutorUtil {
     private ExecutorUtil() {
     }
 
+
     /**
      * buildThreadFactory
      * <p>
@@ -46,76 +47,109 @@ public class ExecutorUtil {
         return ThreadPoolUtil.newThreadFactory(pooName + suffix);
     }
 
+
     /**
-     * 固定线程池 默认上限50000缓冲任务（防止无限创建队列任务oom） 多余的请求同步阻塞 （不丢弃任务）
+     * 固定线程池 (队列容量 + block) // 防止队列容量OOM，防止丢弃任务
+     *
      * <p>
      * 参考：
      * {@link java.util.concurrent.Executors#newFixedThreadPool(int)} }
-     */
-    public static ExecutorService newFixedThreadPool(int nThreads, String pooName) {
-        return newFixedThreadPool(nThreads, pooName + "-caller", new LinkedBlockingQueue<>(1024), ThreadPoolUtil.newCallerRunsPolicy());
-    }
-
-    /**
-     * 固定线程池 不需要队列（防止无限创建队列任务oom） 多余的请求直接丢弃
      * <p>
      * 使用场景：
-     * 1. newFixedThreadPool(1,"xxx-task"); // 开启一个后台监控任务
+     * 1. newFixedThreadPoolBlock(10,"xxxWork"); // 多个线程执行，不丢弃任务
      */
-    public static ExecutorService newFixedThreadPoolDiscard(int nThreads, String pooName) {
-        return newFixedThreadPool(nThreads, pooName + "-discard", new SynchronousQueue<>(), ThreadPoolUtil.newDiscardPolicyPlus());
+    public static ExecutorService newFixedThreadPoolBlock(int nThreads, String pooName) {
+        return newFixedThreadPool(
+                nThreads,
+                "block-" + pooName,
+                new LinkedBlockingQueue<>(1024),
+                ThreadPoolUtil.newBlockPolicy());
     }
 
-    public static ExecutorService newFixedThreadPool(int nThreads, String pooName, BlockingQueue<Runnable> blockingQueue, RejectedExecutionHandler reject) {
+
+    /**
+     * 固定线程池 (同步队列 + discard) // 防止重复执行任务
+     * <p>
+     * 参考：
+     * {@link java.util.concurrent.Executors#newFixedThreadPool(int)} }
+     * <p>
+     * 使用场景：
+     * 1. newFixedThreadPoolDiscard(1,"xxxTask"); // 开启一个后台监控任务
+     */
+    public static ExecutorService newFixedThreadPoolDiscard(int nThreads, String pooName) {
+        return newFixedThreadPool(
+                nThreads,
+                "discard-" + pooName,
+                new SynchronousQueue<>(),
+                ThreadPoolUtil.newDiscardPolicyPlus());
+    }
+
+
+    private static ExecutorService newFixedThreadPool(int nThreads,
+                                                      String pooName,
+                                                      BlockingQueue<Runnable> blockingQueue,
+                                                      RejectedExecutionHandler reject) {
         return new TraceThreadPoolExecutor(
                 // 固定大小
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
                 blockingQueue,
-                buildThreadFactory(pooName, "-fix-pool-"),
+                buildThreadFactory("fix-", pooName),
                 reject);
     }
 
+
     /**
-     * 缓存线程池 10秒空闲时间(防止无限创建缓存线程oom) 同步队列（默认队列就排队串行了！！！） 默认拒绝策略
-     * <p>
-     * 参考：
-     * {@link java.util.concurrent.Executors#newCachedThreadPool() }
-     * {@link cn.hutool.core.thread.ExecutorBuilder#build(cn.hutool.core.thread.ExecutorBuilder) }
+     * 缓存线程池 （同步队列 + Block）// 防止无限创建线程，防止丢弃任务
      */
-    public static ExecutorService newCachedThreadPool(String pooName) {
-        return newCachedThreadPoolMax(pooName, Integer.MAX_VALUE, ThreadPoolUtil.newAbortPolicy());
+    public static ExecutorService newCachedThreadPoolBlock(int maxThreads, String pooName) {
+        return newCachedThreadPool(
+                "block-" + pooName,
+                maxThreads,
+                ThreadPoolUtil.newBlockPolicy());
     }
 
-    public static ExecutorService newCachedThreadPoolMax(String pooName, int maxSize) {
-        return newCachedThreadPoolMax(pooName, maxSize, ThreadPoolUtil.newAbortPolicy());
-    }
-
-    public static ExecutorService newCachedThreadPoolMax(String pooName, int maxSize, RejectedExecutionHandler reject) {
-        return new TraceThreadPoolExecutor(
-                // 指定大小
-                0, maxSize,
-                10, TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
-                buildThreadFactory(pooName, "-cached"),
-                reject);
-    }
 
     /**
-     * 缓存线程池 最大nThreads线程大小(防止无限创建缓存线程oom) 同步队列 多余的请求直接丢弃
+     * 缓存线程池 // 防止无限创建线程，防止丢弃任务
      * <p>
      * 使用场景：
-     * 1. newCachedThreadPool(1,"refresh-token"); // 提前1小时，派一个线程取刷新token
+     * 1. newCachedThreadPool(1, "refresh-token"); // 提前1小时，派一个线程取刷新token
      */
-    public static ExecutorService newCachedThreadPoolDiscard(int nThreads, String pooName) {
-        return new TraceThreadPoolExecutor(
-                // 固定大小
-                0, nThreads,
-                60L, TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
-                buildThreadFactory(pooName, "-cached-discard-pool-"),
-                // 忽略其他请求
+    public static ExecutorService newCachedThreadPoolDiscard(int maxThreads, String pooName) {
+        return newCachedThreadPool(
+                "block-" + pooName,
+                maxThreads,
                 ThreadPoolUtil.newDiscardPolicyPlus());
+    }
+
+
+    private static ExecutorService newCachedThreadPool(String pooName,
+                                                       int maxThreads,
+                                                       RejectedExecutionHandler reject) {
+        return new TraceThreadPoolExecutor(
+                // 指定大小
+                0, maxThreads,
+                10, TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                buildThreadFactory("cached-", pooName),
+                reject);
+    }
+
+
+    /**
+     * 单线程执行器 1个线程串行执行所有任务 默认上限50000缓冲任务（防止无限创建队列任务oom）多余的请求同步阻塞 （不丢弃任务）
+     * 参考：
+     * {@link java.util.concurrent.Executors#newSingleThreadExecutor() }
+     */
+    public static ExecutorService newSingleThreadExecutorBlock(String pooName) {
+        return ExecutorBuilder.create()
+                .setCorePoolSize(1).setMaxPoolSize(1)
+                .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
+                .setWorkQueue(new LinkedBlockingQueue<>(1024))
+                .setThreadFactory(buildThreadFactory(pooName, "-single-block"))
+                .setHandler(ThreadPoolUtil.newBlockPolicy())
+                .buildFinalizable();
     }
 
     /**
@@ -123,12 +157,12 @@ public class ExecutorUtil {
      * 参考：
      * {@link java.util.concurrent.Executors#newSingleThreadExecutor() }
      */
-    public static ExecutorService newSingleThreadExecutor(String pooName) {
+    public static ExecutorService newSingleThreadExecutorCaller(String pooName) {
         return ExecutorBuilder.create()
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new LinkedBlockingQueue<>(1024))
-                .setThreadFactory(buildThreadFactory(pooName, "-single-caller-pool-"))
+                .setThreadFactory(buildThreadFactory(pooName, "-single-caller"))
                 .setHandler(ThreadPoolUtil.newCallerRunsPolicy())
                 .buildFinalizable();
     }
@@ -142,7 +176,7 @@ public class ExecutorUtil {
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new SynchronousQueue<>())
-                .setThreadFactory(buildThreadFactory(pooName, "-single-discard-pool-"))
+                .setThreadFactory(buildThreadFactory(pooName, "-single-discard"))
                 .setHandler(ThreadPoolUtil.newDiscardPolicyPlus())
                 .buildFinalizable();
     }

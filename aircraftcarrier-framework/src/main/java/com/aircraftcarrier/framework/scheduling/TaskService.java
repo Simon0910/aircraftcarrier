@@ -34,7 +34,7 @@ public class TaskService {
      * 解决1： selfCancelService.nThreads >= for.size ( ThreadPoolUtil.newCachedThreadPool(>=for.size, "self-cancel"); )
      * 解决2： 使用jdk默认的 newCachedThreadPool
      */
-    private final ExecutorService selfCancelService = ExecutorUtil.newCachedThreadPool("self-cancel");
+    private final ExecutorService selfCancelService = ExecutorUtil.newCachedThreadPoolBlock(10, "self-cancel");
     private final Map<String, ScheduledFuture<?>> scheduledMap = new ConcurrentHashMap<>();
     private final Map<String, Future<?>> manualFutureMap = new ConcurrentHashMap<>();
     private final ConcurrentTaskScheduler taskScheduler;

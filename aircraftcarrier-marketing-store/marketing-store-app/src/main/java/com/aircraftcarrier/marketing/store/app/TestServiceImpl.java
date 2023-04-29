@@ -402,7 +402,7 @@ public class TestServiceImpl implements TestService {
         }
 
 //        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
-        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPool("测试redis锁"), asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPoolBlock(asyncBatchTasks.size(), "测试redis锁"), asyncBatchTasks);
         log.info("success: {}, 耗时：{}", success, System.currentTimeMillis() - start);
     }
 

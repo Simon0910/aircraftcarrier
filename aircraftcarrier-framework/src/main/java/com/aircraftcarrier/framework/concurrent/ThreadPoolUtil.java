@@ -297,7 +297,7 @@ public class ThreadPoolUtil {
      * @return List<V>
      */
     public static <T, V> List<V> invokeTask(CallParallelTask<T, V> callParallelTask, int parallelism, String taskName) {
-        ExecutorService executor = ExecutorUtil.newCachedThreadPoolMax("callParallelTask-" + taskName, parallelism, newBlockPolicy());
+        ExecutorService executor = ExecutorUtil.newCachedThreadPoolBlock(parallelism, "invokeTask-" + taskName);
         return invokeTask(executor, callParallelTask);
     }
 
