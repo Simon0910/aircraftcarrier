@@ -71,10 +71,8 @@ public class LockUtils {
             return true;
         }
 
-        Request request = new Request(key, expire, timeout);
-
         try {
-            CompletableFuture<Request> f = KEY_QUEUE.submit(request, timeout, TimeUnit.MILLISECONDS);
+            CompletableFuture<Request> f = KEY_QUEUE.submit(new Request(key, expire, timeout), timeout, TimeUnit.MILLISECONDS);
             Request getRequest = f.get();
 
             if (getRequest == null) {

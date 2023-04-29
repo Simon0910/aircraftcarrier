@@ -351,11 +351,11 @@ public class TestServiceImpl implements TestService {
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
-        int num = 500;
+        int num = 20;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            // String lockKey = String.valueOf(key);
-            String lockKey = String.valueOf(i);
+            String lockKey = String.valueOf(key);
+            // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchTasks.add(() -> {
                 try {
@@ -367,8 +367,8 @@ public class TestServiceImpl implements TestService {
                     // LockUtil.lock(lockKey);
                     // LockUtil.lock(lockKey2);
 
-                    LockUtils.lock(lockKey, 30000, 3000);
-                    LockUtils.lock(lockKey2, 30000, 3000);
+                    LockUtils.lock(lockKey, 30000, 1000);
+                    LockUtils.lock(lockKey2, 30000, 1000);
 
 //                    LockKeyUtil.lock();
 //                    LockKeyUtil.lock(lockKey2);
@@ -452,8 +452,8 @@ public class TestServiceImpl implements TestService {
     private void reentrantLock2(String key, String key2) {
         try {
             log.info("第二次加锁");
-            LockUtils.lock(key, 30000, 3000);
-            LockUtils.lock(key2, 30000, 3000);
+            LockUtils.lock(key, 30000, 1000);
+            LockUtils.lock(key2, 30000, 1000);
             // LockUtil.lock(key);
             // LockUtil.lock(key2);
 //            LockKeyUtil.lock();
