@@ -9,6 +9,7 @@ import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.tookit.LockKeyUtil;
 import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
@@ -361,17 +362,17 @@ public class TestServiceImpl implements TestService {
                 try {
                     log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
-                    // LockUtil.lockTimeout(lockKey, 3000, 10);
-                    // LockUtil.lockTimeout(lockKey2, 3000, 10);
+                    // LockUtil.lockTimeout(lockKey, 1000, 10);
+                    // LockUtil.lockTimeout(lockKey2, 1000, 10);
 
                     // LockUtil.lock(lockKey);
                     // LockUtil.lock(lockKey2);
 
-                    LockUtils.lock(lockKey, 30000, 1000);
-                    LockUtils.lock(lockKey2, 30000, 1000);
+                    // LockUtils.lock(lockKey, 30000, 1000);
+                    // LockUtils.lock(lockKey2, 30000, 1000);
 
-//                    LockKeyUtil.lock();
-//                    LockKeyUtil.lock(lockKey2);
+                   LockKeyUtil.lock();
+                   LockKeyUtil.lock(lockKey2);
 
                     reentrantLock2(lockKey, lockKey2);
 
@@ -390,12 +391,15 @@ public class TestServiceImpl implements TestService {
                     log.error(e.getMessage());
                 } finally {
                     log.info("1解锁");
-                    LockUtils.unLock(lockKey2);
-                    LockUtils.unLock(lockKey);
+
                     // LockUtil.unLock(lockKey2);
                     // LockUtil.unLock(lockKey);
-//                    LockKeyUtil.unlock(lockKey2);
-//                    LockKeyUtil.unlock();
+
+                    // LockUtils.unLock(lockKey2);
+                    // LockUtils.unLock(lockKey);
+
+                   LockKeyUtil.unlock(lockKey2);
+                   LockKeyUtil.unlock();
                 }
 
             });
@@ -452,12 +456,15 @@ public class TestServiceImpl implements TestService {
     private void reentrantLock2(String key, String key2) {
         try {
             log.info("第二次加锁");
-            LockUtils.lock(key, 30000, 1000);
-            LockUtils.lock(key2, 30000, 1000);
+
             // LockUtil.lock(key);
             // LockUtil.lock(key2);
-//            LockKeyUtil.lock();
-//            LockKeyUtil.lock(key2);
+
+            // LockUtils.lock(key, 30000, 1000);
+            // LockUtils.lock(key2, 30000, 1000);
+
+           LockKeyUtil.lock();
+           LockKeyUtil.lock(key2);
             // 执行业务逻辑
             TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 20));
         } catch (InterruptedException e) {
@@ -466,12 +473,15 @@ public class TestServiceImpl implements TestService {
             log.error(e.getMessage());
         } finally {
             log.info("2解锁");
-            LockUtils.unLock(key);
-            LockUtils.unLock(key2);
+
             // LockUtil.unLock(key2);
             // LockUtil.unLock(key);
-//            LockKeyUtil.unlock(key2);
-//            LockKeyUtil.unlock();
+
+            // LockUtils.unLock(key);
+            // LockUtils.unLock(key2);
+
+           LockKeyUtil.unlock(key2);
+           LockKeyUtil.unlock();
         }
     }
 }
