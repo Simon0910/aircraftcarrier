@@ -354,8 +354,8 @@ public class TestServiceImpl implements TestService {
         int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            String lockKey = String.valueOf(key);
-            // String lockKey = String.valueOf(i);
+            // String lockKey = String.valueOf(key);
+            String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchTasks.add(() -> {
                 try {
@@ -364,11 +364,11 @@ public class TestServiceImpl implements TestService {
                     // LockUtil.lockTimeout(lockKey, 1000, 10);
                     // LockUtil.lockTimeout(lockKey2, 1000, 10);
 
-                    // LockUtil.lock(lockKey);
-                    // LockUtil.lock(lockKey2);
+                    LockUtil.lock(lockKey);
+                    LockUtil.lock(lockKey2);
 
-                    LockUtils.lockMillis(lockKey, 30000, 1000);
-                    LockUtils.lockMillis(lockKey2, 30000, 1000);
+                    // LockUtils.lockMillis(lockKey, 30000, 1000);
+                    // LockUtils.lockMillis(lockKey2, 30000, 1000);
 
                     // LockKeyUtil.lock();
                     // LockKeyUtil.lock(lockKey2);
@@ -391,11 +391,11 @@ public class TestServiceImpl implements TestService {
                 } finally {
                     log.info("1解锁");
 
-                    // LockUtil.unLock(lockKey2);
-                    // LockUtil.unLock(lockKey);
+                    LockUtil.unLock(lockKey2);
+                    LockUtil.unLock(lockKey);
 
-                    LockUtils.unLock(lockKey2);
-                    LockUtils.unLock(lockKey);
+                    // LockUtils.unLock(lockKey2);
+                    // LockUtils.unLock(lockKey);
 
                     // LockKeyUtil.unlock(lockKey2);
                     // LockKeyUtil.unlock();
@@ -456,11 +456,11 @@ public class TestServiceImpl implements TestService {
         try {
             log.info("第二次加锁");
 
-            // LockUtil.lock(key);
-            // LockUtil.lock(key2);
+            LockUtil.lock(key);
+            LockUtil.lock(key2);
 
-            LockUtils.lockMillis(key, 30000, 3000);
-            LockUtils.lockMillis(key2, 30000, 3000);
+            // LockUtils.lockMillis(key, 30000, 3000);
+            // LockUtils.lockMillis(key2, 30000, 3000);
 
             // LockKeyUtil.lock();
             // LockKeyUtil.lock(key2);
@@ -473,11 +473,11 @@ public class TestServiceImpl implements TestService {
         } finally {
             log.info("2解锁");
 
-            // LockUtil.unLock(key2);
-            // LockUtil.unLock(key);
+            LockUtil.unLock(key2);
+            LockUtil.unLock(key);
 
-            LockUtils.unLock(key);
-            LockUtils.unLock(key2);
+            // LockUtils.unLock(key);
+            // LockUtils.unLock(key2);
 
             // LockKeyUtil.unlock(key2);
             // LockKeyUtil.unlock();

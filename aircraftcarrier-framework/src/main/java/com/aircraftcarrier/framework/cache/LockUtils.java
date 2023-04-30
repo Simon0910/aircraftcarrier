@@ -19,7 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author lzp
+ * @deprecated This interface has been deprecated. See the {@link LockUtil}
  */
+@Deprecated
 @Slf4j
 public class LockUtils {
 
@@ -36,7 +38,7 @@ public class LockUtils {
     /**
      * KEY_QUEUE
      */
-    private static final PluralUpdateQueue<Request, Request> KEY_QUEUE = new PluralUpdateQueue<>(LockUtils::doRedisLock);
+    private static final PluralUpdateQueue<Request, Request> KEY_QUEUE = new PluralUpdateQueue<>(LockUtils::doRedisLock, 20);
 
 
     static {
