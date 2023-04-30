@@ -18,6 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 超时时间基于所有key的队列等待时间
+ *
  * @author lzp
  * @deprecated This interface has been deprecated. See the {@link LockUtil}
  */
@@ -129,10 +131,7 @@ public class LockUtils {
 
         try {
             // todo 为什么并发执行苞米豆lock方法，一个都没有获取到锁呢？改用lockPlus总能获取到至少一个
-            LockInfo lockInfo = getMyLockTemplate().lockPlus(
-                    request.getLockKey(),
-                    request.getUnit().toMillis(request.getExpire()),
-                    request.getUnit().toMillis(request.getTimeout()), -1, null);
+            LockInfo lockInfo = getMyLockTemplate().lockPlus(request.getLockKey(), request.getUnit().toMillis(request.getExpire()), request.getUnit().toMillis(request.getTimeout()), -1, null);
             if (lockInfo == null) {
                 request.setErrorMessage("not acquired");
                 return request;

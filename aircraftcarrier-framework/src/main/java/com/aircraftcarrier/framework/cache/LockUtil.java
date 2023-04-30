@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 超时时间基于key的独占线程持有时间
+ *
  * @author lzp
  */
 @Slf4j
