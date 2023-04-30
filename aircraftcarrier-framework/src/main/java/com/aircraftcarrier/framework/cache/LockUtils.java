@@ -51,18 +51,33 @@ public class LockUtils {
         return LockUtils.ResourceHolder.MY_LOCK_TEMPLATE;
     }
 
+    public static void lockMillis(String key, long expire, long timeout) throws LockNotAcquiredException {
+        lock(key, expire, timeout, TimeUnit.MILLISECONDS);
+    }
 
-    public static void lock(String key, long expire, long timeout) throws LockNotAcquiredException {
-        if (!doLock(key, expire, timeout)) {
+    public static void lockSeconds(String key, long expire, long timeout) throws LockNotAcquiredException {
+        lock(key, expire, timeout, TimeUnit.SECONDS);
+    }
+
+    public static void lock(String key, long expire, long timeout, TimeUnit unit) throws LockNotAcquiredException {
+        if (!doLock(key, expire, timeout, unit)) {
             throw new LockNotAcquiredException("do not locked");
         }
     }
 
-    public static boolean tryLock(String key, long expire, long timeout) {
-        return doLock(key, expire, timeout);
+    public static boolean tryLockMillis(String key, long expire, long timeout) {
+        return tryLock(key, expire, timeout, TimeUnit.MILLISECONDS);
     }
 
-    private static boolean doLock(String key, long expire, long timeout) {
+    public static boolean tryLockSeconds(String key, long expire, long timeout) {
+        return tryLock(key, expire, timeout, TimeUnit.SECONDS);
+    }
+
+    public static boolean tryLock(String key, long expire, long timeout, TimeUnit unit) {
+        return doLock(key, expire, timeout, unit);
+    }
+
+    private static boolean doLock(String key, long expire, long timeout, TimeUnit unit) {
         Map<String, Request> keyMap = THREAD_LOCAL.get(Thread.currentThread());
         Request preRequest;
         if (keyMap != null && (preRequest = keyMap.get(key)) != null) {
@@ -72,7 +87,7 @@ public class LockUtils {
         }
 
         try {
-            CompletableFuture<Request> f = KEY_QUEUE.submit(new Request(key, expire, timeout), timeout, TimeUnit.MILLISECONDS);
+            CompletableFuture<Request> f = KEY_QUEUE.submit(new Request(key, expire, timeout, unit), timeout, unit);
             Request getRequest = f.get();
 
             if (getRequest == null) {
@@ -95,7 +110,7 @@ public class LockUtils {
     }
 
     private static Request doRedisLock(Request request) {
-        if (System.currentTimeMillis() - request.getRequestTime() > request.getTimeout()) {
+        if (request.getUnit().toNanos(System.currentTimeMillis()) - request.getUnit().toNanos(request.getRequestTime()) >= request.getUnit().toNanos(request.getTimeout())) {
             // 请求超时
             request.setErrorMessage("waiting timeout");
             return request;
@@ -111,7 +126,11 @@ public class LockUtils {
         }
 
         try {
-            LockInfo lockInfo = getMyLockTemplate().lock(request.getLockKey(), request.getExpire(), request.getTimeout());
+            // todo 为什么并发执行苞米豆lock方法，一个都没有获取到锁呢？改用lockPlus总能获取到至少一个
+            LockInfo lockInfo = getMyLockTemplate().lockPlus(
+                    request.getLockKey(),
+                    request.getUnit().toMillis(request.getExpire()),
+                    request.getUnit().toMillis(request.getTimeout()), -1, null);
             if (lockInfo == null) {
                 request.setErrorMessage("not acquired");
                 return request;
@@ -188,20 +207,23 @@ public class LockUtils {
     @Setter
     private static class Request {
         private final Thread requestThread = Thread.currentThread();
-        private final long requestTime = System.currentTimeMillis();
+        private final long requestTime;
         private final String lockKey;
         private final long expire;
         private final long timeout;
+        private final TimeUnit unit;
         private LockInfo lockInfo;
         // 当前请求重入了几次
         private int acquireCount;
 
         private String errorMessage;
 
-        private Request(String lockKey, long expire, long timeout) {
+        private Request(String lockKey, long expire, long timeout, TimeUnit unit) {
             this.lockKey = lockKey;
             this.expire = expire;
             this.timeout = timeout;
+            this.unit = unit;
+            this.requestTime = System.currentTimeMillis();
         }
 
         private boolean isLocked() {

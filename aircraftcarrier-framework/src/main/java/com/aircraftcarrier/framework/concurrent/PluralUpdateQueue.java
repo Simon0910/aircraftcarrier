@@ -20,7 +20,7 @@ public class PluralUpdateQueue<R, S> {
 
     private static final Unsafe U = Unsafe.getUnsafe();
     private static final long STATE = U.objectFieldOffset(PluralUpdateQueue.class, "state");
-    private final ArrayBlockingQueue<RequestWrapper<R, S>> workQueue = new ArrayBlockingQueue<>(1000);
+    private final ArrayBlockingQueue<RequestWrapper<R, S>> workQueue = new ArrayBlockingQueue<>(1024);
     private final Function<R, S> handler;
     private final ExecutorService mainWorker = ExecutorUtil.newCachedThreadPoolBlock(1, "bossWorker");
     private final ExecutorService subWorker = ExecutorUtil.newCachedThreadPoolBlock(20, "subWorker");
@@ -63,16 +63,14 @@ public class PluralUpdateQueue<R, S> {
         while (isRunning) {
             Optional<RequestWrapper<R, S>> item = take();
             // 30秒还没获取到请请求，shutdown
-            item.ifPresentOrElse(requestWrapper -> {
-                subWorker.execute(() -> {
-                    try {
-                        S response = handler.apply(requestWrapper.getRequest());
-                        requestWrapper.complete(response);
-                    } catch (Exception e) {
-                        requestWrapper.completeExceptionally(e);
-                    }
-                });
-            }, this::shutdown);
+            item.ifPresentOrElse(requestWrapper -> subWorker.execute(() -> {
+                try {
+                    S response = handler.apply(requestWrapper.getRequest());
+                    requestWrapper.complete(response);
+                } catch (Exception e) {
+                    requestWrapper.completeExceptionally(e);
+                }
+            }), this::shutdown);
         }
     }
 
@@ -116,7 +114,7 @@ public class PluralUpdateQueue<R, S> {
         }
 
         public void complete(S response) {
-            future.completeAsync(() -> response);
+            future.complete(response);
         }
 
         public void completeExceptionally(Exception e) {

@@ -9,7 +9,6 @@ import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.LockKeyUtil;
 import com.aircraftcarrier.framework.tookit.RandomUtil;
 import com.aircraftcarrier.framework.tookit.RequestLimitUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
@@ -352,7 +351,7 @@ public class TestServiceImpl implements TestService {
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
-        int num = 20;
+        int num = 500;
         List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             String lockKey = String.valueOf(key);
@@ -368,11 +367,11 @@ public class TestServiceImpl implements TestService {
                     // LockUtil.lock(lockKey);
                     // LockUtil.lock(lockKey2);
 
-                    // LockUtils.lock(lockKey, 30000, 1000);
-                    // LockUtils.lock(lockKey2, 30000, 1000);
+                    LockUtils.lockMillis(lockKey, 30000, 1000);
+                    LockUtils.lockMillis(lockKey2, 30000, 1000);
 
-                   LockKeyUtil.lock();
-                   LockKeyUtil.lock(lockKey2);
+                    // LockKeyUtil.lock();
+                    // LockKeyUtil.lock(lockKey2);
 
                     reentrantLock2(lockKey, lockKey2);
 
@@ -395,11 +394,11 @@ public class TestServiceImpl implements TestService {
                     // LockUtil.unLock(lockKey2);
                     // LockUtil.unLock(lockKey);
 
-                    // LockUtils.unLock(lockKey2);
-                    // LockUtils.unLock(lockKey);
+                    LockUtils.unLock(lockKey2);
+                    LockUtils.unLock(lockKey);
 
-                   LockKeyUtil.unlock(lockKey2);
-                   LockKeyUtil.unlock();
+                    // LockKeyUtil.unlock(lockKey2);
+                    // LockKeyUtil.unlock();
                 }
 
             });
@@ -460,11 +459,11 @@ public class TestServiceImpl implements TestService {
             // LockUtil.lock(key);
             // LockUtil.lock(key2);
 
-            // LockUtils.lock(key, 30000, 1000);
-            // LockUtils.lock(key2, 30000, 1000);
+            LockUtils.lockMillis(key, 30000, 3000);
+            LockUtils.lockMillis(key2, 30000, 3000);
 
-           LockKeyUtil.lock();
-           LockKeyUtil.lock(key2);
+            // LockKeyUtil.lock();
+            // LockKeyUtil.lock(key2);
             // 执行业务逻辑
             TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10, 20));
         } catch (InterruptedException e) {
@@ -477,11 +476,11 @@ public class TestServiceImpl implements TestService {
             // LockUtil.unLock(key2);
             // LockUtil.unLock(key);
 
-            // LockUtils.unLock(key);
-            // LockUtils.unLock(key2);
+            LockUtils.unLock(key);
+            LockUtils.unLock(key2);
 
-           LockKeyUtil.unlock(key2);
-           LockKeyUtil.unlock();
+            // LockKeyUtil.unlock(key2);
+            // LockKeyUtil.unlock();
         }
     }
 }
