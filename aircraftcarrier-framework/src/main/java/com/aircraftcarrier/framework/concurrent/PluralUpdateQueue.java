@@ -23,12 +23,17 @@ public class PluralUpdateQueue<R, S> {
     private final ArrayBlockingQueue<RequestWrapper<R, S>> workQueue = new ArrayBlockingQueue<>(1024);
     private final Function<R, S> handler;
     private final ExecutorService mainWorker = ExecutorUtil.newCachedThreadPoolBlock(1, "bossWorker");
-    private final ExecutorService subWorker = ExecutorUtil.newCachedThreadPoolBlock(20, "subWorker");
+    private final ExecutorService subWorker;
     private volatile int state;
     private volatile boolean isRunning = false;
 
     public PluralUpdateQueue(Function<R, S> handler) {
+        this(handler, Runtime.getRuntime().availableProcessors());
+    }
+
+    public PluralUpdateQueue(Function<R, S> handler, int nThreads) {
         this.handler = handler;
+        this.subWorker = ExecutorUtil.newCachedThreadPoolBlock(nThreads, "subWorker");
     }
 
     public CompletableFuture<S> submit(R request) throws InterruptedException {
