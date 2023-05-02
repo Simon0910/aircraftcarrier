@@ -9,7 +9,7 @@ import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.exception.FrameworkException;
 import com.aircraftcarrier.framework.exception.SysException;
-import com.aircraftcarrier.framework.tookit.ResponseWriterUtil;
+import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.alibaba.excel.exception.ExcelAnalysisException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -21,6 +21,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import javax.servlet.ServletException;
@@ -33,37 +34,38 @@ import java.util.List;
  */
 @Slf4j
 @ControllerAdvice
+@ResponseBody
 public class GlobalExceptionHandler {
     private GlobalExceptionHandler() {
     }
 
     @ExceptionHandler({HttpMediaTypeNotSupportedException.class, HttpRequestMethodNotSupportedException.class})
-    public void httpHandler(ServletException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
+    public SingleResponse<Object> httpHandler(ServletException e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class})
-    public void httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
+    public SingleResponse<Object> httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({BizException.class})
-    public void bizExceptionHandler(BizException e, HttpServletResponse response) {
-        this.doHandle(e.getErrCode(), e.getErrMessage(), e, response);
+    public SingleResponse<Object> bizExceptionHandler(BizException e, HttpServletResponse response) {
+        return this.doHandle(e.getErrCode(), e.getErrMessage(), e, response);
     }
 
     @ExceptionHandler({FrameworkException.class})
-    public void frameworkExceptionHandler(FrameworkException e, HttpServletResponse response) {
-        this.doHandle(e.getErrCode(), e.getErrMessage(), e, response);
+    public SingleResponse<Object> frameworkExceptionHandler(FrameworkException e, HttpServletResponse response) {
+        return this.doHandle(e.getErrCode(), e.getErrMessage(), e, response);
     }
 
     @ExceptionHandler({BindException.class})
-    public void bindExceptionHandler(BindException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.PARAMS_GET_ERROR, "", e, response);
+    public SingleResponse<Object> bindExceptionHandler(BindException e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, "", e, response);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
-    public void methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e, HttpServletResponse response) {
+    public SingleResponse<Object> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e, HttpServletResponse response) {
         BindingResult bindingResult = e.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
         StringBuilder sb = new StringBuilder();
@@ -74,36 +76,32 @@ public class GlobalExceptionHandler {
                 sb.append("; ");
             }
         }
-        this.doHandle(ErrorCode.PARAMS_GET_ERROR, sb.toString(), e, response);
+        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, sb.toString(), e, response);
     }
 
     @ExceptionHandler({ExcelAnalysisException.class})
-    public void excelAnalysisExceptionHandler(ExcelAnalysisException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.SYS, e.getMessage(), e, response);
+    public SingleResponse<Object> excelAnalysisExceptionHandler(ExcelAnalysisException e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.SYS, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({SysException.class})
-    public void sysExceptionHandler(SysException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.SYS, e.getErrMessage(), e, response);
+    public SingleResponse<Object> sysExceptionHandler(SysException e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.SYS, e.getErrMessage(), e, response);
     }
 
     @ExceptionHandler({MissingServletRequestPartException.class})
-    public void uploadExceptionHandler(MissingServletRequestPartException e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.SYS, e.getMessage(), e, response);
+    public SingleResponse<Object> uploadExceptionHandler(MissingServletRequestPartException e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.SYS, e.getMessage(), e, response);
     }
 
     @ExceptionHandler({Exception.class})
-    public void exceptionHandler(Exception e, HttpServletResponse response) {
-        this.doHandle(ErrorCode.SYS, "内部系统错误", e, response);
+    public SingleResponse<Object> exceptionHandler(Exception e, HttpServletResponse response) {
+        return this.doHandle(ErrorCode.SYS, "内部系统错误", e, response);
     }
 
-    private void doHandle(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
+    private SingleResponse<Object> doHandle(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
         log.error("doHandle: ", e);
-        ResponseWriterUtil.handlerExceptionMessage(errorCode, errorMsg, response);
+        return SingleResponse.error(errorCode, errorMsg);
     }
 
-    private void doHandleI18n(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
-        log.error("doHandleI18n: ", e);
-        ResponseWriterUtil.handlerExceptionMessageI18n(errorCode, errorMsg, response);
-    }
 }
