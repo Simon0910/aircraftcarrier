@@ -158,7 +158,7 @@ public class UpdateInventoryExe2 {
 
                 // 返回请求
                 for (PromiseRequest request : batchList) {
-                    request.future.completeAsync(() -> SingleResponse.error("处理异常"));
+                    request.future.completeAsync(() -> buildErrorSingleResponse("处理异常"));
                 }
 
                 try {
@@ -251,7 +251,7 @@ public class UpdateInventoryExe2 {
 
                     // 返回请求
                     for (PromiseRequest request : batchList) {
-                        request.future.completeAsync(() -> SingleResponse.error(e.getMessage()));
+                        request.future.completeAsync(() -> buildErrorSingleResponse(e.getMessage()));
                     }
 
                     try {
@@ -279,7 +279,7 @@ public class UpdateInventoryExe2 {
         Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
         if (stock != null) {
             log.error("库存不足了哦");
-            return SingleResponse.error("库存不足了哦");
+            return buildErrorSingleResponse("库存不足了哦");
         }
 
 //        return productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
@@ -293,11 +293,11 @@ public class UpdateInventoryExe2 {
             boolean enqueueSuccess = REQUEST_QUEUE.offer(request, 100, TimeUnit.MILLISECONDS);
             if (!enqueueSuccess) {
                 log.error("系统繁忙");
-                return SingleResponse.error("系统繁忙");
+                return buildErrorSingleResponse("系统繁忙");
             }
         } catch (InterruptedException e) {
             log.error("系统繁忙", e);
-            return SingleResponse.error("系统繁忙");
+            return buildErrorSingleResponse("系统繁忙");
         }
 
         try {
@@ -305,11 +305,15 @@ public class UpdateInventoryExe2 {
         } catch (Exception e) {
             // 库存是否回滚
             log.error("系统异常", e);
-            return SingleResponse.error("系统繁忙");
+            return buildErrorSingleResponse("系统繁忙");
         }
 
 //        // 如果不同步获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
-//        return SingleResponse.error("get 〒_〒");
+//        return buildErrorSingleResponse("get 〒_〒");
+    }
+
+    private SingleResponse<Void> buildErrorSingleResponse(String msg) {
+        return SingleResponse.error(500, msg);
     }
 
 

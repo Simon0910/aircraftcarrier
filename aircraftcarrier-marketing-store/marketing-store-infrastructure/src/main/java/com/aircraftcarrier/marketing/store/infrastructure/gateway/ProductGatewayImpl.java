@@ -84,7 +84,7 @@ public class ProductGatewayImpl implements ProductGateway {
             Integer stock = ZERO_STOCK_CACHE.getIfPresent(String.valueOf(goodsNo));
             if (stock != null) {
                 log.error("库存不足了哦-0");
-                return SingleResponse.error("库存不足了哦");
+                return buildErrorSingleResponse("库存不足了哦");
             }
         }
 //        ProductDo productDo = getProductDoFromLocalCache(String.valueOf(goodsNo));
@@ -95,6 +95,10 @@ public class ProductGatewayImpl implements ProductGateway {
         // updateInventory 主要使用 getProductDoFromLocalCache 缓存的主键,
         // 和缓存的其他数据(缓存10秒的库存有点作用判断库存不足，缓存10秒的版本号没有一点关系)关系不大, 不影响程序执行的正确性
         return updateInventory(productDo, productDo.getInventory(), appendInventory);
+    }
+
+    private SingleResponse<Void> buildErrorSingleResponse(String msg) {
+        return SingleResponse.error(500, msg);
     }
 
     private ProductDo getProductDo(Serializable goodsNo) {
@@ -165,21 +169,21 @@ public class ProductGatewayImpl implements ProductGateway {
         if (appendInventory == 0) {
             // 避免无效递增版本号，无需不发送MQ库存变更通知，若更新所有字段和数据库相同避免死循环
             log.warn("库存无变化");
-            return SingleResponse.error("库存无变化");
+            return buildErrorSingleResponse("库存无变化");
         }
 
         if (appendInventory < 1) {
             Integer stock = ZERO_STOCK_CACHE.getIfPresent(String.valueOf(productDo.getGoodsNo()));
             if (stock != null) {
                 log.error("库存不足了哦-1");
-                return SingleResponse.error("库存不足了哦");
+                return buildErrorSingleResponse("库存不足了哦");
             }
         }
 
         int newInventory = originInventory + appendInventory;
         if (newInventory < 0) {
             log.error("库存不足");
-            return SingleResponse.error("库存不足");
+            return buildErrorSingleResponse("库存不足");
         }
 
         Long id = productDo.getId();
@@ -193,7 +197,7 @@ public class ProductGatewayImpl implements ProductGateway {
                     Integer stock = ZERO_STOCK_CACHE.getIfPresent(String.valueOf(productDo.getGoodsNo()));
                     if (stock != null) {
                         log.error("库存不足了哦-3");
-                        return SingleResponse.error("库存不足了哦");
+                        return buildErrorSingleResponse("库存不足了哦");
                     }
                 }
 
@@ -201,14 +205,14 @@ public class ProductGatewayImpl implements ProductGateway {
                 ProductDo newProductDo = productMapper.selectById(id);
                 if (newProductDo == null) {
                     log.error("商品不存在...");
-                    return SingleResponse.error("商品不存在...");
+                    return buildErrorSingleResponse("商品不存在...");
                 }
                 if (newProductDo.getInventory() < 1) {
                     markNoStock(newProductDo.getGoodsNo());
                 }
                 if ((newProductDo.getInventory() + appendInventory) < 0) {
                     log.error("库存不足...");
-                    return SingleResponse.error("库存不足...");
+                    return buildErrorSingleResponse("库存不足...");
                 }
                 log.info("retry..." + id);
                 updateInventoryByVersion(newProductDo, newProductDo.getVersion(), newProductDo.getInventory(), appendInventory);
@@ -245,21 +249,21 @@ public class ProductGatewayImpl implements ProductGateway {
         if (appendInventory == 0) {
             // 避免无效递增版本号，无需不发送MQ库存变更通知，若更新所有字段和数据库相同避免死循环
             log.warn("库存无变化");
-            return SingleResponse.error("库存无变化");
+            return buildErrorSingleResponse("库存无变化");
         }
 
         if (appendInventory < 1) {
             Integer stock = ZERO_STOCK_CACHE.getIfPresent(String.valueOf(productDo.getGoodsNo()));
             if (stock != null) {
                 log.error("库存不足了哦-1");
-                return SingleResponse.error("库存不足了哦");
+                return buildErrorSingleResponse("库存不足了哦");
             }
         }
 
         int newInventory = originInventory + appendInventory;
         if (newInventory < 0) {
             log.error("库存不足");
-            return SingleResponse.error("库存不足");
+            return buildErrorSingleResponse("库存不足");
         }
 
         Long id = productDo.getId();
@@ -277,7 +281,7 @@ public class ProductGatewayImpl implements ProductGateway {
                 if (stock != null) {
                     // 防止进入synchronized
                     log.error("库存不足了哦-2");
-                    return SingleResponse.error("库存不足了哦");
+                    return buildErrorSingleResponse("库存不足了哦");
                 }
             }
 
@@ -287,7 +291,7 @@ public class ProductGatewayImpl implements ProductGateway {
                     Integer stock = ZERO_STOCK_CACHE.getIfPresent(String.valueOf(productDo.getGoodsNo()));
                     if (stock != null) {
                         log.error("库存不足了哦-3");
-                        return SingleResponse.error("库存不足了哦");
+                        return buildErrorSingleResponse("库存不足了哦");
                     }
                 }
 
@@ -295,14 +299,14 @@ public class ProductGatewayImpl implements ProductGateway {
                 ProductDo newProductDo = productMapper.selectById(id);
                 if (newProductDo == null) {
                     log.error("商品不存在...");
-                    return SingleResponse.error("商品不存在...");
+                    return buildErrorSingleResponse("商品不存在...");
                 }
                 if (newProductDo.getInventory() < 1) {
                     markNoStock(newProductDo.getGoodsNo());
                 }
                 if ((newProductDo.getInventory() + appendInventory) < 0) {
                     log.error("库存不足...");
-                    return SingleResponse.error("库存不足...");
+                    return buildErrorSingleResponse("库存不足...");
                 }
                 log.info("retry..." + id);
                 updateInventory(newProductDo, newProductDo.getInventory(), appendInventory);

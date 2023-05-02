@@ -183,7 +183,7 @@ public class UpdateInventoryExe {
 
                         // 返回请求
                         for (RequestPromise request : batchList) {
-                            request.getFuture().completeAsync(() -> SingleResponse.error(e.getMessage()));
+                            request.getFuture().completeAsync(() -> buildErrorSingleResponse(e.getMessage()));
                         }
 
                         try {
@@ -229,7 +229,7 @@ public class UpdateInventoryExe {
         Integer stock = ProductGatewayImpl.ZERO_STOCK_CACHE.getIfPresent(inventoryRequest.getGoodsNo());
         if (stock != null) {
             log.error("库存不足了哦");
-            return SingleResponse.error("库存不足了哦");
+            return buildErrorSingleResponse("库存不足了哦");
         }
 
 //        SingleResponse<Void> response = productGateway.deductionInventory(inventoryRequest.getGoodsNo(), inventoryRequest.getCount());
@@ -246,7 +246,7 @@ public class UpdateInventoryExe {
             REQUEST_QUEUE.put(request);
         } catch (InterruptedException e) {
             log.error("系统繁忙", e);
-            return SingleResponse.error("系统繁忙");
+            return buildErrorSingleResponse("系统繁忙");
         }
 
         try {
@@ -254,10 +254,14 @@ public class UpdateInventoryExe {
         } catch (Exception e) {
             // 库存是否回滚
             log.error("系统异常", e);
-            return SingleResponse.error("系统繁忙");
+            return buildErrorSingleResponse("系统繁忙");
         }
 //        // 如果不获取结果，可达到极限速度，可采用另外一个接口获取轮询结果
-//        return SingleResponse.error("get 〒_〒");
+//        return buildErrorSingleResponse("get 〒_〒");
+    }
+
+    private SingleResponse<Void> buildErrorSingleResponse(String msg) {
+        return SingleResponse.error(500, msg);
     }
 
     @Data
