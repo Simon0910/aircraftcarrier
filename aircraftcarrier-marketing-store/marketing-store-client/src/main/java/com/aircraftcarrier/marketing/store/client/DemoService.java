@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.client;
 
 import com.aircraftcarrier.framework.model.BatchResult;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoDeleteCmd;

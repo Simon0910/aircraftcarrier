@@ -2,7 +2,7 @@ package ${cfg.serviceImpl_p};
 
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import ${cfg.AddCmdExe_f};
 import ${cfg.DeleteCmdExe_f};

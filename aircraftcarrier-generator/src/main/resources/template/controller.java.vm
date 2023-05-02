@@ -3,7 +3,7 @@ package ${cfg.controller_p};
 import com.aircraftcarrier.framework.excel.util.EasyExcelWriteUtil;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 #if(${superControllerClassPackage})

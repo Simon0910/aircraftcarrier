@@ -18,6 +18,11 @@ public class Response implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 追踪id
+     */
+    protected String responseId;
+
+    /**
      * 编码：0表示成功，其他值表示失败
      */
     @ApiModelProperty(value = "编码：0表示成功，其他值表示失败", required = true, example = "0")

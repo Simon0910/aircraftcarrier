@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.model.BatchResult;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.marketing.store.app.demo.executor.DemoAddExe;

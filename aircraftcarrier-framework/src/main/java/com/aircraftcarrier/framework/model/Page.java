@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.model.response;
+package com.aircraftcarrier.framework.model;
 
 import com.aircraftcarrier.framework.tookit.BeanUtil;
 import io.swagger.annotations.ApiModel;

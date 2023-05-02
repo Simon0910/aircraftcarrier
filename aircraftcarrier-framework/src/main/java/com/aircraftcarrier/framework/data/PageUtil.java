@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.data;
 
 import com.aircraftcarrier.framework.model.request.PageQuery;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.github.pagehelper.ISelect;
 import com.github.pagehelper.page.PageMethod;
 

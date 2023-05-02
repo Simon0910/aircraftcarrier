@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.app.demo.executor.query;
 
 import com.aircraftcarrier.framework.data.PageUtil;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.aircraftcarrier.framework.tookit.BeanMapUtil;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoPageQryCmd;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoPageQry;

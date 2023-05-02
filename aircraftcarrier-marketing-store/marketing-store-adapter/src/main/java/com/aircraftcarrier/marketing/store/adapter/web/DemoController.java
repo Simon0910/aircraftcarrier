@@ -3,7 +3,7 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 import com.aircraftcarrier.framework.excel.util.EasyExcelWriteUtil;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.MultiResponse;
-import com.aircraftcarrier.framework.model.response.Page;
+import com.aircraftcarrier.framework.model.Page;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.client.DemoService;
 import com.aircraftcarrier.marketing.store.client.demo.cmd.DemoCmd;
