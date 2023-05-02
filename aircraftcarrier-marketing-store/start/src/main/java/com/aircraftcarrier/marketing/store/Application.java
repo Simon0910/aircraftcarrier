@@ -29,7 +29,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "redis.properties"},
         encoding = "utf-8")
 @SpringBootApplication(scanBasePackages = {"com.aircraftcarrier.marketing.store", "com.aircraftcarrier.security"}
-        ,scanBasePackageClasses = AuthServiceImpl.class
+        , scanBasePackageClasses = AuthServiceImpl.class
 //        , exclude = {SecurityAutoConfiguration.class}
 )
 @MapperScan("com.aircraftcarrier.marketing.store.infrastructure.repository")
@@ -37,6 +37,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class Application {
 
     public static void main(String[] args) {
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
+
         log.info("Begin to start Spring Boot Application");
         Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
 

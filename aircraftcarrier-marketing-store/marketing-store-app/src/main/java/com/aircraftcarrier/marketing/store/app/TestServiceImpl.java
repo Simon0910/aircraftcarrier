@@ -1,7 +1,6 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
-import com.aircraftcarrier.framework.cache.LockUtils;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
@@ -284,9 +283,9 @@ public class TestServiceImpl implements TestService {
 
         // 模拟多人抢购商品
         int num = 500;
-        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        List<CallableVoid> asyncBatchActions = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            asyncBatchTasks.add(() -> {
+            asyncBatchActions.add(() -> {
                 String inventory = JedisUtil.get(goodsNo);
                 if (Integer.parseInt(inventory) > 0) {
                     long stockNum = JedisUtil.decrBy(goodsNo, 3);
@@ -306,7 +305,7 @@ public class TestServiceImpl implements TestService {
             });
         }
 
-        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchActions);
         long end = System.currentTimeMillis();
         log.info("耗时：" + (end - start));
 
@@ -352,12 +351,12 @@ public class TestServiceImpl implements TestService {
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
         int num = 500;
-        List<CallableVoid> asyncBatchTasks = new ArrayList<>(num);
+        List<CallableVoid> asyncBatchActions = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             // String lockKey = String.valueOf(key);
             String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
-            asyncBatchTasks.add(() -> {
+            asyncBatchActions.add(() -> {
                 try {
                     log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
@@ -405,7 +404,7 @@ public class TestServiceImpl implements TestService {
         }
 
 //        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
-        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPoolBlock(asyncBatchTasks.size(), "测试redis锁"), asyncBatchTasks);
+        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPoolBlock(asyncBatchActions.size(), "测试redis锁"), asyncBatchActions);
         log.info("success: {}, 耗时：{}", success, System.currentTimeMillis() - start);
     }
 

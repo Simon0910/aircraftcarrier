@@ -46,11 +46,14 @@ public class ThreadPoolUtil {
      * {@link ForkJoinPool#commonPool(); }
      * {@link Executors#newWorkStealingPool(int) }
      */
-    private static ForkJoinPool newDefaultExecutorService() {
-        return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
-                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-                null, true);
+    private static ForkJoinPool newDefaultForkJoinPool() {
+        return ForkJoinPool.commonPool();
     }
+
+    private static ExecutorService newDefaultExecutorService() {
+        return ExecutorUtil.newCachedThreadPoolBlock(100, "default");
+    }
+
 
     /**
      * newThreadFactory
@@ -129,7 +132,7 @@ public class ThreadPoolUtil {
      * @param action action
      */
     public static void invokeVoid(RecursiveAction action) {
-        invokeVoid(newDefaultExecutorService(), action);
+        invokeVoid(newDefaultForkJoinPool(), action);
     }
 
 
@@ -179,22 +182,22 @@ public class ThreadPoolUtil {
     /**
      * invokeAllVoid
      *
-     * @param asyncBatchTasks asyncBatchTasks
+     * @param asyncBatchActions asyncBatchActions
      */
-    public static void invokeAllVoid(List<CallableVoid> asyncBatchTasks) {
-        invokeAllVoid(newDefaultExecutorService(), asyncBatchTasks);
+    public static void invokeAllVoid(List<CallableVoid> asyncBatchActions) {
+        invokeAllVoid(newDefaultExecutorService(), asyncBatchActions);
     }
 
 
     /**
      * executeAllVoid
      *
-     * @param executor        executor
-     * @param asyncBatchTasks asyncBatchTasks
+     * @param executor          executor
+     * @param asyncBatchActions asyncBatchActions
      */
-    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchTasks) {
-        List<Callable<Void>> callables = new ArrayList<>(asyncBatchTasks.size());
-        for (CallableVoid task : asyncBatchTasks) {
+    public static void invokeAllVoid(ExecutorService executor, List<CallableVoid> asyncBatchActions) {
+        List<Callable<Void>> callables = new ArrayList<>(asyncBatchActions.size());
+        for (CallableVoid task : asyncBatchActions) {
             callables.add(() -> {
                 task.call();
                 return null;
@@ -215,7 +218,7 @@ public class ThreadPoolUtil {
      * @return V
      */
     public static <V> V invoke(RecursiveTask<V> task) {
-        return invoke(newDefaultExecutorService(), task);
+        return invoke(newDefaultForkJoinPool(), task);
     }
 
 

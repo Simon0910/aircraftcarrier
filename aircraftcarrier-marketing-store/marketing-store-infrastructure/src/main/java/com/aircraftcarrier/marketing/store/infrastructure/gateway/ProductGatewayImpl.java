@@ -101,16 +101,18 @@ public class ProductGatewayImpl implements ProductGateway {
         return SingleResponse.error(500, msg);
     }
 
-    private ProductDo getProductDo(Serializable goodsNo) {
+    public ProductDo getProductDo(Serializable goodsNo) {
         List<ProductDo> list = new LambdaQueryChainWrapper<>(productMapper)
                 .eq(ProductDo::getGoodsNo, goodsNo)
                 .list();
         if (list.isEmpty()) {
             log.error("商品不存在");
+            markNotFound(goodsNo);
             throw new BizException("商品不存在");
         }
         if (list.size() != 1) {
             // 暴漏数据异常，此问题需要从源头解决！！！
+            markNotFound(goodsNo);
             throw new BizException("Duplicate keys result in objects that cannot be mapped");
         }
 
@@ -134,6 +136,13 @@ public class ProductGatewayImpl implements ProductGateway {
             STOCK_CACHE.put(String.valueOf(goodsNo), cacheProduct);
         }
         return cacheProduct;
+    }
+
+    /**
+     * 标记不存在，防止穿透
+     */
+    private void markNotFound(Serializable goodsNo) {
+        markNoStock(goodsNo);
     }
 
     /**

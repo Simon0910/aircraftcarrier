@@ -51,6 +51,7 @@ public class CallApiRecursiveTaskTest {
             params.add(param);
         }
         callApiService = (param) -> {
+            log.info("n");
 //            longAdder.increment();
             longAccumulator.accumulate(1);
 //            SleepUtil.sleepMilliseconds(RandomUtil.nextInt(100, 200));
