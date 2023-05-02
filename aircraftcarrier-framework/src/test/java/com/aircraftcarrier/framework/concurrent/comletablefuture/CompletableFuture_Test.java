@@ -20,46 +20,7 @@ public class CompletableFuture_Test {
     static ExecutorService ioBound = Executors.newCachedThreadPool();
 
     @Test
-    public void test01() {
-        // example1
-        for (int i = 0; i < 1; i++) {
-            String finalI = String.valueOf(i);
-            CompletableFuture<String> cf = CompletableFuture.supplyAsync(() -> multiThreadPlusExe.getOrder(finalI), fjp)
-                    .thenApplyAsync(order -> multiThreadPlusExe.enrichOrder(order + finalI), cpuBound)
-                    .thenApplyAsync(o -> multiThreadPlusExe.performPayment(o + finalI), ioBound)
-                    .exceptionally(e -> "failedOrder" + finalI)
-                    .thenApplyAsync(order -> multiThreadPlusExe.dispatchOrder(order + finalI));
-
-            // wait for pool until run finish!
-            log.info("wait for pool until run finish!");
-            MultiThreadPlusExe.sleep(8000);
-
-            // main thread run
-            log.info("main thread run!");
-            cf.thenAccept(order -> multiThreadPlusExe.sendEmail(order + finalI))
-                    .thenRun(() -> log.info("all done"))
-                    .thenRun(() -> log.info("not really"))
-                    .thenRun(() -> log.info("keep on going"));
-        }
-
-        // example2
-        CompletableFuture<Integer> future = new CompletableFuture<>();
-        // java9 support timeout
-//        future.completeOnTimeout(500, 3, TimeUnit.SECONDS);
-        future.orTimeout(3, TimeUnit.SECONDS);
-        MultiThreadPlusExe.process(future);
-
-        MultiThreadPlusExe.sleep(2000);
-//        future.complete(2);
-//        future.completeExceptionally(new SysException("something went wrong " + Thread.currentThread().getName()));
-        MultiThreadPlusExe.sleep(5000);
-
-        // example3
-        MultiThreadPlusExe.create(2).thenCombine(MultiThreadPlusExe.create(3), Integer::sum)
-                .thenAccept(r -> {
-                    log.info("example3 result: {} \t {}", r, Thread.currentThread().getName());
-                });
-
+    public void test04() {
         // example4
         MultiThreadPlusExe.create(2).thenCompose(MultiThreadPlusExe::create)
                 .thenAccept(r -> {
@@ -67,5 +28,77 @@ public class CompletableFuture_Test {
                 });
 
         log.info("main running... {}", Thread.currentThread().getName());
+    }
+
+    @Test
+    public void test03() {
+        // example3
+        MultiThreadPlusExe.create(2).thenCombine(MultiThreadPlusExe.create(3), Integer::sum)
+                .thenAccept(r -> {
+                    log.info("example3 result: {} \t {}", r, Thread.currentThread().getName());
+                });
+
+        log.info("main running... {}", Thread.currentThread().getName());
+    }
+
+    @Test
+    public void test02() {
+        // example2
+        CompletableFuture<Integer> future = new CompletableFuture<>();
+
+        // java9 support timeout 默认值
+        future.orTimeout(3, TimeUnit.SECONDS);
+        // future.completeOnTimeout(500, 3, TimeUnit.SECONDS);
+
+        MultiThreadPlusExe.process(future);
+
+        // complete future = 2.
+        // System.out.println("complete future = 2.");
+        // future.complete(2);
+
+        // complete throw Exception
+        // System.out.println("complete Exception.");
+        // future.completeExceptionally(new SysException("something went wrong " + Thread.currentThread().getName()));
+
+        MultiThreadPlusExe.sleep(5000);
+        log.info("main end !");
+    }
+
+    @Test
+    public void test01() {
+        // example1
+        for (int i = 0; i < 3; i++) {
+            int finalI = i;
+            CompletableFuture<Order> cf = CompletableFuture.supplyAsync(() -> multiThreadPlusExe.getOrder(String.valueOf(finalI)), fjp)
+                    .thenApplyAsync(order -> multiThreadPlusExe.enrichOrder(order), cpuBound)
+                    .thenApplyAsync(o -> multiThreadPlusExe.performPayment(o), ioBound)
+                    .exceptionally(e -> {
+                        System.out.println("failedOrder: " + e.getMessage());
+                        // return new Order();
+                        // return null;
+                        throw new RuntimeException("###########");
+                    })
+                    .thenApplyAsync(order -> multiThreadPlusExe.dispatchOrder(order));
+
+            // wait for pool until run finish!
+            // log.info("wait for pool until run finish!");
+            // MultiThreadPlusExe.sleep(8000);
+
+            // main thread run
+            log.info("main thread run!");
+
+            cf.thenApply(order -> multiThreadPlusExe.sendEmail(order))
+                    .thenAccept(order -> log.info("当前订单{}总耗时：{}", order.getI(), System.currentTimeMillis() - order.getStart()))
+                    // log
+                    .thenRun(() -> log.info("all done"))
+                    .thenRun(() -> log.info("not really"))
+                    .thenRun(() -> log.info("keep on going"));
+        }
+
+        // wait for pool until run finish!
+        log.info("main running wait for pool until run finish!");
+        MultiThreadPlusExe.sleep(10000);
+
+        log.info("main stop ！");
     }
 }
