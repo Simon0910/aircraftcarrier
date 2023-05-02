@@ -34,6 +34,12 @@ public class Response implements Serializable {
     protected String msg = "success";
 
     /**
+     * 错误详情
+     */
+    @ApiModelProperty(value = "错误详情", required = false, example = "param is valid")
+    protected String detailMessage;
+
+    /**
      * 是否成功
      *
      * @return 成功表示

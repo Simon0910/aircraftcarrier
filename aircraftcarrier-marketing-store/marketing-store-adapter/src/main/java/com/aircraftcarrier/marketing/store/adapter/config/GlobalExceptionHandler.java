@@ -99,9 +99,9 @@ public class GlobalExceptionHandler {
         return this.doHandle(ErrorCode.SYS, "内部系统错误", e, response);
     }
 
-    private SingleResponse<Object> doHandle(int errorCode, String errorMsg, Exception e, HttpServletResponse response) {
+    private SingleResponse<Object> doHandle(int code, String msg, Exception e, HttpServletResponse response) {
         log.error("doHandle: ", e);
-        return SingleResponse.error(errorCode, errorMsg);
+        return SingleResponse.error(code, msg, e.getMessage());
     }
 
 }

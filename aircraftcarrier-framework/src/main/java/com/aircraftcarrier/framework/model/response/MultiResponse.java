@@ -1,6 +1,5 @@
 package com.aircraftcarrier.framework.model.response;
 
-import com.aircraftcarrier.framework.exception.ErrorCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -27,6 +26,12 @@ public class MultiResponse<T> extends Response {
         this.msg = msg;
     }
 
+    private MultiResponse(int code, String msg, String detailMessage) {
+        this.code = code;
+        this.msg = msg;
+        this.detailMessage = detailMessage;
+    }
+
     public static <T> MultiResponse<T> ok() {
         return ok(Collections.emptyList());
     }
@@ -35,20 +40,12 @@ public class MultiResponse<T> extends Response {
         return new MultiResponse<>(data);
     }
 
-    public static <T> MultiResponse<T> error() {
-        return error(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
-
-    public static <T> MultiResponse<T> error(int code) {
-        return error(code, "");
-    }
-
-    public static <T> MultiResponse<T> error(String msg) {
-        return error(ErrorCode.INTERNAL_SERVER_ERROR, msg);
-    }
-
     public static <T> MultiResponse<T> error(int code, String msg) {
-        return new MultiResponse<>(code, msg);
+        return error(code, msg, "");
+    }
+
+    public static <T> MultiResponse<T> error(int code, String msg, String detailMessage) {
+        return new MultiResponse<>(code, msg, detailMessage);
     }
 
     public Collection<T> getData() {

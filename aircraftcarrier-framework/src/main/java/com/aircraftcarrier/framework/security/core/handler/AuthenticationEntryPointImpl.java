@@ -27,7 +27,7 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e) {
         log.debug("[commence][访问 URL({}) 时，没有登录], {}", request.getRequestURI(), e.getMessage());
         // 返回 401
-        ServletUtil.writeJSON(response, SingleResponse.error(ErrorCode.UNAUTHORIZED));
+        ServletUtil.writeJSON(response, SingleResponse.error(ErrorCode.UNAUTHORIZED, "认证失败"));
     }
 
 }

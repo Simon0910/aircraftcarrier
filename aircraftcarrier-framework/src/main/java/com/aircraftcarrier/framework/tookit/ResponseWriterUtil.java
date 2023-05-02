@@ -18,28 +18,28 @@ public class ResponseWriterUtil {
 
     }
 
-    public static void handlerExceptionMessage(int errorCode, String errorMsg, HttpServletResponse response) {
-        log.error("errorCode : {}, errorMsg : {}", errorCode, errorMsg);
+    public static void handlerExceptionMessage(int code, String msg, String detailMessage, HttpServletResponse response) {
+        log.error("code : {}, msg : {}, detailMessage: {}", code, msg, detailMessage);
 
         response.setHeader("Content-type", "application/json;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
 
         try (PrintWriter pw = response.getWriter()) {
-            pw.print(JSON.toJSON(SingleResponse.error(errorCode, errorMsg)));
+            pw.print(JSON.toJSON(SingleResponse.error(code, msg, detailMessage)));
             pw.flush();
         } catch (IOException ex) {
             log.error("统一异常处理 error", ex);
         }
     }
 
-    public static void handlerExceptionMessageI18n(int errorCode, String errorMsg, HttpServletResponse response) {
-        log.error("errorCode : {}, errorMsg : {}", errorCode, errorMsg);
+    public static void handlerExceptionMessageI18n(int code, String msg, String detailMessage, HttpServletResponse response) {
+        log.error("code : {}, msg : {}, detailMessage: {}", code, msg, detailMessage);
 
         response.setHeader("Content-type", "application/json;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
 
         try (PrintWriter pw = response.getWriter()) {
-            pw.print(JSON.toJSON(SingleResponse.error(errorCode)));
+            pw.print(JSON.toJSON(SingleResponse.error(code, msg, detailMessage)));
             pw.flush();
         } catch (IOException ex) {
             log.error("统一异常处理 error", ex);

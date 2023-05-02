@@ -1,6 +1,5 @@
 package com.aircraftcarrier.framework.model.response;
 
-import com.aircraftcarrier.framework.exception.ErrorCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -30,6 +29,12 @@ public class SingleResponse<T> extends Response {
         this.msg = msg;
     }
 
+    private SingleResponse(int code, String msg, String detailMessage) {
+        this.code = code;
+        this.msg = msg;
+        this.detailMessage = detailMessage;
+    }
+
     public static <T> SingleResponse<T> ok() {
         return new SingleResponse<>();
     }
@@ -38,20 +43,12 @@ public class SingleResponse<T> extends Response {
         return new SingleResponse<>(data);
     }
 
-    public static <T> SingleResponse<T> error() {
-        return error(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
-
-    public static <T> SingleResponse<T> error(int code) {
-        return error(code, "");
-    }
-
-    public static <T> SingleResponse<T> error(String msg) {
-        return error(ErrorCode.INTERNAL_SERVER_ERROR, msg);
-    }
-
     public static <T> SingleResponse<T> error(int code, String msg) {
-        return new SingleResponse<>(code, msg);
+        return error(code, msg, "");
+    }
+
+    public static <T> SingleResponse<T> error(int code, String msg, String detailMessage) {
+        return new SingleResponse<>(code, msg, detailMessage);
     }
 
 
