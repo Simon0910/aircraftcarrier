@@ -17,6 +17,8 @@ public class Response implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 
+    private static final String SUCCESS = "0";
+
     /**
      * 追踪id
      */
@@ -26,7 +28,7 @@ public class Response implements Serializable {
      * 编码：0表示成功，其他值表示失败
      */
     @ApiModelProperty(value = "编码：0表示成功，其他值表示失败", required = true, example = "0")
-    protected int code = 0;
+    protected String code = SUCCESS;
     /**
      * 消息内容
      */
@@ -45,6 +47,6 @@ public class Response implements Serializable {
      * @return 成功表示
      */
     public boolean success() {
-        return code == 0;
+        return SUCCESS.equals(code);
     }
 }

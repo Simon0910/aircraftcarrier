@@ -21,12 +21,12 @@ public class MultiResponse<T> extends Response {
         this.data = data;
     }
 
-    private MultiResponse(int code, String msg) {
+    private MultiResponse(String code, String msg) {
         this.code = code;
         this.msg = msg;
     }
 
-    private MultiResponse(int code, String msg, String detailMessage) {
+    private MultiResponse(String code, String msg, String detailMessage) {
         this.code = code;
         this.msg = msg;
         this.detailMessage = detailMessage;
@@ -40,11 +40,11 @@ public class MultiResponse<T> extends Response {
         return new MultiResponse<>(data);
     }
 
-    public static <T> MultiResponse<T> error(int code, String msg) {
+    public static <T> MultiResponse<T> error(String code, String msg) {
         return error(code, msg, "");
     }
 
-    public static <T> MultiResponse<T> error(int code, String msg, String detailMessage) {
+    public static <T> MultiResponse<T> error(String code, String msg, String detailMessage) {
         return new MultiResponse<>(code, msg, detailMessage);
     }
 

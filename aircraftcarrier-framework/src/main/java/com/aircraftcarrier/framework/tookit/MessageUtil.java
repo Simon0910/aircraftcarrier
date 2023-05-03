@@ -19,11 +19,11 @@ public class MessageUtil {
     private MessageUtil() {
     }
 
-    public static String getMessage(int code) {
+    public static String getMessage(String code) {
         return getMessage(code, new String[0]);
     }
 
-    public static String getMessage(int code, String... params) {
+    public static String getMessage(String code, String... params) {
         return MESSAGE_SOURCE.getMessage(code + "", params, LocaleContextHolder.getLocale());
     }
 }

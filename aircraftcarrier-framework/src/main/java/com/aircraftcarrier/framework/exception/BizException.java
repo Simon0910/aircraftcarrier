@@ -13,7 +13,7 @@ public class BizException extends BaseException {
         super(ErrorCode.BIZ, errMessage);
     }
 
-    public BizException(int errCode, String errMessage) {
+    public BizException(String errCode, String errMessage) {
         super(errCode, errMessage);
     }
 
@@ -21,7 +21,7 @@ public class BizException extends BaseException {
         super(ErrorCode.BIZ, errMessage, e);
     }
 
-    public BizException(int errorCode, String errMessage, Throwable e) {
+    public BizException(String errorCode, String errMessage, Throwable e) {
         super(errorCode, errMessage, e);
     }
 

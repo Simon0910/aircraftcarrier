@@ -8,11 +8,11 @@ public class FrameworkException extends BaseException {
 
     private static final long serialVersionUID = 1L;
 
-    public FrameworkException(int errCode, String errMessage) {
+    public FrameworkException(String errCode, String errMessage) {
         super(errCode, errMessage);
     }
 
-    public FrameworkException(int errCode, String errMessage, Throwable e) {
+    public FrameworkException(String errCode, String errMessage, Throwable e) {
         super(errCode, errMessage, e);
     }
 

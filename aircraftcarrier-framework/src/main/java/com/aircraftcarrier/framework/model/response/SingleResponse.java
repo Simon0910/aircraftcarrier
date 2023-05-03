@@ -24,12 +24,12 @@ public class SingleResponse<T> extends Response {
         this.data = data;
     }
 
-    private SingleResponse(int code, String msg) {
+    private SingleResponse(String code, String msg) {
         this.code = code;
         this.msg = msg;
     }
 
-    private SingleResponse(int code, String msg, String detailMessage) {
+    private SingleResponse(String code, String msg, String detailMessage) {
         this.code = code;
         this.msg = msg;
         this.detailMessage = detailMessage;
@@ -43,11 +43,11 @@ public class SingleResponse<T> extends Response {
         return new SingleResponse<>(data);
     }
 
-    public static <T> SingleResponse<T> error(int code, String msg) {
+    public static <T> SingleResponse<T> error(String code, String msg) {
         return error(code, msg, "");
     }
 
-    public static <T> SingleResponse<T> error(int code, String msg, String detailMessage) {
+    public static <T> SingleResponse<T> error(String code, String msg, String detailMessage) {
         return new SingleResponse<>(code, msg, detailMessage);
     }
 

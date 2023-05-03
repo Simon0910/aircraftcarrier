@@ -12,7 +12,7 @@ public class SysException extends BaseException {
         super(ErrorCode.SYS, errMessage);
     }
 
-    public SysException(int errCode, String errMessage) {
+    public SysException(String errCode, String errMessage) {
         super(errCode, errMessage);
     }
 
@@ -20,7 +20,7 @@ public class SysException extends BaseException {
         super(ErrorCode.SYS, errMessage, e);
     }
 
-    public SysException(int errorCode, String errMessage, Throwable e) {
+    public SysException(String errorCode, String errMessage, Throwable e) {
         super(errorCode, errMessage, e);
     }
 

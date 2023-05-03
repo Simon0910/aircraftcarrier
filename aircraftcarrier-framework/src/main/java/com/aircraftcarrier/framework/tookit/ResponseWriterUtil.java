@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,34 +16,23 @@ import java.io.PrintWriter;
 public class ResponseWriterUtil {
 
     private ResponseWriterUtil() {
-
     }
 
-    public static void handlerExceptionMessage(int code, String msg, String detailMessage, HttpServletResponse response) {
+    public static void responseMessage(String code, String msg, String detailMessage, HttpServletResponse response) {
         log.error("code : {}, msg : {}, detailMessage: {}", code, msg, detailMessage);
 
         response.setHeader("Content-type", "application/json;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+        SingleResponse<Object> singleResponse = SingleResponse.error(code, msg, detailMessage);
+        singleResponse.setResponseId(TraceIdUtil.getTraceId());
+
         try (PrintWriter pw = response.getWriter()) {
-            pw.print(JSON.toJSON(SingleResponse.error(code, msg, detailMessage)));
+            pw.print(JSON.toJSON(singleResponse));
             pw.flush();
         } catch (IOException ex) {
             log.error("统一异常处理 error", ex);
         }
     }
 
-    public static void handlerExceptionMessageI18n(int code, String msg, String detailMessage, HttpServletResponse response) {
-        log.error("code : {}, msg : {}, detailMessage: {}", code, msg, detailMessage);
-
-        response.setHeader("Content-type", "application/json;charset=UTF-8");
-        response.setCharacterEncoding("UTF-8");
-
-        try (PrintWriter pw = response.getWriter()) {
-            pw.print(JSON.toJSON(SingleResponse.error(code, msg, detailMessage)));
-            pw.flush();
-        } catch (IOException ex) {
-            log.error("统一异常处理 error", ex);
-        }
-    }
 }

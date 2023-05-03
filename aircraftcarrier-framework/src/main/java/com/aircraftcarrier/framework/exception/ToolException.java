@@ -8,11 +8,11 @@ public class ToolException extends BaseException {
 
     private static final long serialVersionUID = 1L;
 
-    public ToolException(int errCode, String errMessage) {
+    public ToolException(String errCode, String errMessage) {
         super(errCode, errMessage);
     }
 
-    public ToolException(int errCode, String errMessage, Throwable e) {
+    public ToolException(String errCode, String errMessage, Throwable e) {
         super(errCode, errMessage, e);
     }
 }

@@ -1,6 +1,7 @@
 package com.aircraftcarrier.marketing.store.app.test.executor;
 
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
+import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.client.product.request.InventoryRequest;
 import com.aircraftcarrier.marketing.store.domain.gateway.ProductGateway;
@@ -261,7 +262,7 @@ public class UpdateInventoryExe {
     }
 
     private SingleResponse<Void> buildErrorSingleResponse(String msg) {
-        return SingleResponse.error(500, msg);
+        return SingleResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, msg);
     }
 
     @Data

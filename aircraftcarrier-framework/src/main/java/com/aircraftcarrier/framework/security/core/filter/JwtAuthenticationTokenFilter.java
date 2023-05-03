@@ -35,7 +35,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = SecurityFrameworkUtil.obtainAuthorization(request, securityProperties.getTokenHeader());
         if (StrUtil.isBlank(token)) {
-            ResponseWriterUtil.handlerExceptionMessage(ErrorCode.UNAUTHORIZED, "token must not be null", "", response);
+            ResponseWriterUtil.responseMessage(ErrorCode.UNAUTHORIZED, "token must not be null", "", response);
             return;
         }
 
@@ -52,7 +52,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             }
         } catch (Throwable ex) {
             logger.error("验证 token 失败", ex);
-            ResponseWriterUtil.handlerExceptionMessage(ErrorCode.TOKEN_INVALID, "验证 token 失败", "", response);
+            ResponseWriterUtil.responseMessage(ErrorCode.TOKEN_INVALID, "验证 token 失败", "", response);
             return;
         }
 

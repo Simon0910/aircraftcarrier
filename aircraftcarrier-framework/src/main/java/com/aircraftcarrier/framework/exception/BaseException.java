@@ -9,23 +9,23 @@ public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    protected final int errCode;
+    protected final String errCode;
     protected final String errMessage;
 
-    protected BaseException(int errCode, String errMessage) {
+    protected BaseException(String errCode, String errMessage) {
         super(errMessage);
         this.errCode = errCode;
         this.errMessage = errMessage;
     }
 
 
-    protected BaseException(int errCode, String errMessage, Throwable e) {
+    protected BaseException(String errCode, String errMessage, Throwable e) {
         super(errMessage, e);
         this.errCode = errCode;
         this.errMessage = errMessage;
     }
 
-    public int getErrCode() {
+    public String getErrCode() {
         return errCode;
     }
 

@@ -1,6 +1,7 @@
 package com.aircraftcarrier.marketing.store.infrastructure.gateway;
 
 import com.aircraftcarrier.framework.exception.BizException;
+import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.tookit.LockKeyUtil;
@@ -98,7 +99,7 @@ public class ProductGatewayImpl implements ProductGateway {
     }
 
     private SingleResponse<Void> buildErrorSingleResponse(String msg) {
-        return SingleResponse.error(500, msg);
+        return SingleResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, msg);
     }
 
     public ProductDo getProductDo(Serializable goodsNo) {
