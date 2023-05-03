@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.RejectedExecutionException;
@@ -375,11 +374,7 @@ public class ThreadPoolUtil {
         int j = 0;
         breakOut:
         try {
-            for (Callable<T> t : tasks) {
-                futures.add(new FutureTask<>(t));
-            }
-
-            final int size = futures.size();
+            final int size = tasks.size();
 
             // Interleave time checks and calls to execute in case
             // executor doesn't have any/much parallelism.
@@ -388,7 +383,7 @@ public class ThreadPoolUtil {
                     runtimeException = new ThreadException("execute [" + i + "] TimeoutException ");
                     break breakOut;
                 }
-                executor.execute((Runnable) futures.get(i));
+                futures.add(executor.submit(tasks.get(i)));
             }
 
             for (; j < size; j++) {

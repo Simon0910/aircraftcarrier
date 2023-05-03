@@ -1,8 +1,5 @@
 package com.aircraftcarrier.framework.concurrent;
 
-import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
-import com.aircraftcarrier.framework.tookit.StringPool;
-import com.aircraftcarrier.framework.tookit.StringUtil;
 import org.slf4j.MDC;
 
 import java.util.HashMap;
@@ -48,29 +45,10 @@ public class TraceRunnable implements Runnable {
 
     @Override
     public void run() {
-        // 传递context
-        Map<String, String> curMdcMap = MDC.getCopyOfContextMap();
-        if (curMdcMap == null) {
-            curMdcMap = new HashMap<>();
-        }
-        curMdcMap.putAll(parentMdcMap);
-
-        // 传递traceId
-        String traceId = parentMdcMap.get(TraceIdUtil.TRACE_ID);
-        if (traceId != null) {
-            String[] parentTraceId = traceId.split(StringPool.UNDERSCORE);
-            traceId = StringUtil.append(parentTraceId[parentTraceId.length - 1], TraceIdUtil.genUuid(), StringPool.UNDERSCORE);
-        } else {
-            traceId = TraceIdUtil.genUuid();
-        }
-        curMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
-
-        try {
+        TraceAvailableExecute.execute(parentMdcMap, () -> {
             runnable.run();
-        } finally {
-            // 任务执行完, 清除本地变量, 以防对后续任务有影响
-            MDC.clear();
-        }
+            return null;
+        });
     }
 
 }

@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.concurrent;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -59,6 +60,20 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
         RunnableFuture<Void> ftask = newTaskForTrace(task, null);
         super.execute(ftask);
         return ftask;
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        if (task == null) {
+            throw new NullPointerException();
+        }
+        RunnableFuture<T> ftask = newTaskForTrace(task);
+        execute(ftask);
+        return ftask;
+    }
+
+    protected <T> RunnableFuture<T> newTaskForTrace(Callable<T> callable) {
+        return new FutureTask<>(new TraceCallable<>(callable));
     }
 
     protected <T> RunnableFuture<T> newTaskForTrace(Runnable runnable, T value) {
