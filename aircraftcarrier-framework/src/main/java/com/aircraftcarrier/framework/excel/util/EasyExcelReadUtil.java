@@ -261,15 +261,15 @@ public class EasyExcelReadUtil {
     private static <T extends ExcelRow> void checkHead(Map<Integer, String> headMap, Class<T> model) {
         Map<Integer, String> head = MapUtil.newHashMap();
         try {
-            //通过class获取到使用@ExcelProperty注解配置的字段
+            // 通过class获取到使用@ExcelProperty注解配置的字段
             head = getIndexNameMap(model);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
-        //解析到的excel表头和实体配置的进行比对
+        // 解析到的excel表头和实体配置的进行比对
         Set<Integer> keySet = head.keySet();
         for (Integer key : keySet) {
-            if (StringUtil.isEmpty(headMap.get(key))) {
+            if (StringUtil.isBlank(headMap.get(key))) {
                 log.error("表头第" + key + 1 + "列为空，请参照模板填写");
                 throw new BizException("解析excel出错，请传入正确格式的excel");
             }
@@ -289,18 +289,18 @@ public class EasyExcelReadUtil {
      * @throws NoSuchFieldException NoSuchFieldException
      */
     private static Map<Integer, String> getIndexNameMap(Class<?> clazz) throws NoSuchFieldException {
-        //获取类中所有的属性
+        // 获取类中所有的属性
         Field[] fields = clazz.getDeclaredFields();
         Map<Integer, String> result = MapUtil.newHashMap(fields.length);
         int index = 0;
         for (Field item : fields) {
             Field field = clazz.getDeclaredField(item.getName());
             ReflectionUtils.makeAccessible(field);
-            //获取根据注解的方式获取ExcelProperty修饰的字段
+            // 获取根据注解的方式获取ExcelProperty修饰的字段
             ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
             if (excelProperty != null) {
                 StringBuilder stringBuilder = new StringBuilder();
-                //字段值
+                // 字段值
                 for (String v : excelProperty.value()) {
                     stringBuilder.append(v);
                 }

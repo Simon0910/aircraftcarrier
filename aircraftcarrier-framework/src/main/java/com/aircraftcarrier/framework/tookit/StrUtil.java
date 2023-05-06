@@ -46,7 +46,7 @@ public class StrUtil {
         return sb.toString();
     }
 
-    public static boolean contains(String str, char searchChar) {
+    private static boolean contains(String str, char searchChar) {
         return str.indexOf(searchChar) >= 0;
     }
 }
