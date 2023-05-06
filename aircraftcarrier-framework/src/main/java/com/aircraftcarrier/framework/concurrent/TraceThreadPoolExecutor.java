@@ -68,7 +68,7 @@ public class TraceThreadPoolExecutor extends ThreadPoolExecutor {
             throw new NullPointerException();
         }
         RunnableFuture<T> ftask = newTaskForTrace(task);
-        execute(ftask);
+        super.execute(ftask);
         return ftask;
     }
 
