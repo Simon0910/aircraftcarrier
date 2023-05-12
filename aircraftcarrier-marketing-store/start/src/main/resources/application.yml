@@ -25,7 +25,7 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s #设置缓冲时间 默认30s
   profiles:
-    active: dev,extend
+    active: dev,extend,test
   messages:
     encoding: UTF-8
     basename: i18n/messages
