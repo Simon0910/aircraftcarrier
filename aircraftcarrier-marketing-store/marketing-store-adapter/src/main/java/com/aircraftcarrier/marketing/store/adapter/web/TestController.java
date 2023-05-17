@@ -11,6 +11,8 @@ import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
+import com.aircraftcarrier.marketing.store.adapter.test.ConfigurationTestProperties;
+import com.aircraftcarrier.marketing.store.adapter.test.TestProperties;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.aircraftcarrier.marketing.store.client.demo.request.DemoRequest;
 import com.alibaba.fastjson.JSON;
@@ -62,10 +64,18 @@ public class TestController {
     @Resource
     private TestService testService;
 
+    @Resource
+    TestProperties testProperties;
+
+    @Resource
+    ConfigurationTestProperties configurationTestProperties;
+
     @ApiOperationSupport(order = -1)
     @ApiOperation("hello")
     @GetMapping("/hello")
     public SingleResponse<String> hello() {
+        testProperties.test();
+        configurationTestProperties.test();
         return SingleResponse.ok("hello world");
     }
 

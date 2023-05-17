@@ -244,5 +244,13 @@
             <artifactId>elasticsearch-rest-client</artifactId>
         </dependency>
 
+        <!-- 支持 v15.0 -->
+        <!-- <version>5.1.1.0</version> -->
+        <!-- https://unicode.org/emoji/charts/full-emoji-list.html -->
+        <dependency>
+            <groupId>com.vdurmont</groupId>
+            <artifactId>emoji-java</artifactId>
+            <version>5.1.1</version>
+        </dependency>
     </dependencies>
 </project>

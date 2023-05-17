@@ -1,0 +1,23 @@
+test:
+  receive.emails: 111@189.com,222@189.com,111@189.com
+  dept.pin.map1: "{'dept01': 'pin100', dept02: 'pin200'}"
+  dept.pin.map2: '{"dept01": "100", dept02: 200}'
+
+  # @ConfigurationProperties 支持复杂结构方式
+  list:
+    - 333@163.com
+    - 333@163.com
+    - 333@163.com
+    - 333@163.com
+  set:
+    - 111@189.com
+    - 222@189.com
+    - 111@189.com
+
+  map:
+    key1: v1
+    key2: v2
+  aa:
+    bb:
+      b1: b1
+      b2: b2
