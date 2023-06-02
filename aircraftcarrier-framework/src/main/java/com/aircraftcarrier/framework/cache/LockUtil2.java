@@ -18,11 +18,14 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 public class LockUtil2 {
-
     private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
     private static final Map<String, ReentrantLock> LOCAL_LOCK_CACHE = Maps.newConcurrentMap();
 
+    private static String getKey(String lockKey) {
+        return getEnv() + lockKey;
+    }
     public static boolean tryLock(String lockKey) {
+        lockKey = getKey(lockKey);
         long expire = 30000; // 默认30秒自动失效
         long acquireTimeout = 10;
         long retryInterval = 0;
@@ -50,6 +53,7 @@ public class LockUtil2 {
      * @return boolean
      */
     public static boolean tryLock(String lockKey, long timeout, TimeUnit unit) {
+        lockKey = getKey(lockKey);
         long expire = 30000; // 默认30秒自动失效
         long acquireTimeout = unit.toMillis(timeout);
         long retryInterval = 20;
@@ -117,6 +121,7 @@ public class LockUtil2 {
      * @param lockKey lockKey
      */
     public static void unLock(String lockKey) {
+        lockKey = getKey(lockKey);
         try {
             LockInfo lockInfo = THREAD_LOCAL.get();
             if (lockInfo != null) {
@@ -146,7 +151,12 @@ public class LockUtil2 {
         return LockUtil2.ResourceHolder.myLockTemplate;
     }
 
+    private static String getEnv() {
+        return LockUtil2.ResourceHolder.ENV;
+    }
+
     private static class ResourceHolder {
-        public static MyLockTemplate myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class); // This will be lazily initialised
+        private static final String ENV = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0] + ":";
+        public static final MyLockTemplate myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class); // This will be lazily initialised
     }
 }

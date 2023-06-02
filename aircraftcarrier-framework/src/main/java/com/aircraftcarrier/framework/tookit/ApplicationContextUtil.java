@@ -51,5 +51,8 @@ public class ApplicationContextUtil {
         return applicationContext.getType(name);
     }
 
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
 
 }
