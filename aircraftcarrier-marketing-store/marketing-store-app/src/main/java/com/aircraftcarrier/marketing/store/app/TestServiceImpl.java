@@ -1,6 +1,7 @@
 package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
+import com.aircraftcarrier.framework.cache.LockUtil2;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
@@ -353,8 +354,8 @@ public class TestServiceImpl implements TestService {
         int num = 500;
         List<CallableVoid> asyncBatchActions = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            // String lockKey = String.valueOf(key);
-            String lockKey = String.valueOf(i);
+            String lockKey = String.valueOf(key);
+            // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchActions.add(() -> {
                 try {
@@ -363,8 +364,8 @@ public class TestServiceImpl implements TestService {
                     // LockUtil.lockTimeout(lockKey, 1000, 10);
                     // LockUtil.lockTimeout(lockKey2, 1000, 10);
 
-                    LockUtil.lock(lockKey);
-                    LockUtil.lock(lockKey2);
+                    // LockUtil.lock(lockKey);
+                    // LockUtil.lock(lockKey2);
 
                     // LockUtils.lockMillis(lockKey, 30000, 1000);
                     // LockUtils.lockMillis(lockKey2, 30000, 1000);
@@ -372,7 +373,13 @@ public class TestServiceImpl implements TestService {
                     // LockKeyUtil.lock();
                     // LockKeyUtil.lock(lockKey2);
 
-                    reentrantLock2(lockKey, lockKey2);
+                    // reentrantLock2(lockKey, lockKey2);
+
+                    boolean b = LockUtil2.tryLock(lockKey);
+                    // boolean b = LockUtil2.tryLock(lockKey, 3000, TimeUnit.MILLISECONDS);
+                    if (!b) {
+                        return;
+                    }
 
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
@@ -390,8 +397,10 @@ public class TestServiceImpl implements TestService {
                 } finally {
                     log.info("1解锁");
 
-                    LockUtil.unLock(lockKey2);
-                    LockUtil.unLock(lockKey);
+                    LockUtil2.unLock(lockKey);
+
+                    // LockUtil.unLock(lockKey2);
+                    // LockUtil.unLock(lockKey);
 
                     // LockUtils.unLock(lockKey2);
                     // LockUtils.unLock(lockKey);
