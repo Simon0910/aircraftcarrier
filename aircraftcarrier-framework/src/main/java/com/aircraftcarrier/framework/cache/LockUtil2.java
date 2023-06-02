@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LockUtil2 {
 
     private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
-    private static final Map<String, ReentrantLock> LOCAL_LOCK_CACHE = Maps.newHashMapWithExpectedSize(1024);
+    private static final Map<String, ReentrantLock> LOCAL_LOCK_CACHE = Maps.newConcurrentMap();
 
     public static boolean tryLock(String lockKey) {
         long expire = 30000; // 默认30秒自动失效
@@ -54,25 +54,50 @@ public class LockUtil2 {
         long acquireTimeout = unit.toMillis(timeout);
         long retryInterval = 20;
 
-        long start = System.currentTimeMillis();
         ReentrantLock writeKeyLock = getWriteLock(lockKey);
-        writeKeyLock.lock();
+        long start = System.currentTimeMillis();
         try {
-            while (System.currentTimeMillis() - start < acquireTimeout) {
+            while (true) {
+                boolean ok = writeKeyLock.tryLock(timeout, unit);
+                if (ok) {
+                    // continue get redis lock
+                    break;
+                }
+                if (System.currentTimeMillis() - start >= acquireTimeout) {
+                    log.info("timeout...");
+                    return false;
+                }
+                log.info("retry...");
+                TimeUnit.MILLISECONDS.sleep(retryInterval);
+            }
+        } catch (Exception e) {
+            log.error("tryLockTimeout error key [{}] ", lockKey, e);
+            return false;
+        }
+
+        try {
+            if (System.currentTimeMillis() - start < acquireTimeout) {
                 LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, retryInterval, null);
                 if (lockInfo != null) {
                     THREAD_LOCAL.set(lockInfo);
                     return true;
                 }
-                log.info("retry...");
                 TimeUnit.MILLISECONDS.sleep(retryInterval);
             }
-            log.info("timeout...");
+            log.info("tryLock timeout...");
             writeKeyLock.unlock();
+            if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
+                log.info("tryLock timeout removeWriteLock [{}] ", lockKey);
+                removeWriteLock(lockKey);
+            }
             return false;
         } catch (Exception e) {
+            log.error("tryLock error key [{}] ", lockKey, e);
             writeKeyLock.unlock();
-            log.error("tryLockTimeout error key [{}] ", lockKey, e);
+            if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
+                log.info("tryLock error removeWriteLock [{}] ", lockKey);
+                removeWriteLock(lockKey);
+            }
             throw new RuntimeException(e);
         }
     }
@@ -80,6 +105,10 @@ public class LockUtil2 {
     @NotNull
     private static ReentrantLock getWriteLock(String lockKey) {
         return LOCAL_LOCK_CACHE.compute(lockKey, (k, v) -> v == null ? new ReentrantLock() : v);
+    }
+
+    private static void removeWriteLock(String lockKey) {
+        LOCAL_LOCK_CACHE.remove(lockKey);
     }
 
     /**
@@ -98,10 +127,17 @@ public class LockUtil2 {
         } catch (Exception e) {
             log.error("unLock error key [{}] ", lockKey, e);
         } finally {
-            ReentrantLock writeLock = getWriteLock(lockKey);
-            if (writeLock.isHeldByCurrentThread()) {
-                log.info("unLock writeLock [{}] ", lockKey);
-                writeLock.unlock();
+            ReentrantLock writeKeyLock = LOCAL_LOCK_CACHE.get(lockKey);
+            if (writeKeyLock == null) {
+                return;
+            }
+            if (writeKeyLock.isHeldByCurrentThread()) {
+                log.info("unLock writeKeyLock [{}] ", lockKey);
+                writeKeyLock.unlock();
+            }
+            if (!writeKeyLock.hasQueuedThreads()) {
+                log.info("unLock removeWriteLock [{}] ", lockKey);
+                removeWriteLock(lockKey);
             }
         }
     }
