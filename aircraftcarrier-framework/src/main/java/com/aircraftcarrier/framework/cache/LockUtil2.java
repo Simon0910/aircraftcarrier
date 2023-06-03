@@ -30,14 +30,13 @@ public class LockUtil2 {
     }
 
 
-    public static boolean tryLock(String lockKey) {
+    public static boolean tryLock(String lockKey, long expire, TimeUnit unit) {
         lockKey = getKey(lockKey);
-        long expire = 30000; // 默认30秒自动失效
         long acquireTimeout = 10;
         long retryInterval = 0;
 
         try {
-            LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, retryInterval, null);
+            LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, unit.toMillis(expire), acquireTimeout, retryInterval, null);
             if (lockInfo != null) {
                 THREAD_LOCAL.set(lockInfo);
                 return true;
@@ -55,10 +54,11 @@ public class LockUtil2 {
      *
      * @param lockKey lockKey
      * @param timeout timeout
+     * @param expire  expire
      * @param unit    unit
      * @return boolean
      */
-    public static boolean tryLock(String lockKey, long timeout, TimeUnit unit) {
+    public static boolean tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
         lockKey = getKey(lockKey);
         ReentrantLock writeKeyLock = getWriteLock(lockKey);
         try {
@@ -74,7 +74,6 @@ public class LockUtil2 {
         }
 
         boolean locked = false;
-        long expire = 30000; // 默认30秒自动失效
         long acquireTimeout = unit.toMillis(timeout);
         // 假设百分之99的场景的并发key, 过几毫秒就可以成功获取！ 超时之前最多获取 n次: retryInterval = acquireTimeout / n;
         // 假设 timout = 12s, n = 3, 4s重试一次, 共重试3次
