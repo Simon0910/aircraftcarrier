@@ -73,6 +73,7 @@ public class LockUtil2 {
             return false;
         }
 
+        boolean locked = false;
         long expire = 30000; // 默认30秒自动失效
         long acquireTimeout = unit.toMillis(timeout);
         // 假设百分之99的场景的并发key, 过几毫秒就可以成功获取！ 超时之前最多获取 n次: retryInterval = acquireTimeout / n;
@@ -89,6 +90,7 @@ public class LockUtil2 {
                 LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, retryInterval, null);
                 if (lockInfo != null) {
                     THREAD_LOCAL.set(lockInfo);
+                    locked = true;
                     return true;
                 }
                 if (retryCount < fastRetryCount) {
@@ -99,11 +101,6 @@ public class LockUtil2 {
                 }
             } while (System.currentTimeMillis() - start < acquireTimeout);
             log.info("tryLock timeout...");
-            writeKeyLock.unlock();
-            if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
-                log.info("tryLock timeout removeWriteLock [{}] ", lockKey);
-                removeWriteLock(lockKey);
-            }
             return false;
         } catch (InterruptedException e) {
             log.error("tryLock error interrupted key [{}] ", lockKey, e);
@@ -111,12 +108,15 @@ public class LockUtil2 {
             return false;
         } catch (Exception e) {
             log.error("tryLock error key [{}] ", lockKey, e);
-            writeKeyLock.unlock();
-            if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
-                log.info("tryLock error removeWriteLock [{}] ", lockKey);
-                removeWriteLock(lockKey);
-            }
             throw new LockNotAcquiredException(e);
+        } finally {
+            if (!locked) {
+                writeKeyLock.unlock();
+                if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
+                    log.info("tryLock timeout removeWriteLock [{}] ", lockKey);
+                    removeWriteLock(lockKey);
+                }
+            }
         }
     }
 
