@@ -47,25 +47,20 @@ public class LockUtil2 {
         long start = System.currentTimeMillis();
         lockKey = getKey(lockKey);
         ReentrantLock writeKeyLock = setAndGetWriteLock(lockKey);
+        boolean unlock = true;
         try {
             if (!writeKeyLock.tryLock(timeout, unit)) {
                 log.info("timeout...");
+                unlock = false;
                 return false;
             }
             // continue get redis lock...
-        } catch (InterruptedException e) {
-            log.error("tryLockTimeout error interrupted key [{}] ", lockKey, e);
-            Thread.currentThread().interrupt();
-            return false;
-        }
 
-        boolean locked = false;
-        long acquireTimeout = unit.toMillis(timeout);
-        // 假设百分之90的场景的并发key, 过几十毫秒就可以成功获取！
-        int retryCount = 0;
-        int maxFastRetryNum = 2;
-        long retryInterval = 1000;
-        try {
+            long acquireTimeout = unit.toMillis(timeout);
+            // 假设百分之90的场景的并发key, 过几十毫秒就可以成功获取！
+            int retryCount = 0;
+            int maxFastRetryNum = 2;
+            long retryInterval = 1000;
             do {
                 // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
                 if (retryCount < 6 || retryCount % 3 == 0 || System.currentTimeMillis() - start + retryInterval >= acquireTimeout) {
@@ -73,7 +68,7 @@ public class LockUtil2 {
                     LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
                     if (lockInfo != null) {
                         THREAD_LOCAL.set(lockInfo);
-                        locked = true;
+                        unlock = false;
                         return true;
                     }
                 }
@@ -95,7 +90,7 @@ public class LockUtil2 {
             log.error("tryLock error key [{}] ", lockKey, e);
             throw new LockNotAcquiredException(e);
         } finally {
-            if (!locked) {
+            if (unlock) {
                 writeKeyLock.unlock();
                 if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
                     log.info("tryLock timeout removeWriteLock [{}] ", lockKey);

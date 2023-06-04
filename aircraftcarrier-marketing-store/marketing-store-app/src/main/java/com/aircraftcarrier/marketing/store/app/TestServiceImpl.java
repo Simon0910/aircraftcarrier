@@ -376,8 +376,8 @@ public class TestServiceImpl implements TestService {
                     // reentrantLock2(lockKey, lockKey2);
 
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 3000, TimeUnit.MILLISECONDS);
-                    boolean b = LockUtil2.tryLock(lockKey, 60000, 5000, TimeUnit.MILLISECONDS);
+                    boolean b = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
+                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
                     if (!b) {
                         return;
