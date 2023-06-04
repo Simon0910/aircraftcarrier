@@ -375,15 +375,17 @@ public class TestServiceImpl implements TestService {
 
                     // reentrantLock2(lockKey, lockKey2);
 
-                    boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
+                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 3000, TimeUnit.MILLISECONDS);
+                    boolean b = LockUtil2.tryLock(lockKey, 60000, 5000, TimeUnit.MILLISECONDS);
+                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
                     if (!b) {
                         return;
                     }
 
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
-                    // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(10000, 20000));
+                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(100, 200));
                     success.increment();
                 }
 //                catch (InterruptedException e) {

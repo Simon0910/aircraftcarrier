@@ -31,22 +31,7 @@ public class LockUtil2 {
 
 
     public static boolean tryLock(String lockKey, long expire, TimeUnit unit) {
-        lockKey = getKey(lockKey);
-        long acquireTimeout = 10;
-        long retryInterval = 0;
-
-        try {
-            LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, unit.toMillis(expire), acquireTimeout, retryInterval, null);
-            if (lockInfo != null) {
-                THREAD_LOCAL.set(lockInfo);
-                return true;
-            }
-            log.info("not locked!");
-            return false;
-        } catch (Exception e) {
-            log.error("tryLock error key [{}] ", lockKey, e);
-            throw new LockNotAcquiredException(e);
-        }
+        return tryLock(lockKey, expire, 0, unit);
     }
 
     /**
@@ -59,8 +44,9 @@ public class LockUtil2 {
      * @return boolean
      */
     public static boolean tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
+        long start = System.currentTimeMillis();
         lockKey = getKey(lockKey);
-        ReentrantLock writeKeyLock = getWriteLock(lockKey);
+        ReentrantLock writeKeyLock = setAndGetWriteLock(lockKey);
         try {
             if (!writeKeyLock.tryLock(timeout, unit)) {
                 log.info("timeout...");
@@ -75,29 +61,29 @@ public class LockUtil2 {
 
         boolean locked = false;
         long acquireTimeout = unit.toMillis(timeout);
-        // 假设百分之99的场景的并发key, 过几毫秒就可以成功获取！ 超时之前最多获取 n次: retryInterval = acquireTimeout / n;
-        // 假设 timout = 12s, n = 3, 4s重试一次, 共重试3次
-        // |--- --- --- ---|--- --- --- ---|--- --- --- ---|
-        // 快速重试2次, 实际重试2次, 共重试4次
-        // |---|---|--- --- --- ---|--- --- --- ---|--- ---
-        long retryInterval = acquireTimeout / 3;
+        // 假设百分之90的场景的并发key, 过几十毫秒就可以成功获取！
         int retryCount = 0;
-        int fastRetryCount = 2;
+        int maxFastRetryNum = 2;
+        long retryInterval = 1000;
         try {
-            long start = System.currentTimeMillis();
             do {
-                LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, retryInterval, null);
-                if (lockInfo != null) {
-                    THREAD_LOCAL.set(lockInfo);
-                    locked = true;
-                    return true;
+                // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
+                if (retryCount < 6 || retryCount % 3 == 0 || System.currentTimeMillis() - start + retryInterval >= acquireTimeout) {
+                    log.info("tryLock...");
+                    LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
+                    if (lockInfo != null) {
+                        THREAD_LOCAL.set(lockInfo);
+                        locked = true;
+                        return true;
+                    }
                 }
-                if (retryCount < fastRetryCount) {
-                    retryCount++;
+                log.info("tryLock retry...");
+                if (retryCount < maxFastRetryNum) {
                     TimeUnit.MILLISECONDS.sleep(10);
                 } else {
                     TimeUnit.MILLISECONDS.sleep(retryInterval);
                 }
+                retryCount++;
             } while (System.currentTimeMillis() - start < acquireTimeout);
             log.info("tryLock timeout...");
             return false;
@@ -120,7 +106,7 @@ public class LockUtil2 {
     }
 
     @NotNull
-    private static ReentrantLock getWriteLock(String lockKey) {
+    private static ReentrantLock setAndGetWriteLock(String lockKey) {
         return LOCAL_LOCK_CACHE.compute(lockKey, (k, v) -> v == null ? new ReentrantLock() : v);
     }
 
