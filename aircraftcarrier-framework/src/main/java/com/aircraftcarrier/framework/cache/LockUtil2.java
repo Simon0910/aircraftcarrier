@@ -50,7 +50,7 @@ public class LockUtil2 {
         boolean unlock = true;
         try {
             if (!writeKeyLock.tryLock(timeout, unit)) {
-                log.info("timeout...");
+                log.info("timeout!");
                 unlock = false;
                 return false;
             }
@@ -61,26 +61,32 @@ public class LockUtil2 {
             int retryCount = 0;
             int maxFastRetryNum = 2;
             long retryInterval = 1000;
+            boolean lastTime = false;
             do {
                 // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
-                if (retryCount < 6 || retryCount % 3 == 0 || System.currentTimeMillis() - start + retryInterval >= acquireTimeout) {
-                    log.info("tryLock...");
+                if (retryCount < 6 || retryCount % 3 == 0 || lastTime) {
+                    log.info("tryLock [{}]...", lockKey);
                     LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
                     if (lockInfo != null) {
                         THREAD_LOCAL.set(lockInfo);
                         unlock = false;
                         return true;
+                    } else if (lastTime) {
+                        log.info("tryLock timeout [{}]", lockKey);
+                        return false;
                     }
                 }
-                log.info("tryLock retry...");
                 if (retryCount < maxFastRetryNum) {
                     TimeUnit.MILLISECONDS.sleep(10);
                 } else {
-                    TimeUnit.MILLISECONDS.sleep(retryInterval);
+                    lastTime = System.currentTimeMillis() - start + retryInterval >= acquireTimeout;
+                    if (!lastTime) {
+                        TimeUnit.MILLISECONDS.sleep(retryInterval);
+                    }
                 }
                 retryCount++;
             } while (System.currentTimeMillis() - start < acquireTimeout);
-            log.info("tryLock timeout...");
+            log.info("tryLock timeout [{}].", lockKey);
             return false;
         } catch (InterruptedException e) {
             log.error("tryLock error interrupted key [{}] ", lockKey, e);
