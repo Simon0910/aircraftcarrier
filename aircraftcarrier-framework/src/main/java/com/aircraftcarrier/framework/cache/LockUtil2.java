@@ -80,9 +80,9 @@ public class LockUtil2 {
                 if (retryCount < maxFastRetryNum) {
                     TimeUnit.MILLISECONDS.sleep(10);
                 } else {
-                    lastTime = (lastTimeRetryInterval = acquireTimeout - (System.currentTimeMillis() - start)) < 1000;
+                    lastTime = (lastTimeRetryInterval = acquireTimeout - (System.currentTimeMillis() - start)) <= 1000;
                     if (lastTime) {
-                        TimeUnit.MILLISECONDS.sleep(lastTimeRetryInterval);
+                        TimeUnit.MILLISECONDS.sleep(lastTimeRetryInterval - 10);
                     } else {
                         TimeUnit.MILLISECONDS.sleep(retryInterval);
                     }
@@ -94,6 +94,7 @@ public class LockUtil2 {
         } catch (InterruptedException e) {
             log.error("tryLock error interrupted key [{}] ", lockKey, e);
             Thread.currentThread().interrupt();
+            unlock = false;
             return false;
         } catch (Exception e) {
             log.error("tryLock error key [{}] ", lockKey, e);

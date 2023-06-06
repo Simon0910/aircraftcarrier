@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.LongAdder;
 @Slf4j
 @Service
 public class TestServiceImpl implements TestService {
+    private volatile boolean once = true;
     private static final int TASK_NUM = 100;
     private final CyclicBarrier barrier = new CyclicBarrier(TASK_NUM);
     private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, 20, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
@@ -348,6 +349,7 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
+        once = true;
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
@@ -386,7 +388,17 @@ public class TestServiceImpl implements TestService {
 
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
-                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1000, 2000));
+                    if (once) {
+                        // once = false;
+                        System.out.println("gg...");
+                        // throw new RuntimeException("gg");
+                        TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1, 1));
+                    }
+                    // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(19000, 20000));
+                    TimeUnit.MILLISECONDS.sleep(19000); // timeout = 20s 两个抢到redis锁，总耗时38s
+                    // TimeUnit.MILLISECONDS.sleep(20000); // timeout = 20s 两个抢到redis锁，总耗时40s
+                    // TimeUnit.MILLISECONDS.sleep(21000); // timeout = 20s 1个抢到redis锁，总耗时20s
+                    // TimeUnit.MILLISECONDS.sleep(1000);
                     success.increment();
                 }
 //                catch (InterruptedException e) {
