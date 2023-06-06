@@ -50,7 +50,7 @@ public class LockUtil2 {
         boolean unlock = true;
         try {
             if (!writeKeyLock.tryLock(timeout, unit)) {
-                log.info("timeout!");
+                log.info("timeout [{}]!", lockKey);
                 unlock = false;
                 return false;
             }
@@ -62,6 +62,7 @@ public class LockUtil2 {
             int maxFastRetryNum = 2;
             long retryInterval = 1000;
             boolean lastTime = false;
+            long lastTimeRetryInterval;
             do {
                 // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
                 if (retryCount < 6 || retryCount % 3 == 0 || lastTime) {
@@ -79,8 +80,10 @@ public class LockUtil2 {
                 if (retryCount < maxFastRetryNum) {
                     TimeUnit.MILLISECONDS.sleep(10);
                 } else {
-                    lastTime = System.currentTimeMillis() - start + retryInterval >= acquireTimeout;
-                    if (!lastTime) {
+                    lastTime = (lastTimeRetryInterval = acquireTimeout - (System.currentTimeMillis() - start)) < 1000;
+                    if (lastTime) {
+                        TimeUnit.MILLISECONDS.sleep(lastTimeRetryInterval);
+                    } else {
                         TimeUnit.MILLISECONDS.sleep(retryInterval);
                     }
                 }

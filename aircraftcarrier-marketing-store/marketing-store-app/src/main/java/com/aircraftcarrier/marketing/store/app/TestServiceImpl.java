@@ -351,7 +351,7 @@ public class TestServiceImpl implements TestService {
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
-        int num = 2;
+        int num = 500;
         List<CallableVoid> asyncBatchActions = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             String lockKey = String.valueOf(key);
@@ -386,7 +386,7 @@ public class TestServiceImpl implements TestService {
 
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
-                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(19000, 20000));
+                    TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1000, 2000));
                     success.increment();
                 }
 //                catch (InterruptedException e) {
