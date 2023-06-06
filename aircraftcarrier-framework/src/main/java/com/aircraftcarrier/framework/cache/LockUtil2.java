@@ -150,15 +150,21 @@ public class LockUtil2 {
     }
 
     private static MyLockTemplate getMyLockTemplate() {
+        if (LockUtil2.ResourceHolder.myLockTemplate == null) {
+            LockUtil2.ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
+        }
         return LockUtil2.ResourceHolder.myLockTemplate;
     }
 
     private static String getEnv() {
-        return LockUtil2.ResourceHolder.ENV;
+        if (LockUtil2.ResourceHolder.env == null) {
+            LockUtil2.ResourceHolder.env = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0] + ":";
+        }
+        return LockUtil2.ResourceHolder.env;
     }
 
     private static class ResourceHolder {
-        public static final MyLockTemplate myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class); // This will be lazily initialised
-        private static final String ENV = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0] + ":";
+        public static MyLockTemplate myLockTemplate = getMyLockTemplate(); // This will be lazily initialised
+        private static String env = getEnv();
     }
 }
