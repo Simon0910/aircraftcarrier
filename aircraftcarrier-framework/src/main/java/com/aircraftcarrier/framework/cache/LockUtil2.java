@@ -130,7 +130,7 @@ public class LockUtil2 {
             if (lockInfo != null) {
                 log.info("unLock key [{}] ", lockKey);
                 THREAD_LOCAL.remove();
-                getMyLockTemplate().releaseLock(lockInfo);
+                doUnLock(lockInfo, 1);
             }
         } catch (Exception e) {
             log.error("unLock error key [{}] ", lockKey, e);
@@ -145,6 +145,29 @@ public class LockUtil2 {
                     log.info("unLock removeWriteLock [{}] ", lockKey);
                     removeWriteLock(lockKey);
                 }
+            }
+        }
+    }
+
+    private static boolean doUnLock(LockInfo lockInfo, int retry) {
+        try {
+            // 释放锁
+            getMyLockTemplate().releaseLock(lockInfo);
+            return true;
+        } catch (Exception e) {
+            log.warn("doUnLock {}", lockInfo.getLockKey(), e);
+            // 网络异常
+            try {
+                TimeUnit.MILLISECONDS.sleep(500);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+
+            if (retry > 0) {
+                retry--;
+                return doUnLock(lockInfo, retry);
+            } else {
+                return false;
             }
         }
     }
