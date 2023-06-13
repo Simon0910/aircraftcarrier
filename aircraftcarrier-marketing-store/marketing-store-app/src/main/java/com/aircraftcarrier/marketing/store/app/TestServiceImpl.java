@@ -349,6 +349,8 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
+        JedisUtil.del(LockUtil2.forceDelLockKey(key));
+
         once = true;
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
@@ -380,8 +382,8 @@ public class TestServiceImpl implements TestService {
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
-                    boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
+                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
+                    boolean b = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
                     if (!b) {
                         return;
                     }

@@ -34,6 +34,10 @@ public class JedisUtil implements ApplicationContextAware {
         return jedisCluster.decrBy(key, decrement);
     }
 
+    public static void del(final String key) {
+        jedisCluster.del(key);
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         jedisCluster = applicationContext.getBean(JedisCluster.class);

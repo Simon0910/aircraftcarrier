@@ -30,7 +30,7 @@ public class LockUtil2 {
     }
 
     private static String getKey(String lockKey) {
-        return getEnv() + lockKey;
+        return ResourceHolder.getEnv() + lockKey;
     }
 
 
@@ -71,7 +71,7 @@ public class LockUtil2 {
                 // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
                 if (retryCount < 6 || retryCount % 3 == 0 || lastTime) {
                     log.info("tryLock [{}]...", lockKey);
-                    LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
+                    LockInfo lockInfo = ResourceHolder.getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
                     if (lockInfo != null) {
                         THREAD_LOCAL.set(lockInfo);
                         return true;
@@ -159,7 +159,7 @@ public class LockUtil2 {
     private static boolean doUnLock(LockInfo lockInfo, int retry) {
         try {
             // 释放锁
-            getMyLockTemplate().releaseLock(lockInfo);
+            ResourceHolder.getMyLockTemplate().releaseLock(lockInfo);
             return true;
         } catch (Exception e) {
             log.warn("doUnLock {}", lockInfo.getLockKey(), e);
@@ -179,22 +179,30 @@ public class LockUtil2 {
         }
     }
 
-    private static MyLockTemplate getMyLockTemplate() {
-        if (LockUtil2.ResourceHolder.myLockTemplate == null) {
-            LockUtil2.ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
-        }
-        return LockUtil2.ResourceHolder.myLockTemplate;
+
+    public static String forceDelLockKey(String lockKey) {
+        return getKey(lockKey);
     }
 
-    private static String getEnv() {
-        if (LockUtil2.ResourceHolder.env == null) {
-            LockUtil2.ResourceHolder.env = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0] + ":";
-        }
-        return LockUtil2.ResourceHolder.env;
-    }
 
     private static class ResourceHolder {
         public static MyLockTemplate myLockTemplate = getMyLockTemplate(); // This will be lazily initialised
         private static String env = getEnv();
+
+        private static MyLockTemplate getMyLockTemplate() {
+            if (LockUtil2.ResourceHolder.myLockTemplate == null) {
+                LockUtil2.ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
+            }
+            return LockUtil2.ResourceHolder.myLockTemplate;
+        }
+
+        private static String getEnv() {
+            if (LockUtil2.ResourceHolder.env == null) {
+                LockUtil2.ResourceHolder.env = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0] + ":";
+            }
+            return LockUtil2.ResourceHolder.env;
+        }
     }
+
+
 }
