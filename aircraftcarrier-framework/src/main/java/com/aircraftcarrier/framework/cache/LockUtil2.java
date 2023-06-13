@@ -5,11 +5,12 @@ import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
-import com.google.common.collect.Maps;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -20,7 +21,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class LockUtil2 {
     private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
-    private static final Map<String, ReentrantLock> LOCAL_LOCK_CACHE = Maps.newConcurrentMap();
+    private static final Cache<String, ReentrantLock> LOCAL_LOCK_CACHE = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.SECONDS)
+            .initialCapacity(50000)
+            .build();
 
     private LockUtil2() {
     }
@@ -46,12 +50,12 @@ public class LockUtil2 {
     public static boolean tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
         long start = System.currentTimeMillis();
         lockKey = getKey(lockKey);
-        ReentrantLock writeKeyLock = setAndGetWriteLock(lockKey);
-        boolean unlock = true;
+        ReentrantLock writeKeyLock = null;
+        boolean needUnlock = false;
         try {
+            writeKeyLock = setAndGetWriteLock(lockKey);
             if (!writeKeyLock.tryLock(timeout, unit)) {
                 log.info("timeout [{}]!", lockKey);
-                unlock = false;
                 return false;
             }
             // continue get redis lock...
@@ -70,10 +74,10 @@ public class LockUtil2 {
                     LockInfo lockInfo = getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
                     if (lockInfo != null) {
                         THREAD_LOCAL.set(lockInfo);
-                        unlock = false;
                         return true;
                     } else if (lastTime) {
                         log.info("tryLock timeout [{}]", lockKey);
+                        needUnlock = true;
                         return false;
                     }
                 }
@@ -90,17 +94,19 @@ public class LockUtil2 {
                 retryCount++;
             } while (System.currentTimeMillis() - start < acquireTimeout);
             log.info("tryLock timeout [{}].", lockKey);
+            needUnlock = true;
             return false;
         } catch (InterruptedException e) {
+            needUnlock = true;
             log.error("tryLock error interrupted key [{}] ", lockKey, e);
             Thread.currentThread().interrupt();
-            unlock = false;
             return false;
         } catch (Exception e) {
+            needUnlock = true;
             log.error("tryLock error key [{}] ", lockKey, e);
             throw new LockNotAcquiredException(e);
         } finally {
-            if (unlock) {
+            if (needUnlock && writeKeyLock != null) {
                 writeKeyLock.unlock();
                 if (!writeKeyLock.hasQueuedThreads() && !writeKeyLock.isLocked()) {
                     log.info("tryLock timeout removeWriteLock [{}] ", lockKey);
@@ -111,12 +117,12 @@ public class LockUtil2 {
     }
 
     @NotNull
-    private static ReentrantLock setAndGetWriteLock(String lockKey) {
-        return LOCAL_LOCK_CACHE.compute(lockKey, (k, v) -> v == null ? new ReentrantLock() : v);
+    private static ReentrantLock setAndGetWriteLock(String lockKey) throws ExecutionException {
+        return LOCAL_LOCK_CACHE.get(lockKey, ReentrantLock::new);
     }
 
     private static void removeWriteLock(String lockKey) {
-        LOCAL_LOCK_CACHE.remove(lockKey);
+        LOCAL_LOCK_CACHE.invalidate(lockKey);
     }
 
     /**
@@ -136,7 +142,7 @@ public class LockUtil2 {
         } catch (Exception e) {
             log.error("unLock error key [{}] ", lockKey, e);
         } finally {
-            ReentrantLock writeKeyLock = LOCAL_LOCK_CACHE.get(lockKey);
+            ReentrantLock writeKeyLock = LOCAL_LOCK_CACHE.getIfPresent(lockKey);
             if (writeKeyLock != null) {
                 if (writeKeyLock.isHeldByCurrentThread()) {
                     log.info("unLock writeKeyLock [{}] ", lockKey);

@@ -380,8 +380,8 @@ public class TestServiceImpl implements TestService {
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
                     // boolean b = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
-                    boolean b = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
+                    boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
+                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
                     if (!b) {
                         return;
                     }
@@ -392,10 +392,10 @@ public class TestServiceImpl implements TestService {
                         // once = false;
                         System.out.println("gg...");
                         // throw new RuntimeException("gg");
-                        TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1, 1));
+                        // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1, 1));
                     }
                     // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(19000, 20000));
-                    TimeUnit.MILLISECONDS.sleep(19000); // timeout = 20s 两个抢到redis锁，总耗时38s
+                    TimeUnit.MILLISECONDS.sleep(10000); // timeout = 20s 两个抢到redis锁，总耗时38s
                     // TimeUnit.MILLISECONDS.sleep(20000); // timeout = 20s 两个抢到redis锁，总耗时40s
                     // TimeUnit.MILLISECONDS.sleep(21000); // timeout = 20s 1个抢到redis锁，总耗时20s
                     // TimeUnit.MILLISECONDS.sleep(1000);
