@@ -8,6 +8,7 @@ import com.baomidou.lock.LockTemplate;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ExecutionException;
@@ -20,7 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 public class LockUtil2 {
-    private static final ThreadLocal<LockInfo> THREAD_LOCAL = new ThreadLocal<>();
     private static final Cache<String, ReentrantLock> LOCAL_LOCK_CACHE = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.SECONDS)
             .initialCapacity(50000)
@@ -29,12 +29,12 @@ public class LockUtil2 {
     private LockUtil2() {
     }
 
-    private static String getKey(String lockKey) {
+    private static String getEnvKey(String lockKey) {
         return ResourceHolder.getEnv() + lockKey;
     }
 
 
-    public static boolean tryLock(String lockKey, long expire, TimeUnit unit) {
+    public static RedisLocker tryLock(String lockKey, long expire, TimeUnit unit) {
         return tryLock(lockKey, expire, 0, unit);
     }
 
@@ -47,16 +47,21 @@ public class LockUtil2 {
      * @param unit    unit
      * @return boolean
      */
-    public static boolean tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
+    public static RedisLocker tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
+        // 校验key
+        if (StringUtils.isBlank(lockKey)) {
+            log.error("lockKey is blank");
+            throw new LockNotAcquiredException("lockKey is blank");
+        }
+
         long start = System.currentTimeMillis();
-        lockKey = getKey(lockKey);
         ReentrantLock writeKeyLock = null;
         boolean needUnlock = false;
         try {
             writeKeyLock = setAndGetWriteLock(lockKey);
             if (!writeKeyLock.tryLock(timeout, unit)) {
-                log.info("timeout [{}]!", lockKey);
-                return false;
+                log.info("timeout! [{}]", lockKey);
+                return buildNotLockedRedisLocker(lockKey);
             }
             // continue get redis lock...
 
@@ -71,14 +76,13 @@ public class LockUtil2 {
                 // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
                 if (retryCount < 6 || retryCount % 3 == 0 || lastTime) {
                     log.info("tryLock [{}]...", lockKey);
-                    LockInfo lockInfo = ResourceHolder.getMyLockTemplate().lockPlus(lockKey, expire, acquireTimeout, 0, null);
+                    LockInfo lockInfo = ResourceHolder.getMyLockTemplate().lockPlus(getEnvKey(lockKey), expire, acquireTimeout, 0, null);
                     if (lockInfo != null) {
-                        THREAD_LOCAL.set(lockInfo);
-                        return true;
+                        return new RedisLocker(lockKey, lockInfo.getLockValue(), true, lockInfo);
                     } else if (lastTime) {
                         log.info("tryLock timeout [{}]", lockKey);
                         needUnlock = true;
-                        return false;
+                        return buildNotLockedRedisLocker(lockKey);
                     }
                 }
                 if (retryCount < maxFastRetryNum) {
@@ -95,12 +99,12 @@ public class LockUtil2 {
             } while (System.currentTimeMillis() - start < acquireTimeout);
             log.info("tryLock timeout [{}].", lockKey);
             needUnlock = true;
-            return false;
+            return buildNotLockedRedisLocker(lockKey);
         } catch (InterruptedException e) {
             needUnlock = true;
             log.error("tryLock error interrupted key [{}] ", lockKey, e);
             Thread.currentThread().interrupt();
-            return false;
+            return buildNotLockedRedisLocker(lockKey);
         } catch (Exception e) {
             needUnlock = true;
             log.error("tryLock error key [{}] ", lockKey, e);
@@ -117,6 +121,11 @@ public class LockUtil2 {
     }
 
     @NotNull
+    private static RedisLocker buildNotLockedRedisLocker(String lockKey) {
+        return new RedisLocker(lockKey, null, false, null);
+    }
+
+    @NotNull
     private static ReentrantLock setAndGetWriteLock(String lockKey) throws ExecutionException {
         return LOCAL_LOCK_CACHE.get(lockKey, ReentrantLock::new);
     }
@@ -125,19 +134,21 @@ public class LockUtil2 {
         LOCAL_LOCK_CACHE.invalidate(lockKey);
     }
 
+    public static void unLock(RedisLocker redisLocker) {
+        unLock(redisLocker.getLockKey(), redisLocker.getLockInfo());
+    }
+
     /**
      * unLock
      *
      * @param lockKey lockKey
      */
-    public static void unLock(String lockKey) {
-        lockKey = getKey(lockKey);
+    private static void unLock(String lockKey, LockInfo lockInfo) {
         try {
-            LockInfo lockInfo = THREAD_LOCAL.get();
             if (lockInfo != null) {
                 log.info("unLock key [{}] ", lockKey);
-                THREAD_LOCAL.remove();
-                doUnLock(lockInfo, 1);
+                boolean ok = doUnLock(lockInfo, 1);
+                log.info("unLock key [{}] {}.", lockKey, ok);
             }
         } catch (Exception e) {
             log.error("unLock error key [{}] ", lockKey, e);
@@ -181,14 +192,11 @@ public class LockUtil2 {
 
 
     public static String forceDelLockKey(String lockKey) {
-        return getKey(lockKey);
+        return getEnvKey(lockKey);
     }
 
 
     private static class ResourceHolder {
-        public static MyLockTemplate myLockTemplate = getMyLockTemplate(); // This will be lazily initialised
-        private static String env = getEnv();
-
         private static MyLockTemplate getMyLockTemplate() {
             if (LockUtil2.ResourceHolder.myLockTemplate == null) {
                 LockUtil2.ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
@@ -202,6 +210,9 @@ public class LockUtil2 {
             }
             return LockUtil2.ResourceHolder.env;
         }
+
+        private static MyLockTemplate myLockTemplate = getMyLockTemplate(); // This will be lazily initialised
+        private static String env = getEnv();
     }
 
 

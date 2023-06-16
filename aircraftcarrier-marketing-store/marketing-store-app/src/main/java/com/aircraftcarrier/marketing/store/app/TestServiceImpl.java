@@ -2,6 +2,7 @@ package com.aircraftcarrier.marketing.store.app;
 
 import com.aircraftcarrier.framework.cache.LockUtil;
 import com.aircraftcarrier.framework.cache.LockUtil2;
+import com.aircraftcarrier.framework.cache.RedisLocker;
 import com.aircraftcarrier.framework.concurrent.CallableVoid;
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
@@ -53,7 +54,6 @@ import java.util.concurrent.atomic.LongAdder;
 @Slf4j
 @Service
 public class TestServiceImpl implements TestService {
-    private volatile boolean once = true;
     private static final int TASK_NUM = 100;
     private final CyclicBarrier barrier = new CyclicBarrier(TASK_NUM);
     private final TraceThreadPoolExecutor threadPool = new TraceThreadPoolExecutor(10, 20, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000));
@@ -71,6 +71,7 @@ public class TestServiceImpl implements TestService {
     DemoMybatisPlus demoMybatisPlus;
     @Resource
     TransactionalExe2 transactionalExe2;
+    private volatile boolean once = true;
 
     @Override
     public void testTransactional() {
@@ -362,6 +363,14 @@ public class TestServiceImpl implements TestService {
             // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchActions.add(() -> {
+                // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
+                // boolean b = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
+                // boolean b = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
+                // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
+                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
+                if (!redisLocker.isLocked()) {
+                    return;
+                }
                 try {
                     log.info("第一次加锁");
                     // 等待一秒钟还没有抢到redis锁，说明竞争太激烈，或者另一个线程抢到锁后执行逻辑太久不释放
@@ -378,15 +387,6 @@ public class TestServiceImpl implements TestService {
                     // LockKeyUtil.lock(lockKey2);
 
                     // reentrantLock2(lockKey, lockKey2);
-
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
-                    // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
-                    boolean b = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
-                    if (!b) {
-                        return;
-                    }
 
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
@@ -414,7 +414,7 @@ public class TestServiceImpl implements TestService {
                 } finally {
                     log.info("1解锁");
 
-                    LockUtil2.unLock(lockKey);
+                    redisLocker.unLock();
 
                     // LockUtil.unLock(lockKey2);
                     // LockUtil.unLock(lockKey);
