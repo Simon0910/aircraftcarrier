@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LockUtil2 {
     private static final Cache<String, ReentrantLock> LOCAL_LOCK_CACHE = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.SECONDS)
-            .initialCapacity(1024)
+            .initialCapacity(256)
             .maximumSize(100000)
             .build();
 
