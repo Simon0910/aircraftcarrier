@@ -23,7 +23,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LockUtil2 {
     private static final Cache<String, ReentrantLock> LOCAL_LOCK_CACHE = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.SECONDS)
-            .initialCapacity(50000)
+            .initialCapacity(1024)
+            .maximumSize(100000)
             .build();
 
     private LockUtil2() {
@@ -35,7 +36,19 @@ public class LockUtil2 {
 
 
     public static RedisLocker tryLock(String lockKey, long expire, TimeUnit unit) {
-        return tryLock(lockKey, expire, 0, unit);
+        return doTryLock(lockKey, expire, 0, unit, true);
+    }
+
+    public static RedisLocker tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
+        return doTryLock(lockKey, expire, timeout, unit, true);
+    }
+
+    public static RedisLocker tryLockRemote(String lockKey, long expire, TimeUnit unit) {
+        return doTryLock(lockKey, expire, 0, unit, false);
+    }
+
+    public static RedisLocker tryLockRemote(String lockKey, long expire, long timeout, TimeUnit unit) {
+        return doTryLock(lockKey, expire, timeout, unit, false);
     }
 
     /**
@@ -47,7 +60,7 @@ public class LockUtil2 {
      * @param unit    unit
      * @return boolean
      */
-    public static RedisLocker tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
+    private static RedisLocker doTryLock(String lockKey, long expire, long timeout, TimeUnit unit, boolean local) {
         // 校验key
         if (StringUtils.isBlank(lockKey)) {
             log.error("lockKey is blank");
@@ -59,9 +72,12 @@ public class LockUtil2 {
         boolean needUnlock = false;
         try {
             writeKeyLock = setAndGetWriteLock(lockKey);
-            if (!writeKeyLock.tryLock(timeout, unit)) {
-                log.info("timeout! [{}]", lockKey);
-                return buildNotLockedRedisLocker(lockKey);
+            if (local) {
+                writeKeyLock = setAndGetWriteLock(lockKey);
+                if (!writeKeyLock.tryLock(timeout, unit)) {
+                    log.info("timeout! [{}]", lockKey);
+                    return buildNotLockedRedisLocker(lockKey);
+                }
             }
             // continue get redis lock...
 
