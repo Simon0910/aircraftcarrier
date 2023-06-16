@@ -363,11 +363,11 @@ public class TestServiceImpl implements TestService {
             // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchActions.add(() -> {
-                // boolean b = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
-                // boolean b = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
-                // boolean b = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
-                // boolean b = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
-                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
+                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
                 if (!redisLocker.isLocked()) {
                     return;
                 }
