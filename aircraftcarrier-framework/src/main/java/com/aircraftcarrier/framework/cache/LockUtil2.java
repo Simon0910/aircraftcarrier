@@ -71,7 +71,6 @@ public class LockUtil2 {
         ReentrantLock writeKeyLock = null;
         boolean needUnlock = false;
         try {
-            writeKeyLock = setAndGetWriteLock(lockKey);
             if (local) {
                 writeKeyLock = setAndGetWriteLock(lockKey);
                 if (!writeKeyLock.tryLock(timeout, unit)) {
