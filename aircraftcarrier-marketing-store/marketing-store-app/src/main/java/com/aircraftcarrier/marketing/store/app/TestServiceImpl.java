@@ -350,7 +350,7 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
-        JedisUtil.del(LockUtil2.forceDelLockKey(key));
+        LockUtil2.forceDelLockKey(key);
 
         once = true;
         long start = System.currentTimeMillis();
@@ -363,7 +363,7 @@ public class TestServiceImpl implements TestService {
             // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchActions.add(() -> {
-                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 50, TimeUnit.MILLISECONDS);
+                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 100, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
@@ -387,6 +387,7 @@ public class TestServiceImpl implements TestService {
                     // LockKeyUtil.lock(lockKey2);
 
                     // reentrantLock2(lockKey, lockKey2);
+                    // reentrantLock2(redisLocker);
 
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
@@ -397,7 +398,7 @@ public class TestServiceImpl implements TestService {
                         // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1, 1));
                     }
                     // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(19000, 20000));
-                    TimeUnit.MILLISECONDS.sleep(10000); // timeout = 20s 两个抢到redis锁，总耗时38s
+                    TimeUnit.MILLISECONDS.sleep(50); // timeout = 20s 两个抢到redis锁，总耗时38s
                     // TimeUnit.MILLISECONDS.sleep(20000); // timeout = 20s 两个抢到redis锁，总耗时40s
                     // TimeUnit.MILLISECONDS.sleep(21000); // timeout = 20s 1个抢到redis锁，总耗时20s
                     // TimeUnit.MILLISECONDS.sleep(1000);
@@ -475,6 +476,17 @@ public class TestServiceImpl implements TestService {
 
         SleepUtil.sleepSeconds(8);
         System.out.println("end");
+    }
+
+    private void reentrantLock2(RedisLocker redisLocker) {
+        boolean lock = redisLocker.lock();
+        try {
+            if (lock) {
+                log.info("第二次加锁");
+            }
+        } finally {
+            redisLocker.unLock();
+        }
     }
 
     private void reentrantLock2(String key, String key2) {
