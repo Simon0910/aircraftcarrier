@@ -78,9 +78,6 @@ public class RedisLocker {
     }
 
     public void unLock() {
-        if (!isLocked()) {
-            return;
-        }
         LockUtil2.unLock(this);
     }
 }

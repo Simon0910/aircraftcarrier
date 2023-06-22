@@ -14,6 +14,35 @@ import redis.clients.jedis.JedisCluster;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * LockUtil
+ * <p>
+ * 使用方式
+ * <pre> {@code
+ *
+ *  RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 100, TimeUnit.MILLISECONDS);
+ *  if (!redisLocker.isLocked()) {
+ *      log.info("请稍后重试...");
+ *      return;
+ *  }
+ *  try {
+ *      // 业务逻辑...
+ *      // 可重入锁
+ *      if (redisLocker.lock()) {
+ *          try {
+ *
+ *          } finally {
+ *              // 内层解锁
+ *              redisLocker.unlock();
+ *          }
+ *      }
+ *      // 业务逻辑...
+ *  } finally {
+ *      // 外层解锁
+ *      redisLocker.unLock();
+ *  }
+ *
+ * }</pre>
+ *
  * @author lzp
  * @since 2023/06/01 17:07
  */
@@ -126,7 +155,11 @@ public class LockUtil2 {
 
     public static void unLock(RedisLocker redisLocker) {
         if (redisLocker == null) {
-            log.error("redisLocker is null");
+            log.warn("redisLocker is null");
+            return;
+        }
+        if (!redisLocker.isLocked()) {
+            log.warn("redisLocker is not locked");
             return;
         }
         if (redisLocker.getAcquireCount() > 0) {
