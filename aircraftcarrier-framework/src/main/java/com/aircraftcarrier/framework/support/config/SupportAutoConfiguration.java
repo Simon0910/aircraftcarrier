@@ -1,5 +1,7 @@
 package com.aircraftcarrier.framework.support.config;
 
+import com.aircraftcarrier.framework.support.ApplicationEventAllListener;
+import com.aircraftcarrier.framework.support.ApplicationEventListener;
 import com.aircraftcarrier.framework.support.ApplicationPrintInfoRunner;
 import com.aircraftcarrier.framework.support.context.EnumMappingContext;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,5 +25,15 @@ public class SupportAutoConfiguration {
     @Bean
     public ApplicationPrintInfoRunner applicationPrintInfoRunner() {
         return new ApplicationPrintInfoRunner();
+    }
+
+    @Bean
+    public ApplicationEventAllListener applicationEventListener() {
+        return new ApplicationEventAllListener();
+    }
+
+    @Bean
+    public ApplicationEventListener availabilityListener() {
+        return new ApplicationEventListener();
     }
 }

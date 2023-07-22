@@ -1,12 +1,11 @@
 package com.aircraftcarrier.framework.exceltask;
 
+import com.aircraftcarrier.framework.support.ApplicationContextClosedEvent;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.exception.ExcelAnalysisStopException;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.util.ResourceUtils;
 
 import java.io.BufferedWriter;
@@ -28,7 +27,7 @@ import java.util.List;
  * @author zhipengliu
  */
 @Slf4j
-public class WorkTask implements ApplicationListener<ContextClosedEvent> {
+public class WorkTask implements ApplicationContextClosedEvent {
 
     private static final List<UploadDataListener<?>> listeners = new ArrayList<>();
 
@@ -204,11 +203,9 @@ public class WorkTask implements ApplicationListener<ContextClosedEvent> {
 
     /**
      * <a href="https://blog.csdn.net/qq271859852/article/details/107442161">...</a>
-     *
-     * @param event event
      */
     @Override
-    public void onApplicationEvent(ContextClosedEvent event) {
+    public void contextClosed() {
         // https://blog.csdn.net/qq271859852/article/details/107442161
         log.info("shutdown hook, jvm runtime hook, listeners size {} ...", listeners.size());
         for (UploadDataListener<?> listener : listeners) {

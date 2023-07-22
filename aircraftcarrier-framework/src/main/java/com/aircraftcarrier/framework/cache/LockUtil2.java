@@ -4,6 +4,8 @@ import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
+import com.aircraftcarrier.framework.tookit.StringPool;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +52,12 @@ import java.util.concurrent.TimeUnit;
 public class LockUtil2 {
 
     private LockUtil2() {
+    }
+
+    public static void init() {
+        ResourceHolder.getEnv();
+        ResourceHolder.getJedisCluster();
+        ResourceHolder.getMyLockTemplate();
     }
 
     private static String getEnvKey(String lockKey) {
@@ -213,7 +221,12 @@ public class LockUtil2 {
         ResourceHolder.getJedisCluster().del(getEnvKey(lockKey));
     }
 
+
     private static class ResourceHolder {
+        private static MyLockTemplate myLockTemplate; // This will be lazily initialised
+        private static String env;
+        private static JedisCluster jedisCluster;
+
         private static MyLockTemplate getMyLockTemplate() {
             if (LockUtil2.ResourceHolder.myLockTemplate == null) {
                 LockUtil2.ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
@@ -223,9 +236,11 @@ public class LockUtil2 {
 
         private static String getEnv() {
             if (LockUtil2.ResourceHolder.env == null) {
-                String applicationName = ApplicationContextUtil.getApplicationContext().getApplicationName() + ":";
-                String profile = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0] + ":";
-                LockUtil2.ResourceHolder.env = applicationName + profile;
+                String applicationName = ApplicationContextUtil.getApplicationContext().getApplicationName();
+                applicationName = StringUtil.isNotBlank(applicationName) ? applicationName : "default";
+                String profile = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0];
+                profile = StringUtil.isNotBlank(profile) ? profile : "env";
+                LockUtil2.ResourceHolder.env = applicationName + StringPool.COLON + profile + StringPool.COLON;
             }
             return LockUtil2.ResourceHolder.env;
         }
@@ -236,10 +251,6 @@ public class LockUtil2 {
             }
             return LockUtil2.ResourceHolder.jedisCluster;
         }
-
-        private static MyLockTemplate myLockTemplate = getMyLockTemplate(); // This will be lazily initialised
-        private static String env = getEnv();
-        private static JedisCluster jedisCluster = getJedisCluster();
     }
 
 
