@@ -252,5 +252,12 @@
             <artifactId>emoji-java</artifactId>
             <version>5.1.1</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.sigpwned/emoji4j-core -->
+        <dependency>
+            <groupId>com.sigpwned</groupId>
+            <artifactId>emoji4j-core</artifactId>
+            <version>15.0.1</version>
+        </dependency>
     </dependencies>
 </project>
