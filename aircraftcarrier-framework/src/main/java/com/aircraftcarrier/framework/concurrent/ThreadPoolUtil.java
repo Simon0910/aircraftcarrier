@@ -132,8 +132,11 @@ public class ThreadPoolUtil {
      */
     public static void invokeVoid(RecursiveAction action) {
         ForkJoinPool forkJoinPool = newDefaultForkJoinPool();
-        invokeVoid(forkJoinPool, action);
-        forkJoinPool.shutdown();
+        try {
+            invokeVoid(forkJoinPool, action);
+        } finally {
+            forkJoinPool.shutdown();
+        }
     }
 
 
@@ -145,8 +148,11 @@ public class ThreadPoolUtil {
      */
     public static void invokeVoid(RecursiveAction action, int parallelism) {
         ForkJoinPool forkJoinPool = ExecutorUtil.newWorkStealingPool(parallelism, "action");
-        invokeVoid(forkJoinPool, action);
-        forkJoinPool.shutdown();
+        try {
+            invokeVoid(forkJoinPool, action);
+        } finally {
+            forkJoinPool.shutdown();
+        }
     }
 
 
@@ -168,8 +174,11 @@ public class ThreadPoolUtil {
      */
     public static void invokeVoid(CallableVoid callableVoid) {
         ExecutorService executorService = newDefaultExecutorService();
-        invokeVoid(executorService, callableVoid);
-        executorService.shutdown();
+        try {
+            invokeVoid(executorService, callableVoid);
+        } finally {
+            executorService.shutdown();
+        }
     }
 
 
@@ -191,8 +200,11 @@ public class ThreadPoolUtil {
      */
     public static void invokeAllVoid(List<CallableVoid> asyncBatchActions) {
         ExecutorService executorService = newDefaultExecutorService();
-        invokeAllVoid(executorService, asyncBatchActions);
-        executorService.shutdown();
+        try {
+            invokeAllVoid(executorService, asyncBatchActions);
+        } finally {
+            executorService.shutdown();
+        }
     }
 
 
@@ -226,9 +238,11 @@ public class ThreadPoolUtil {
      */
     public static <V> V invoke(RecursiveTask<V> task) {
         ForkJoinPool forkJoinPool = newDefaultForkJoinPool();
-        V invoke = invoke(forkJoinPool, task);
-        forkJoinPool.shutdown();
-        return invoke;
+        try {
+            return invoke(forkJoinPool, task);
+        } finally {
+            forkJoinPool.shutdown();
+        }
     }
 
 
@@ -241,7 +255,12 @@ public class ThreadPoolUtil {
      * @return V
      */
     public static <V> V invoke(RecursiveTask<V> task, int parallelism) {
-        return invoke(ExecutorUtil.newWorkStealingPool(parallelism, "task"), task);
+        ForkJoinPool forkJoinPool = ExecutorUtil.newWorkStealingPool(parallelism, "task");
+        try {
+            return invoke(forkJoinPool, task);
+        } finally {
+            forkJoinPool.shutdown();
+        }
     }
 
 
@@ -266,7 +285,12 @@ public class ThreadPoolUtil {
      * @return T
      */
     public static <T> T invoke(Callable<T> callable) {
-        return invoke(newDefaultExecutorService(), callable);
+        ExecutorService executorService = newDefaultExecutorService();
+        try {
+            return invoke(executorService, callable);
+        } finally {
+            executorService.shutdown();
+        }
     }
 
 
@@ -295,7 +319,11 @@ public class ThreadPoolUtil {
      */
     public static <T, V> List<V> invokeTask(CallParallelTask<T, V> callParallelTask, int parallelism) {
         ExecutorService executor = ExecutorUtil.newWorkStealingPool(parallelism, "callParallelTask");
-        return invokeTask(executor, callParallelTask);
+        try {
+            return invokeTask(executor, callParallelTask);
+        } finally {
+            executor.shutdown();
+        }
     }
 
 
@@ -311,7 +339,11 @@ public class ThreadPoolUtil {
      */
     public static <T, V> List<V> invokeTask(CallParallelTask<T, V> callParallelTask, int parallelism, String taskName) {
         ExecutorService executor = ExecutorUtil.newCachedThreadPoolBlock(parallelism, "invokeTask-" + taskName);
-        return invokeTask(executor, callParallelTask);
+        try {
+            return invokeTask(executor, callParallelTask);
+        } finally {
+            executor.shutdown();
+        }
     }
 
 
@@ -337,7 +369,12 @@ public class ThreadPoolUtil {
      * @return List<T>
      */
     public static <T> List<T> invokeAll(List<Callable<T>> callables) {
-        return invokeAll(newDefaultExecutorService(), callables);
+        ExecutorService executorService = newDefaultExecutorService();
+        try {
+            return invokeAll(executorService, callables);
+        } finally {
+            executorService.shutdown();
+        }
     }
 
 
