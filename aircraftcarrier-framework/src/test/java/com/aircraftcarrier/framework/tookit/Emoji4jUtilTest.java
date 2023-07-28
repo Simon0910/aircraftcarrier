@@ -21,18 +21,18 @@ public class Emoji4jUtilTest {
 
     public static void main(String[] args) {
         System.out.println("Emoji4jUtil");
-        Emoji4jUtil emoji4jUtil = Emoji4jUtil.newInstance(getEmojiTestData());
+        String emojiTestData = getEmojiTestData();
 
-        System.out.println(emoji4jUtil.containsEmoji());
-        System.out.println(emoji4jUtil.removeEmoji());
-        System.out.println(emoji4jUtil.replaceAllEmoji("O"));
+        System.out.println(Emoji4jUtil.containsEmoji(emojiTestData));
+        System.out.println(Emoji4jUtil.removeEmoji(emojiTestData));
+        System.out.println(Emoji4jUtil.replaceAllEmoji(emojiTestData, "O"));
 
-        System.out.println(Emoji4jUtil.newInstance("##**").removeEmoji());
+        System.out.println(Emoji4jUtil.removeEmoji("##**"));
 
         System.out.println("===========================");
         String s = "🤏";
         String ss = "🤏🦻";
-        System.out.println(Emoji4jUtil.newInstance(s).isEmojiChar());
-        System.out.println(Emoji4jUtil.newInstance(ss).isEmojiChar());
+        System.out.println(Emoji4jUtil.isEmojiChar(s));
+        System.out.println(Emoji4jUtil.isEmojiChar(ss));
     }
 }
