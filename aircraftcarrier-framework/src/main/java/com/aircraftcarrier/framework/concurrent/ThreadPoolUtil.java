@@ -131,7 +131,9 @@ public class ThreadPoolUtil {
      * @param action action
      */
     public static void invokeVoid(RecursiveAction action) {
-        invokeVoid(newDefaultForkJoinPool(), action);
+        ForkJoinPool forkJoinPool = newDefaultForkJoinPool();
+        invokeVoid(forkJoinPool, action);
+        forkJoinPool.shutdown();
     }
 
 
@@ -142,7 +144,9 @@ public class ThreadPoolUtil {
      * @param parallelism parallelism
      */
     public static void invokeVoid(RecursiveAction action, int parallelism) {
-        invokeVoid(ExecutorUtil.newWorkStealingPool(parallelism, "action"), action);
+        ForkJoinPool forkJoinPool = ExecutorUtil.newWorkStealingPool(parallelism, "action");
+        invokeVoid(forkJoinPool, action);
+        forkJoinPool.shutdown();
     }
 
 
@@ -163,7 +167,9 @@ public class ThreadPoolUtil {
      * @param callableVoid callableVoid
      */
     public static void invokeVoid(CallableVoid callableVoid) {
-        invokeVoid(newDefaultExecutorService(), callableVoid);
+        ExecutorService executorService = newDefaultExecutorService();
+        invokeVoid(executorService, callableVoid);
+        executorService.shutdown();
     }
 
 
@@ -184,7 +190,9 @@ public class ThreadPoolUtil {
      * @param asyncBatchActions asyncBatchActions
      */
     public static void invokeAllVoid(List<CallableVoid> asyncBatchActions) {
-        invokeAllVoid(newDefaultExecutorService(), asyncBatchActions);
+        ExecutorService executorService = newDefaultExecutorService();
+        invokeAllVoid(executorService, asyncBatchActions);
+        executorService.shutdown();
     }
 
 
@@ -217,7 +225,10 @@ public class ThreadPoolUtil {
      * @return V
      */
     public static <V> V invoke(RecursiveTask<V> task) {
-        return invoke(newDefaultForkJoinPool(), task);
+        ForkJoinPool forkJoinPool = newDefaultForkJoinPool();
+        V invoke = invoke(forkJoinPool, task);
+        forkJoinPool.shutdown();
+        return invoke;
     }
 
 
