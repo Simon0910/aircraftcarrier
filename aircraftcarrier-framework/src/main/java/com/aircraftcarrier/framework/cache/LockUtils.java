@@ -30,7 +30,7 @@ public class LockUtils {
     /**
      * Thread: key：request
      */
-    private static final Map<Thread, Map<String, Request>> THREAD_LOCAL = MapUtil.newConcurrentHashMap(1000);
+    private static final Map<Thread, Map<String, Request>> LOCAL_THREAD_MAP = MapUtil.newConcurrentHashMap(1000);
 
     /**
      * key：Thread
@@ -40,7 +40,7 @@ public class LockUtils {
     /**
      * KEY_QUEUE
      */
-    private static final PluralUpdateQueue<Request, Request> KEY_QUEUE = new PluralUpdateQueue<>(LockUtils::doRedisLock, 20);
+    private static final PluralUpdateQueue<Request, Request> KEY_QUEUE = new PluralUpdateQueue<>(LockUtils::doRedisLock);
 
 
     static {
@@ -82,7 +82,7 @@ public class LockUtils {
     }
 
     private static boolean doLock(String key, long expire, long timeout, TimeUnit unit) {
-        Map<String, Request> keyMap = THREAD_LOCAL.get(Thread.currentThread());
+        Map<String, Request> keyMap = LOCAL_THREAD_MAP.get(Thread.currentThread());
         Request preRequest;
         if (keyMap != null && (preRequest = keyMap.get(key)) != null) {
             // 可重入
@@ -120,7 +120,11 @@ public class LockUtils {
             return request;
         }
 
-        Map<String, Request> keyMap = THREAD_LOCAL.get(request.getRequestThread());
+        /*
+         * thread1: key1(ok),key2(ok),key1(incr ok)
+         * thread2: key1(not),key3(ok),key3(incr ok)
+         */
+        Map<String, Request> keyMap = LOCAL_THREAD_MAP.get(request.getRequestThread());
         Request preRequest;
         if (keyMap != null && (preRequest = keyMap.get(request.getLockKey())) != null) {
             // 可重入
@@ -138,7 +142,7 @@ public class LockUtils {
             }
             request.setLockInfo(lockInfo);
 
-            keyMap = THREAD_LOCAL.computeIfAbsent(request.getRequestThread(), k -> new HashMap<>(16));
+            keyMap = LOCAL_THREAD_MAP.computeIfAbsent(request.getRequestThread(), k -> new HashMap<>(16));
             Request reentryRequest = keyMap.get(request.getLockKey());
             if (reentryRequest == null) {
                 keyMap.put(request.getLockKey(), request);
@@ -157,7 +161,7 @@ public class LockUtils {
     }
 
     public static void unLock(String key) {
-        Map<String, Request> keyMap = THREAD_LOCAL.get(Thread.currentThread());
+        Map<String, Request> keyMap = LOCAL_THREAD_MAP.get(Thread.currentThread());
         Request preRequest;
         if (keyMap != null && (preRequest = keyMap.get(key)) != null) {
             if (preRequest.getAcquireCount() == 0) {
@@ -169,7 +173,7 @@ public class LockUtils {
 
                 keyMap.remove(preRequest.getLockKey());
                 if (keyMap.isEmpty()) {
-                    THREAD_LOCAL.remove(Thread.currentThread());
+                    LOCAL_THREAD_MAP.remove(Thread.currentThread());
                 }
 
                 boolean unLocked = doUnLock(preRequest.getLockInfo(), 3);

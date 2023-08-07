@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.concurrent;
 
-import jdk.internal.misc.Unsafe;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
@@ -17,18 +18,17 @@ import java.util.function.Function;
  */
 @Slf4j
 public class PluralUpdateQueue<R, S> {
-
-    private static final Unsafe U = Unsafe.getUnsafe();
-    private static final long STATE = U.objectFieldOffset(PluralUpdateQueue.class, "state");
+    /**
+     * <a href="https://www.baeldung.com/java-thread-stop">...</a>
+     */
+    private final AtomicBoolean running = new AtomicBoolean(false);
     private final ArrayBlockingQueue<RequestWrapper<R, S>> workQueue = new ArrayBlockingQueue<>(1024);
     private final Function<R, S> handler;
     private final ExecutorService mainWorker = ExecutorUtil.newCachedThreadPoolBlock(1, "bossWorker");
     private final ExecutorService subWorker;
-    private volatile int state;
-    private volatile boolean isRunning = false;
 
     public PluralUpdateQueue(Function<R, S> handler) {
-        this(handler, Runtime.getRuntime().availableProcessors());
+        this(handler, Runtime.getRuntime().availableProcessors() * 2);
     }
 
     public PluralUpdateQueue(Function<R, S> handler, int nThreads) {
@@ -39,15 +39,14 @@ public class PluralUpdateQueue<R, S> {
     public CompletableFuture<S> submit(R request) throws InterruptedException {
         var requestWrapper = new RequestWrapper<R, S>(request);
         workQueue.put(requestWrapper);
-        start();
+        checkAndStart();
         return requestWrapper.getFuture();
     }
 
     public CompletableFuture<S> submit(R request, long timeout, TimeUnit unit) throws InterruptedException {
-        var requestWrapper = new RequestWrapper<R, S>(request);
-        boolean offer = workQueue.offer(requestWrapper, timeout, unit);
-        if (offer) {
-            start();
+        RequestWrapper<R, S> requestWrapper = new RequestWrapper<>(request);
+        if (workQueue.offer(requestWrapper, timeout, unit)) {
+            checkAndStart();
             return requestWrapper.getFuture();
         }
         CompletableFuture<S> completableFuture = new CompletableFuture<>();
@@ -55,8 +54,8 @@ public class PluralUpdateQueue<R, S> {
         return completableFuture;
     }
 
-    public void start() {
-        if (!isRunning() && compareAndSetState(0, 1)) {
+    public void checkAndStart() {
+        if (!isRunning() && running.compareAndSet(false, true)) {
             // 此时前一个while死循环可能还没死好, 所以本次while采用Block策略
             log.info("startup...");
             mainWorker.execute(this::run);
@@ -64,43 +63,42 @@ public class PluralUpdateQueue<R, S> {
     }
 
     public void run() {
-        isRunning = true;
-        while (isRunning) {
-            Optional<RequestWrapper<R, S>> item = take();
+        running.set(true);
+        while (running.get()) {
+            Optional<RequestWrapper<R, S>> item = pollTimeout();
             // 30秒还没获取到请请求，shutdown
             item.ifPresentOrElse(requestWrapper -> subWorker.execute(() -> {
                 try {
                     S response = handler.apply(requestWrapper.getRequest());
                     requestWrapper.complete(response);
                 } catch (Exception e) {
+                    log.error("thread is InterruptedException -> ", e);
                     requestWrapper.completeExceptionally(e);
                 }
-            }), this::shutdown);
+            }), this::stoppingPoll);
         }
     }
 
-    private Optional<RequestWrapper<R, S>> take() {
+    private Optional<RequestWrapper<R, S>> pollTimeout() {
         try {
             return Optional.ofNullable(workQueue.poll(10000, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            log.error("thread in Queue is InterruptedException -> ", e);
             return Optional.empty();
         }
     }
 
-    public void shutdown() {
-        this.state = 0;
-        this.isRunning = false;
+    public void stoppingPoll() {
+        running.set(false);
     }
 
     public boolean isRunning() {
-        return this.isRunning;
+        return this.running.get();
     }
 
-    private boolean compareAndSetState(int expect, int update) {
-        return U.compareAndSetInt(this, STATE, expect, update);
-    }
 
+    @Getter
     static class RequestWrapper<R, S> {
         private final CompletableFuture<S> future;
         private final R request;
@@ -110,20 +108,12 @@ public class PluralUpdateQueue<R, S> {
             this.future = new CompletableFuture<>();
         }
 
-        public CompletableFuture<S> getFuture() {
-            return future;
-        }
-
-        public R getRequest() {
-            return request;
-        }
-
         public void complete(S response) {
             future.complete(response);
         }
 
         public void completeExceptionally(Exception e) {
-            e.printStackTrace();
+            log.error("completeExceptionally -> ", e);
             getFuture().completeExceptionally(e);
         }
     }
