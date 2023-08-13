@@ -75,7 +75,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
      */
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Object errorLock = new Object();
-    private final Worker<T> worker;
+    private final Task<T> task;
     private final int batchSize;
     private final LinkedList<T> batchContainer;
     private final HashMap<String, String> errorMapSnapshot = new HashMap<>();
@@ -108,16 +108,16 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
     // https://cloud.tencent.com/developer/news/783592
     private MappedByteBuffer byteBuffer;
 
-    public UploadDataListener(TaskConfig config, Worker<T> worker) throws IOException {
+    public UploadDataListener(TaskConfig config, Task<T> task) throws IOException {
         this.config = config;
         this.batchSize = config.getBatchSize();
         this.batchContainer = new LinkedList<>();
         this.threadPoolExecutor = newFixedThreadPoolWithSyncBockedPolicy(config.getThreadNum(), config.getPoolName());
-        this.worker = worker;
+        this.task = task;
         this.successMap = Maps.newHashMapWithExpectedSize(config.getThreadNum());
         this.fromSheetRowNo = config.getFromSheetRowNo();
         this.endSheetRowNo = config.getEndSheetRowNo();
-        this.autoCheckTimer = new AutoCheckAbnormalScheduler(worker);
+        this.autoCheckTimer = new AutoCheckAbnormalScheduler(task);
         loadSnapshot();
         startRefreshSnapshot();
         startAutoCheckTimer();
@@ -285,7 +285,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
             return;
         }
 
-        if (!worker.check(uploadData)) {
+        if (!task.check(uploadData)) {
             return;
         }
 
@@ -399,7 +399,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         log.info("doWorker - threadBatchList [{}~{}]", firstKey, lastKey);
         String threadNo = ThreadUtil.getThreadNo();
         try {
-            worker.doWorker(threadBatchList);
+            task.doWorker(threadBatchList);
             // 记录最大行号
             successMap.put(threadNo, lastKey);
             successNum.add(size);
@@ -415,7 +415,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
                 try {
                     LinkedList<T> singeList = new LinkedList<>();
                     singeList.add(singeData);
-                    worker.doWorker(singeList);
+                    task.doWorker(singeList);
                     successMap.put(threadNo, singeKey);
                     successNum.increment();
                 } catch (Exception ex) {
@@ -485,7 +485,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
 
     private void doRefreshSuccessMapSnapshot() {
         if (successMap.isEmpty()) {
-            log.info("doRefresh successMap is Empty");
+            log.debug("doRefresh successMap is Empty");
             return;
         }
         try {

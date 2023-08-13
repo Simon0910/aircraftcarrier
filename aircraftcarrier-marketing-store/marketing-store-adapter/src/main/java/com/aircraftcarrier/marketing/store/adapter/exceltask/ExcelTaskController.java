@@ -1,8 +1,6 @@
 package com.aircraftcarrier.marketing.store.adapter.exceltask;
 
-import com.aircraftcarrier.framework.exceltask.WorkTask;
-import com.aircraftcarrier.marketing.store.adapter.exceltask.task01.MyExcelData;
-import com.aircraftcarrier.marketing.store.adapter.exceltask.task01.MyWorker;
+import com.aircraftcarrier.marketing.store.adapter.exceltask.task01.MyExcelTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,39 +19,37 @@ import java.io.IOException;
 public class ExcelTaskController {
 
     @Resource
-    private WorkTask task;
-    @Resource
-    private MyWorker myWorker;
+    private MyExcelTask myExcelTask;
 
 
     @GetMapping("/start")
     public String start(String fileName) {
         // 可以使用对象存储获取数据流
         if (StringUtils.hasText(fileName)) {
-            myWorker.config().setExcelFileClassPath("files/" + fileName + ".xlsx");
+            myExcelTask.config().setExcelFileClassPath("files/" + fileName + ".xlsx");
         }
-        return task.start(myWorker, MyExcelData.class);
+        return myExcelTask.start();
     }
 
     @GetMapping("/stop")
     public String stop() {
-        return task.stop(myWorker);
+        return myExcelTask.stop();
     }
 
     @GetMapping("/reset")
     public String reset() {
-        return task.reset(myWorker);
+        return myExcelTask.reset();
     }
 
 
     @GetMapping("/resetSuccessSheetRow")
     public String resetSuccessSheetRow(String maxSuccessSheetRow) throws IOException {
-        return task.resetSuccessSheetRow(myWorker, maxSuccessSheetRow);
+        return myExcelTask.resetSuccessSheetRow(maxSuccessSheetRow);
     }
 
     @GetMapping("/settingFromWithEnd")
     public String settingFromWithEnd(String fromSheetRow, String endSheetRow) {
-        return task.settingFromWithEnd(myWorker, fromSheetRow, endSheetRow);
+        return myExcelTask.settingFromWithEnd(fromSheetRow, endSheetRow);
     }
 
 }

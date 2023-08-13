@@ -1,13 +1,13 @@
 package com.aircraftcarrier.framework.exceltask;
 
 /**
- * AbstractWorker
+ * AbstractTask
  *
  * @author zhipengliu
  * @date 2023/4/20
  * @since 1.0
  */
-public abstract class AbstractWorker<T> implements Worker<T> {
+public abstract class AbstractTask<T extends AbstractUploadData> implements Task<T> {
     private volatile TaskConfig config;
     private boolean started = false;
     private boolean stopped = false;
@@ -75,7 +75,7 @@ public abstract class AbstractWorker<T> implements Worker<T> {
     }
 
     @Override
-    public void start() {
+    public void doStart() {
         taskThread.start();
     }
 }

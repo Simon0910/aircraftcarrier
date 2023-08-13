@@ -1,47 +1,24 @@
 package com.aircraftcarrier.framework.exceltask;
 
-import java.util.LinkedList;
+import java.io.IOException;
 
 /**
+ * Worker
+ *
  * @author zhipengliu
+ * @date 2023/8/13
+ * @since 1.0
  */
-public interface Worker<T> {
+interface Worker<T extends AbstractUploadData> {
 
-    TaskConfig config();
+    String start();
 
-    boolean isStarted();
+    String stop();
 
-    void setStarted(boolean started);
+    String reset();
 
-    boolean isStopped();
+    String resetSuccessSheetRow(String maxSuccessSheetRow) throws IOException;
 
-    void setStopped(boolean stopped);
+    String settingFromWithEnd(String fromSheetRow, String endSheetRow);
 
-    void setTaskThread(Thread taskThread);
-
-    /**
-     * check
-     *
-     * @param t 行数据
-     * @return true: 通过， false：忽略
-     */
-    default boolean check(T t) {
-        return true;
-    }
-
-    /**
-     * 如果中途抛出未知异常：默认当前一批任务全部失败处理，下次跳过执行
-     * doWorker
-     *
-     * @param uploadDataList 一批数据
-     */
-    void doWorker(LinkedList<T> uploadDataList);
-
-    boolean isAlive();
-
-    boolean isInterrupted();
-
-    void interrupt();
-
-    void start();
 }

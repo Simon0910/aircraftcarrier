@@ -27,7 +27,7 @@ import java.util.List;
  * @author zhipengliu
  */
 @Slf4j
-public class WorkTask implements ApplicationContextClosedEvent {
+public class TaskExecutor implements ApplicationContextClosedEvent {
 
     private static final List<UploadDataListener<?>> listeners = new ArrayList<>();
 
@@ -39,41 +39,40 @@ public class WorkTask implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String start(Worker<T> worker, Class<T> modelClass) {
-        log.info("snapshotPath 位置：{}", worker.config().getSnapshotPath());
-        if (worker.isStarted()) {
+    public <T extends AbstractUploadData> String start(Task<T> task, Class<T> modelClass) {
+        if (task.isStarted()) {
             return "task is started !";
         }
         synchronized (this) {
-            if (worker.isStarted()) {
+            if (task.isStarted()) {
                 return "task is started !";
             }
 
-            worker.setTaskThread(new Thread(() -> {
+            task.setTaskThread(new Thread(() -> {
                 try {
-                    doRead(worker, modelClass);
+                    doRead(task, modelClass);
                 } catch (Exception e) {
                     log.error("doRead error: ", e);
                 } finally {
-                    worker.setStarted(false);
+                    task.setStarted(false);
                 }
             }));
 
-            worker.setStopped(false);
-            worker.setStarted(true);
+            task.setStopped(false);
+            task.setStarted(true);
             // 保证先 started = true 然后 started = false
-            worker.start();
+            task.doStart();
             return "start...";
         }
     }
 
-    private <T extends AbstractUploadData> void doRead(Worker<T> worker, Class<T> modelClass) throws IOException {
+    private <T extends AbstractUploadData> void doRead(Task<T> task, Class<T> modelClass) throws IOException {
         long start = System.currentTimeMillis();
 
-        InputStream inputStream = getExcelFileInputStream(worker.config());
+        InputStream inputStream = getExcelFileInputStream(task.config());
         UploadDataListener<T> listener = null;
         try {
-            listener = new UploadDataListener<>(worker.config(), worker);
+            listener = new UploadDataListener<>(task.config(), task);
             listeners.add(listener);
             ExcelReader excelReader = EasyExcelFactory.read(inputStream, modelClass, listener).autoCloseStream(true).build();
             List<ReadSheet> readSheets = excelReader.excelExecutor().sheetList();
@@ -90,22 +89,22 @@ public class WorkTask implements ApplicationContextClosedEvent {
             listeners.remove(listener);
         }
 
-        log.info("doRead: {}", System.currentTimeMillis() - start);
+        log.info("doRead elapsed time: {} ms.", System.currentTimeMillis() - start);
     }
 
 
-    public <T extends AbstractUploadData> String stop(Worker<T> worker) {
-        if (worker.isStopped()) {
+    public <T extends AbstractUploadData> String stop(Task<T> task) {
+        if (task.isStopped()) {
             return "task already stopped";
         }
         synchronized (this) {
-            if (worker.isStopped()) {
+            if (task.isStopped()) {
                 return "task already stopped";
             }
 
-            if (worker.isStarted()) {
-                worker.interrupt();
-                worker.setStopped(true);
+            if (task.isStarted()) {
+                task.interrupt();
+                task.setStopped(true);
                 return "stop...";
             }
             return "task not start";
@@ -114,12 +113,12 @@ public class WorkTask implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String reset(Worker<T> worker) {
-        if (worker.isStarted()) {
+    public <T extends AbstractUploadData> String reset(Task<T> task) {
+        if (task.isStarted()) {
             return "already started";
         }
         synchronized (this) {
-            if (worker.isStarted()) {
+            if (task.isStarted()) {
                 return "already started";
             }
 
@@ -127,9 +126,9 @@ public class WorkTask implements ApplicationContextClosedEvent {
             DateTimeFormatter dateTimeFormatter = dateTimeFormatterBuilder.toFormatter();
             String nowDatetime = LocalDateTime.now().format(dateTimeFormatter) + "_";
 
-            String successMapSnapshotFilePath = worker.config().getSuccessMapSnapshotFilePath();
+            String successMapSnapshotFilePath = task.config().getSuccessMapSnapshotFilePath();
             String newFilePath = successMapSnapshotFilePath.substring(0, successMapSnapshotFilePath.indexOf(TaskConfig.SUCCESS_MAP_FILENAME)) + nowDatetime + TaskConfig.SUCCESS_MAP_FILENAME;
-            File file = new File(worker.config().getSuccessMapSnapshotFilePath());
+            File file = new File(task.config().getSuccessMapSnapshotFilePath());
             file.setReadable(true);
             file.setWritable(true);
             File newFile = new File(newFilePath);
@@ -142,9 +141,9 @@ public class WorkTask implements ApplicationContextClosedEvent {
                 log.error("Failed to rename SuccessMap file.");
             }
 
-            String errorMapSnapshotFilePath = worker.config().getErrorMapSnapshotFilePath();
+            String errorMapSnapshotFilePath = task.config().getErrorMapSnapshotFilePath();
             newFilePath = errorMapSnapshotFilePath.substring(0, errorMapSnapshotFilePath.indexOf(TaskConfig.ERROR_MAP_FILENAME)) + nowDatetime + TaskConfig.ERROR_MAP_FILENAME;
-            file = new File(worker.config().getErrorMapSnapshotFilePath());
+            file = new File(task.config().getErrorMapSnapshotFilePath());
             file.setReadable(true);
             file.setWritable(true);
             newFile = new File(newFilePath);
@@ -161,20 +160,20 @@ public class WorkTask implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String resetSuccessSheetRow(Worker<T> worker, String maxSuccessSheetRow) throws IOException {
-        if (worker.isStarted()) {
+    public <T extends AbstractUploadData> String resetSuccessSheetRow(Task<T> task, String maxSuccessSheetRow) throws IOException {
+        if (task.isStarted()) {
             return "already started";
         }
         synchronized (this) {
-            if (worker.isStarted()) {
+            if (task.isStarted()) {
                 return "already started";
             }
 
             TaskConfig.checkSheetRow(maxSuccessSheetRow);
 
-            worker.config().preCheckFile();
+            task.config().preCheckFile();
 
-            try (BufferedWriter br = new BufferedWriter(new FileWriter(worker.config().getSuccessMapSnapshotFilePath()))) {
+            try (BufferedWriter br = new BufferedWriter(new FileWriter(task.config().getSuccessMapSnapshotFilePath()))) {
                 br.write(maxSuccessSheetRow + TaskConfig.END);
                 br.flush();
             }
@@ -183,19 +182,19 @@ public class WorkTask implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String settingFromWithEnd(Worker<T> worker, String fromSheetRow, String endSheetRow) {
-        if (worker.isStarted()) {
+    public <T extends AbstractUploadData> String settingFromWithEnd(Task<T> task, String fromSheetRow, String endSheetRow) {
+        if (task.isStarted()) {
             return "already started";
         }
         synchronized (this) {
-            if (worker.isStarted()) {
+            if (task.isStarted()) {
                 return "already started";
             }
 
             // set from
-            worker.config().setFromSheetRowNo(fromSheetRow);
-            worker.config().setEndSheetRowNo(endSheetRow);
-            worker.config().doCheckConfig();
+            task.config().setFromSheetRowNo(fromSheetRow);
+            task.config().setEndSheetRowNo(endSheetRow);
+            task.config().doCheckConfig();
             return "settingFromAndEnd ok";
         }
     }

@@ -1,7 +1,8 @@
 package com.aircraftcarrier.marketing.store.adapter.exceltask.task01;
 
-import com.aircraftcarrier.framework.exceltask.AbstractWorker;
+import com.aircraftcarrier.framework.exceltask.AbstractTaskWorker;
 import com.aircraftcarrier.framework.exceltask.TaskConfig;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import java.util.LinkedList;
  */
 @Component
 @Slf4j
-public class MyWorker extends AbstractWorker<MyExcelData> {
+public class MyExcelTask extends AbstractTaskWorker<MyExcelData> {
     @Value("${myExcelTask.switch.excelFileClassPath:}")
     private String excelFileClassPath;
     @Value("${myExcelTask.threadNum:1}")
@@ -35,7 +36,8 @@ public class MyWorker extends AbstractWorker<MyExcelData> {
     public TaskConfig taskConfig() {
         return new TaskConfig.TaskConfigBuilder()
                 .excelFileClassPath(excelFileClassPath)
-                .threadNum(threadNum)
+                // 注意：单线程顺序执行，多线程无序执行
+                // .threadNum(threadNum)
                 .poolName(poolName)
                 .refreshSnapshotPeriod(refreshSnapshotPeriod)
                 .snapshotPathPath(snapshotPath)
@@ -61,12 +63,10 @@ public class MyWorker extends AbstractWorker<MyExcelData> {
      */
     @Override
     public void doWorker(LinkedList<MyExcelData> threadBatchList) {
-        MyExcelData first = threadBatchList.getFirst();
-        MyExcelData last = threadBatchList.getLast();
-        log.info("MyWorker [{} - {}] start", first.getRowNo(), last.getRowNo());
         for (MyExcelData myExcelData : threadBatchList) {
             try {
                 Thread.sleep(200);
+                log.info("MyExcelTask excelData: {}", JSON.toJSONString(myExcelData));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

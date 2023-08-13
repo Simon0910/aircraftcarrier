@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * AutoCheckTimer
+ * AutoCheckAbnormalScheduler
  *
  * @author zhipengliu
  * @date 2023/4/1
@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 public class AutoCheckAbnormalScheduler {
 
     /**
-     * config
+     * Task
      */
-    private final Worker<?> worker;
+    private final Task<?> task;
     /**
      * 检测是否连续报错，则停止任务
      */
@@ -43,9 +43,9 @@ public class AutoCheckAbnormalScheduler {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 
-    public AutoCheckAbnormalScheduler(Worker<?> worker) {
-        this.worker = worker;
-        this.abnormalMap = Maps.newHashMapWithExpectedSize(worker.config().getAbnormalSampleSize());
+    public AutoCheckAbnormalScheduler(Task<?> task) {
+        this.task = task;
+        this.abnormalMap = Maps.newHashMapWithExpectedSize(task.config().getAbnormalSampleSize());
     }
 
     /**
@@ -68,7 +68,7 @@ public class AutoCheckAbnormalScheduler {
 
     public void putAbnormal(String sheetNoRowNo) {
         threadPoolExecutor.execute(() -> {
-            if (worker.config().isEnableAbnormalAutoCheck()) {
+            if (task.config().isEnableAbnormalAutoCheck()) {
                 synchronized (this) {
                     abnormalMap.put(sheetNoRowNo, CharSequenceUtil.EMPTY);
                 }
@@ -82,7 +82,7 @@ public class AutoCheckAbnormalScheduler {
     private void autoCheckForAbnormal() {
         // 异常采样数
         int size = abnormalMap.size();
-        if (size < worker.config().getAbnormalSampleSize()) {
+        if (size < task.config().getAbnormalSampleSize()) {
             return;
         }
 
@@ -99,14 +99,15 @@ public class AutoCheckAbnormalScheduler {
         Arrays.sort(arr);
 
         // 是否100个以上连续报错
-        if (!hasConsecutiveElements(arr, worker.config().getConsecutiveAbnormalNum())) {
+        if (!hasConsecutiveElements(arr, task.config().getConsecutiveAbnormalNum())) {
             return;
         }
 
         // 100个以上连续报错，停止任务
-        log.info("AutoCheckTimer scheduler - 连续 {}个 报错，停止任务", worker.config().getConsecutiveAbnormalNum());
-        if (worker.isAlive() && !worker.isInterrupted()) {
-            worker.interrupt();
+        log.info("AutoCheckTimer scheduler - 连续 {}个 报错，停止任务", task.config().getConsecutiveAbnormalNum());
+        if (task.isAlive() && !task.isInterrupted()) {
+            task.interrupt();
+            // 可发送邮件提醒，任务停止
         }
     }
 
@@ -135,13 +136,13 @@ public class AutoCheckAbnormalScheduler {
     public void start() {
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                log.info("scheduler auto check...");
+                log.debug("scheduler auto check...");
                 autoCheckForAbnormal();
             } catch (Exception e) {
                 log.error("AutoCheckTimer scheduler error: {}", e.getMessage(), e);
                 e.printStackTrace();
             }
-        }, 0, worker.config().getAutoCheckForAbnormalPeriod(), TimeUnit.MILLISECONDS);
+        }, 0, task.config().getAutoCheckForAbnormalPeriod(), TimeUnit.MILLISECONDS);
     }
 
     public void stop() {

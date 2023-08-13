@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 public class ExcelTaskAutoConfiguration {
 
     @Bean
-    public WorkTask workTask() {
-        return new WorkTask();
+    public TaskExecutor workTask() {
+        return new TaskExecutor();
     }
 }

@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.exceltask;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
@@ -10,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * TaskConfig
+ *
  * @author zhipengliu
  */
 @Data
@@ -27,7 +30,9 @@ public class TaskConfig {
     private String fromSheetRowNo;
     private String endSheetRowNo;
 
+    @Getter
     private String successMapSnapshotFilePath;
+    @Getter
     private String errorMapSnapshotFilePath;
 
 
@@ -51,14 +56,6 @@ public class TaskConfig {
         if (s.length > 2) {
             throw new ExcelTaskException("sheetRow 格式错误");
         }
-    }
-
-    public String getSuccessMapSnapshotFilePath() {
-        return successMapSnapshotFilePath;
-    }
-
-    public String getErrorMapSnapshotFilePath() {
-        return errorMapSnapshotFilePath;
     }
 
     public void preCheckFile() throws IOException {
@@ -188,7 +185,7 @@ public class TaskConfig {
         }
 
 
-        public TaskConfig build(Worker<?> worker) {
+        public TaskConfig build(Task<?> task) {
             TaskConfig config = new TaskConfig();
 
             config.setThreadNum(threadNum);
@@ -205,7 +202,7 @@ public class TaskConfig {
             config.setAutoCheckForAbnormalPeriod(autoCheckForAbnormalPeriod);
 
             String separator = "/";
-            String fixPath = worker.getClass().getSimpleName() + "/snapshot/";
+            String fixPath = task.getClass().getSimpleName() + "/snapshot/";
             if (config.getSnapshotPath().endsWith(separator)) {
                 config.setSuccessMapSnapshotFilePath(config.getSnapshotPath() + fixPath + SUCCESS_MAP_FILENAME);
                 config.setErrorMapSnapshotFilePath(config.getSnapshotPath() + fixPath + ERROR_MAP_FILENAME);
