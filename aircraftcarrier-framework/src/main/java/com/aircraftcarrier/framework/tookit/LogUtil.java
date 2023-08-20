@@ -69,6 +69,19 @@ public class LogUtil {
     }
 
     /**
+     * 重置 logPre
+     *
+     * @param logPre logPre
+     */
+    public static void reset(String logPre) {
+        Map<String, Object> context = THREAD_LOCAL.get();
+        if (context != null) {
+            context.put(LOG_PRE, logPre);
+            context.put(LOG, context.get(TID) + COLON + logPre);
+        }
+    }
+
+    /**
      * 获取 tid:请求标识 - 用户日志
      *
      * @param log 用户日志
