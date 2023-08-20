@@ -34,10 +34,10 @@ public class LogUtil {
      * 使用方式
      * <pre> {@code
      *  try {
-     *      LogUtil.logStart("前缀1");
+     *      LogUtil.requestStart("前缀1");
      *      log.info(LogUtil.getLog("开始..{}", "aaa"));
      *      log.info(LogUtil.getLog("结束.."));
-     *      LogUtil.logStart("前缀2");
+     *      LogUtil.setLogPre("前缀2");
      *      log.info(LogUtil.getLog("开始.."));
      *      log.info(LogUtil.getLog("结束.."));
      *  } finally {
@@ -48,11 +48,11 @@ public class LogUtil {
      *
      * @param logPre 请求标识
      */
-    public static void logStart(String logPre) {
-        logStart(getTid(), logPre);
+    public static void requestStart(String logPre) {
+        requestStart(getTid(), logPre);
     }
 
-    public static void logStart(long tid, String logPre) {
+    public static void requestStart(long tid, String logPre) {
         long uid = getTid();
         tid = tid != 0 ? tid : uid;
         logPre = logPre == null ? EMPTY : logPre;
@@ -69,11 +69,24 @@ public class LogUtil {
     }
 
     /**
+     * getLogPre
+     *
+     * @return logPre logPre
+     */
+    public static String getLogPre() {
+        Map<String, Object> context = THREAD_LOCAL.get();
+        if (context != null) {
+            return String.valueOf(context.get(LOG_PRE));
+        }
+        return EMPTY;
+    }
+
+    /**
      * 重置 logPre
      *
      * @param logPre logPre
      */
-    public static void reset(String logPre) {
+    public static void setLogPre(String logPre) {
         Map<String, Object> context = THREAD_LOCAL.get();
         if (context != null) {
             context.put(LOG_PRE, logPre);
@@ -113,6 +126,15 @@ public class LogUtil {
             return System.nanoTime();
         }
         return (long) context.get(TID);
+    }
+
+    /**
+     * 获取 tid （作用于接口入参）
+     *
+     * @return tid
+     */
+    public static String getTidStr() {
+        return String.valueOf(getTid());
     }
 
     /**
