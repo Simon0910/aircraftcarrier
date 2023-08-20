@@ -65,7 +65,7 @@ public class LogUtil {
 
         context.put(TID, tid);
         context.put(LOG_PRE, logPre);
-        context.put(LOG, context.get(TID) + COLON + logPre);
+        context.put(LOG, tid + COLON + logPre);
     }
 
     /**
