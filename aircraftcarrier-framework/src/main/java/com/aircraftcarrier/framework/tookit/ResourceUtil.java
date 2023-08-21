@@ -48,12 +48,13 @@ public class ResourceUtil {
             }
 
             String resourceString = StringPool.EMPTY;
+            InputStream in = null;
             try {
                 Resource resource = new ClassPathResource(classPath);
-                InputStream inputStream = resource.getInputStream();
+                in = resource.getInputStream();
 
                 StringBuilder sb = new StringBuilder();
-                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 String content;
                 while ((content = br.readLine()) != null) {
                     sb.append(content);
@@ -63,6 +64,14 @@ public class ResourceUtil {
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("read class path resource error", e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             CACHE.put(classPath, resourceString);
             return resourceString;

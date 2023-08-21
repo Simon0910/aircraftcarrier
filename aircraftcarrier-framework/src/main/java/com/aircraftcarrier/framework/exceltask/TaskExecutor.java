@@ -69,12 +69,12 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     private <T extends AbstractUploadData> void doRead(Task<T> task, Class<T> modelClass) throws IOException {
         long start = System.currentTimeMillis();
 
-        InputStream inputStream = getExcelFileInputStream(task.config());
+        InputStream in = getExcelFileInputStream(task.config());
         UploadDataListener<T> listener = null;
         try {
             listener = new UploadDataListener<>(task.config(), task);
             listeners.add(listener);
-            ExcelReader excelReader = EasyExcelFactory.read(inputStream, modelClass, listener).autoCloseStream(true).build();
+            ExcelReader excelReader = EasyExcelFactory.read(in, modelClass, listener).autoCloseStream(true).build();
             List<ReadSheet> readSheets = excelReader.excelExecutor().sheetList();
             excelReader.read(readSheets);
             excelReader.finish();
@@ -83,6 +83,13 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
                 throw e;
             }
         } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             if (listener != null) {
                 listener.shutdown();
             }

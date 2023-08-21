@@ -444,7 +444,7 @@ public class ThreadPoolUtil {
                     log.error("Future got [{}] TimeoutException ", j, e);
                     f.cancel(true);
                     if (!ignoreException) {
-                        runtimeException = new ThreadException("Future got [" + j + "] TimeoutException ");
+                        runtimeException = new ThreadException("Future got [" + j + "] TimeoutException ", e);
                         break breakOut;
                     }
                 } catch (InterruptedException e) {
@@ -452,20 +452,20 @@ public class ThreadPoolUtil {
                     f.cancel(true);
                     Thread.currentThread().interrupt();
                     if (!ignoreException) {
-                        runtimeException = new ThreadException("Future got [" + j + "] InterruptedException ");
+                        runtimeException = new ThreadException("Future got [" + j + "] InterruptedException ", e);
                         break breakOut;
                     }
                 } catch (CancellationException e) {
                     // CancellationException | ExecutionException： 子线程死了
                     log.error("Future got [{}] CancellationException.", j, e);
                     if (!ignoreException) {
-                        runtimeException = new ThreadException("Future got [" + j + "] CancellationException ");
+                        runtimeException = new ThreadException("Future got [" + j + "] CancellationException ", e);
                         break breakOut;
                     }
                 } catch (ExecutionException e) {
                     log.error("Future got [{}] ExecutionException. ", j, e);
                     if (!ignoreException) {
-                        runtimeException = new ThreadException("Future got [" + j + "] ExecutionException ");
+                        runtimeException = new ThreadException("Future got [" + j + "] ExecutionException ", e);
                         break breakOut;
                     }
                 }

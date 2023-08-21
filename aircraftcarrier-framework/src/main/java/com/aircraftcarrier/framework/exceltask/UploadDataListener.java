@@ -108,7 +108,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
     // https://cloud.tencent.com/developer/news/783592
     private MappedByteBuffer byteBuffer;
 
-    public UploadDataListener(TaskConfig config, Task<T> task) throws IOException {
+    UploadDataListener(TaskConfig config, Task<T> task) throws IOException {
         this.config = config;
         this.batchSize = config.getBatchSize();
         this.batchContainer = new LinkedList<>();
