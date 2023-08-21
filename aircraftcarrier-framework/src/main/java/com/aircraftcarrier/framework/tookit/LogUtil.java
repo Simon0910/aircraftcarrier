@@ -83,13 +83,13 @@ public class LogUtil {
         Map<String, Object> context = THREAD_LOCAL.get();
         if (context == null) {
             context = MapUtil.newHashMap(4);
+            // orderNo etc.
+            context.put(FIXED_PRE, EMPTY);
             THREAD_LOCAL.set(context);
         }
 
         // tid
         context.put(TID, tid);
-        // orderNo etc.
-        context.put(FIXED_PRE, EMPTY);
         // 模块名称
         context.put(LOG_PRE, logPre);
         // tid orderNo 模块名称
