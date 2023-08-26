@@ -20,15 +20,15 @@ public class AccountLogListener {
     @Async
     @EventListener(AccountEvent.class)
     public void onApplicationEvent(AccountEvent accountEvent) {
-        log.info("Async AccountLogListener 触发器触发了,参数：{}", JSONUtil.toJsonStr(accountEvent.getData()));
-        LoginUser loginUser3 = LoginUserUtil.getLoginUser();
-        log.info("3-LoginUser：{}", JsonUtil.toJson(loginUser3));
+        log.info("异步触发器触发了,参数：{}", JSONUtil.toJsonStr(accountEvent.getData()));
+        LoginUser loginUser = LoginUserUtil.getLoginUser();
+        log.info("异步触发器触发了,loginUser：{}", JsonUtil.toJson(loginUser));
     }
 
     @EventListener(AccountEvent.class)
     public void onApplicationEventSync(AccountEvent accountEvent) {
-        log.info("Sync AccountLogListener 触发器触发了,参数：{}", JSONUtil.toJsonStr(accountEvent.getData()));
-        LoginUser loginUser4 = LoginUserUtil.getLoginUser();
-        log.info("4-LoginUser：{}", JsonUtil.toJson(loginUser4));
+        log.info("同步触发器触发了,参数：{}", JSONUtil.toJsonStr(accountEvent.getData()));
+        LoginUser loginUser = LoginUserUtil.getLoginUser();
+        log.info("同步触发器触发了,loginUser：{}", JsonUtil.toJson(loginUser));
     }
 }

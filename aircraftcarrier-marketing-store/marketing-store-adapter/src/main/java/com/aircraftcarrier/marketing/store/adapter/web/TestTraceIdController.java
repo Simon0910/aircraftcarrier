@@ -88,7 +88,7 @@ public class TestTraceIdController {
         LoginUser loginUser = LoginUserUtil.getLoginUser();
         LogUtil.setTraceFixedName("orderNo");
         LogUtil.setTraceModuleName("模块1");
-        log.info("LoginUser：{}", LogUtil.toJsonString(loginUser));
+        log.info("Main LoginUser：{}", LogUtil.toJsonString(loginUser));
 
         new Thread(new TraceRunnable(() -> {
             log.info(LogUtil.getLog("线程1"));
