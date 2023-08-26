@@ -112,10 +112,10 @@ public class LogUtil {
      * <pre> {@code
      *  LogUtil.requestStart("订单号", "模块1");
      *  try {
-     *      log.info(LogUtil.getLog("入参: 【{}】", JSON.toJSONString(orderInfo)));
+     *      log.info(LogUtil.getLog("入参: 【{}】", LogUtil.toJsonString(orderInfo)));
      *      log.info(LogUtil.getLog("出参: 【{}】", "orderNo"));
      *      LogUtil.resetModule("模块2");
-     *      log.info(LogUtil.getLog("入参: 【{}】", JSON.toJSONString(orderInfo)));
+     *      log.info(LogUtil.getLog("入参: 【{}】", LogUtil.toJsonString(orderInfo)));
      *      log.info(LogUtil.getLog("出参: 【{}】", "orderNo"));
      *  } finally {
      *      LogUtil.requestEnd();
@@ -196,7 +196,7 @@ public class LogUtil {
      * 获取   tid 固定前缀 模块标识 - 用户日志
      *
      * @param log  例如:  接单入参orderInfo：{} {}
-     * @param args 例如: JSON.toJSONString(orderInfo)
+     * @param args 例如: LogUtil.toJsonString(orderInfo)
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     public static String getLog(String log, String... args) {
@@ -208,7 +208,7 @@ public class LogUtil {
      * 获取   tid 固定前缀 模块标识 - 用户日志
      *
      * @param log  例如:  接单入参orderInfo：{} {}
-     * @param args 例如: JSON.toJSONString(orderInfo)
+     * @param args 例如: LogUtil.toJsonString(orderInfo)
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     public static String getLogAutoJson(String log, Object... args) {
@@ -256,7 +256,7 @@ public class LogUtil {
                     }
                 }
             } else {
-                String argJson = JSON.toJSONString(argObj);
+                String argJson = toJsonString(argObj);
                 if (argJson.contains(LOG_PLACEHOLDER)) {
                     args[i] = StringUtils.replace(argJson, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
                 }
@@ -292,6 +292,14 @@ public class LogUtil {
         return getContextIfPresent().get(FULL_TID);
     }
 
+
+    /**
+     * @see JSON#toJSONString(Object)
+     */
+    public static String toJsonString(Object o) {
+        return JSON.toJSONString(o);
+    }
+
     /**
      * remove
      */
@@ -303,4 +311,5 @@ public class LogUtil {
         // removeContext
         removeContext();
     }
+
 }

@@ -36,6 +36,8 @@ public class TestTraceIdController {
         LogUtil.setTraceModuleName("校验模块");
         LogUtil.requestStart(Long.parseLong(TraceIdUtil.getTraceId()), "orderNo1", "校验模块1");
         try {
+            log.info("普通日志 {}, {}", LogUtil.toJsonString(null), LogUtil.toJsonString(new HashMap<>()));
+
             log.info(LogUtil.getLog("hello trace start"));
 
             Map<String, Object> orderInfo = new HashMap<>();
