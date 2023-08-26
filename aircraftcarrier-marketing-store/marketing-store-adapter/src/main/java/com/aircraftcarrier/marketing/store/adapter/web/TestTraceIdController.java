@@ -57,12 +57,13 @@ public class TestTraceIdController {
         } catch (Exception e) {
             log.error(LogUtil.getLog("请求查询订单接口异常"), e);
         } finally {
+            TraceIdUtil.setFixedName(null);
+            TraceIdUtil.setModuleName(null);
+            log.info(LogUtil.getLog("hello trace return"));
+
             LogUtil.requestEnd();
             i++;
         }
-        TraceIdUtil.setFixedName(null);
-        TraceIdUtil.setModuleName(null);
-        log.info(LogUtil.getLog("hello trace return"));
         return SingleResponse.ok("hello Trace");
     }
 
