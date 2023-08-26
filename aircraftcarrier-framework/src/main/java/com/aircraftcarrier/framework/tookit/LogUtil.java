@@ -54,7 +54,7 @@ public class LogUtil {
     }
 
     /**
-     * get`
+     * get
      */
     private static Map<String, String> getContextIfPresent() {
         Map<String, String> context = THREAD_LOCAL.get();
