@@ -22,6 +22,6 @@ public class ApplicationEventAllListener implements ApplicationListener {
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         Class<? extends ApplicationEvent> eventClass = event.getClass();
-        log.info("应用事件: " + eventClass.getSimpleName());
+        // log.debug("应用事件: " + eventClass.getSimpleName());
     }
 }

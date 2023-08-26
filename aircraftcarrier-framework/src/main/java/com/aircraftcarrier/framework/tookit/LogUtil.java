@@ -102,7 +102,24 @@ public class LogUtil {
         TraceIdUtil.setModuleName(moduleName);
     }
 
+    /**
+     * getRootTraceId
+     */
+    public static String getTraceId() {
+        return TraceIdUtil.getTraceIdOrUuid();
+    }
 
+    /**
+     * getRootTraceIdLong
+     */
+    public static long getTraceIdLong() {
+        try {
+            return Long.parseLong(getTraceId());
+        } catch (Exception e) {
+            log.warn("Root traceId is not a long, use default value " + getTid());
+            return getTid();
+        }
+    }
 
     /**
      * 请求一个标识

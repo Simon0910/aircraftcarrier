@@ -113,17 +113,18 @@ public class StringUtil {
         return StringUtils.endsWithIgnoreCase(str, suffix);
     }
 
-    public static String append(String str1, String str2, String separator) {
-        if (isBlank(str1)) {
-            str1 = EMPTY;
-        }
-        if (isBlank(str2)) {
-            str2 = EMPTY;
-        }
-        if (isEmpty(separator)) {
+    public static String append(String separator, String... string) {
+        if (isBlank(separator)) {
             separator = EMPTY;
         }
-        return str1 + separator + str2;
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0, len = string.length - 1; i <= len; i++) {
+            builder.append(string[i]);
+            if (i < len) {
+                builder.append(separator);
+            }
+        }
+        return builder.toString();
     }
 
 

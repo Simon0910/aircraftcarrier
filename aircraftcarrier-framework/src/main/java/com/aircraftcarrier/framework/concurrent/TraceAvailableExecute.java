@@ -1,8 +1,6 @@
 package com.aircraftcarrier.framework.concurrent;
 
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
-import com.aircraftcarrier.framework.tookit.StringPool;
-import com.aircraftcarrier.framework.tookit.StringUtil;
 import org.slf4j.MDC;
 
 import java.util.HashMap;
@@ -29,8 +27,14 @@ public class TraceAvailableExecute {
         // 传递traceId
         String traceId = parentContext.get(TraceIdUtil.TRACE_ID);
         if (traceId != null) {
-            String[] parentTraceId = traceId.split(StringPool.UNDERSCORE);
-            traceId = StringUtil.append(parentTraceId[parentTraceId.length - 1], String.valueOf(System.nanoTime()), StringPool.UNDERSCORE);
+            String[] traceIdArr = TraceIdUtil.splitTraceId(traceId);
+            String root = traceIdArr[0];
+            if (traceIdArr.length > 1) {
+                String parent = traceIdArr[1];
+                traceId = TraceIdUtil.append(root, TraceIdUtil.uuid(), parent);
+            } else {
+                traceId = TraceIdUtil.append(root, TraceIdUtil.uuid());
+            }
         } else {
             traceId = TraceIdUtil.uuid();
         }

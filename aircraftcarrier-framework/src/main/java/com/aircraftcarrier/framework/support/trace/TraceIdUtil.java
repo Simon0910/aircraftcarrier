@@ -1,10 +1,9 @@
 package com.aircraftcarrier.framework.support.trace;
 
+import com.aircraftcarrier.framework.tookit.StringPool;
+import com.aircraftcarrier.framework.tookit.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * TraceIdUtil
@@ -23,8 +22,32 @@ public class TraceIdUtil {
     private TraceIdUtil() {
     }
 
+    public static String[] splitTraceId(String traceId) {
+        if (traceId == null) {
+            return new String[0];
+        }
+        return traceId.split(StringPool.DASH);
+    }
+
+    public static String append(String root, String current) {
+        // traceId: root-current
+        return StringUtil.append(StringPool.DASH, root, current);
+    }
+
+    public static String append(String root, String current, String parent) {
+        // traceId: root-current-parent
+        return StringUtil.append(StringPool.DASH, root, current, parent);
+    }
+
     public static String getTraceId() {
-        return MDC.get(TRACE_ID);
+        String traceId = MDC.get(TRACE_ID);
+        String[] strings = splitTraceId(traceId);
+        if (strings.length == 1) {
+            return strings[0];
+        } else if (strings.length > 1) {
+            return strings[1];
+        }
+        return null;
     }
 
     public static void setTraceId(String traceId) {

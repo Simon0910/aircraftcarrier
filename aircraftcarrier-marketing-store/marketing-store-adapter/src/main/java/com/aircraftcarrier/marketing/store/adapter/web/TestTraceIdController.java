@@ -1,9 +1,14 @@
 package com.aircraftcarrier.marketing.store.adapter.web;
 
+import com.aircraftcarrier.framework.concurrent.TraceRunnable;
+import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.security.core.LoginUser;
+import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.LogUtil;
 import com.aircraftcarrier.framework.web.client.ApiException;
+import com.aircraftcarrier.marketing.store.client.TestService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -12,8 +17,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 测试
@@ -25,11 +33,14 @@ import java.util.Map;
 @RequestMapping(value = "/web/test/trace")
 @RestController
 public class TestTraceIdController {
-
+    private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(1, 1, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    @Resource
+    private TestService testService;
     private int i = 1;
 
+
     @ApiOperationSupport(order = 1)
-    @ApiOperation("hello")
+    @ApiOperation("hello trace")
     @GetMapping("/hello")
     public SingleResponse<String> hello() {
         LogUtil.setTraceFixedName("orderNo");
@@ -69,5 +80,52 @@ public class TestTraceIdController {
         return SingleResponse.ok("hello Trace");
     }
 
+
+    @ApiOperationSupport(order = 10)
+    @ApiOperation("事件发布")
+    @GetMapping("/publishEvent")
+    public SingleResponse<Void> publishEvent() {
+        LoginUser loginUser = LoginUserUtil.getLoginUser();
+        LogUtil.setTraceFixedName("orderNo");
+        LogUtil.setTraceModuleName("模块1");
+        log.info("LoginUser：{}", LogUtil.toJsonString(loginUser));
+
+        new Thread(new TraceRunnable(() -> {
+            log.info(LogUtil.getLog("线程1"));
+            LoginUser loginUser1 = LoginUserUtil.getLoginUser();
+            log.info(LogUtil.getLog("线程1 loginUser1：{}", LogUtil.toJsonString(loginUser1)));
+        })).start();
+
+        testService.publishEvent();
+
+        threadPoolExecutor.execute(() -> {
+            log.info(LogUtil.getLog("线程2"));
+            LoginUser loginUser2 = LoginUserUtil.getLoginUser();
+            log.info(LogUtil.getLog("线程3 loginUser2：{}", LogUtil.toJsonString(loginUser2)));
+        });
+
+        threadPoolExecutor.execute(() -> {
+            log.info(LogUtil.getLog("线程3"));
+            LoginUser loginUser3 = LoginUserUtil.getLoginUser();
+            log.info(LogUtil.getLog("线程3 loginUser3：{}", LogUtil.toJsonString(loginUser3)));
+
+            new Thread(new TraceRunnable(() -> {
+                log.info(LogUtil.getLog("线程4"));
+                LoginUser loginUser4 = LoginUserUtil.getLoginUser();
+                log.info(LogUtil.getLog("线程4 loginUser1：{}", LogUtil.toJsonString(loginUser4)));
+
+                new Thread(new TraceRunnable(() -> {
+                    LogUtil.requestStart(LogUtil.getTraceIdLong(), "orderNo5", "模块5");
+                    log.info(LogUtil.getLog("线程5"));
+                    LoginUser loginUser5 = LoginUserUtil.getLoginUser();
+                    log.info(LogUtil.getLog("线程5 loginUser5：{}", LogUtil.toJsonString(loginUser5)));
+                    LogUtil.requestEnd();
+                })).start();
+
+            })).start();
+        });
+
+        return SingleResponse.ok(null);
+    }
 
 }
