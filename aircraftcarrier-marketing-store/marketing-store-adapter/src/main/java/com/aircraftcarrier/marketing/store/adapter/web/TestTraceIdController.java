@@ -5,7 +5,6 @@ import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
-import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.LogUtil;
 import com.aircraftcarrier.framework.web.client.ApiException;
 import com.aircraftcarrier.marketing.store.client.TestService;
@@ -45,7 +44,7 @@ public class TestTraceIdController {
     public SingleResponse<String> hello() {
         LogUtil.setTraceFixedName("orderNo");
         LogUtil.setTraceModuleName("校验模块");
-        LogUtil.requestStart(Long.parseLong(TraceIdUtil.getTraceId()), "orderNo1", "校验模块1");
+
         try {
             log.info("普通日志 {}, {}", LogUtil.toJsonString(null), LogUtil.toJsonString(new HashMap<>()));
 
@@ -85,12 +84,18 @@ public class TestTraceIdController {
     @ApiOperation("事件发布")
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {
-        LoginUser loginUser = LoginUserUtil.getLoginUser();
         LogUtil.setTraceFixedName("orderNo");
         LogUtil.setTraceModuleName("模块1");
+
+        LogUtil.resetFixed("orderNo");
+        LogUtil.resetModule("main");
+
+        LoginUser loginUser = LoginUserUtil.getLoginUser();
+        log.info(LogUtil.getLog("start..."));
         log.info("Main LoginUser：{}", LogUtil.toJsonString(loginUser));
 
         new Thread(new TraceRunnable(() -> {
+            LogUtil.resetModule("线程1");
             log.info(LogUtil.getLog("线程1"));
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
             log.info(LogUtil.getLog("线程1 loginUser1：{}", LogUtil.toJsonString(loginUser1)));
@@ -99,27 +104,29 @@ public class TestTraceIdController {
         testService.publishEvent();
 
         threadPoolExecutor.execute(() -> {
+            LogUtil.resetModule("线程2");
             log.info(LogUtil.getLog("线程2"));
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
             log.info(LogUtil.getLog("线程3 loginUser2：{}", LogUtil.toJsonString(loginUser2)));
         });
 
         threadPoolExecutor.execute(() -> {
+            LogUtil.resetModule("线程3");
             log.info(LogUtil.getLog("线程3"));
             LoginUser loginUser3 = LoginUserUtil.getLoginUser();
             log.info(LogUtil.getLog("线程3 loginUser3：{}", LogUtil.toJsonString(loginUser3)));
 
             new Thread(new TraceRunnable(() -> {
+                LogUtil.resetModule("线程4");
                 log.info(LogUtil.getLog("线程4"));
                 LoginUser loginUser4 = LoginUserUtil.getLoginUser();
                 log.info(LogUtil.getLog("线程4 loginUser1：{}", LogUtil.toJsonString(loginUser4)));
 
                 new Thread(new TraceRunnable(() -> {
-                    LogUtil.requestStart(LogUtil.getTraceIdLong(), "orderNo5", "模块5");
+                    LogUtil.resetModule("线程5");
                     log.info(LogUtil.getLog("线程5"));
                     LoginUser loginUser5 = LoginUserUtil.getLoginUser();
                     log.info(LogUtil.getLog("线程5 loginUser5：{}", LogUtil.toJsonString(loginUser5)));
-                    LogUtil.requestEnd();
                 })).start();
 
             })).start();

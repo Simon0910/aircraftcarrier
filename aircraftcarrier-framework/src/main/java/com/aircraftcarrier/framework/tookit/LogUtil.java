@@ -42,8 +42,8 @@ public class LogUtil {
     private LogUtil() {
     }
 
-    private static long getRequestId() {
-        return System.nanoTime();
+    public static String uuid() {
+        return TraceIdUtil.uuid();
     }
 
     private static String fixString(String str) {
@@ -110,15 +110,10 @@ public class LogUtil {
     }
 
     /**
-     * getRootTraceIdLong
+     * getTraceIdLong
      */
-    public static long getTraceIdLong() {
-        try {
-            return Long.parseLong(getTraceId());
-        } catch (Exception e) {
-            log.warn("Root traceId is not a long, use default value " + getTid());
-            return getTid();
-        }
+    public static String getTraceIdLong() {
+        return getTraceId();
     }
 
     /**
@@ -143,23 +138,27 @@ public class LogUtil {
      * @param fixed 请求标识
      */
     public static void requestStart(String fixed) {
-        requestStart(getRequestId(), fixed, EMPTY);
+        requestStartByTid(uuid(), fixed, EMPTY);
     }
 
     public static void requestStart(String fixed, String module) {
-        requestStart(getRequestId(), fixed, module);
+        requestStartByTid(uuid(), fixed, module);
     }
 
-    public static void requestStart(long tid, String fixed) {
-        requestStart(tid, fixed, EMPTY);
+    public static void requestStartByTid(String tid) {
+        requestStartByTid(tid, EMPTY, EMPTY);
     }
 
-    public static void requestStart(long tid, String fixed, String module) {
+    public static void requestStartByTid(String tid, String fixed) {
+        requestStartByTid(tid, fixed, EMPTY);
+    }
+
+    public static void requestStartByTid(String tid, String fixed, String module) {
         // get
         Map<String, String> context = getContextIfPresent();
 
         // tid
-        context.put(TID, String.valueOf(tid));
+        context.put(TID, tid);
         // orderNo etc.
         context.put(FIXED, fixString(fixed));
         // 模块名称.
@@ -295,8 +294,8 @@ public class LogUtil {
      *
      * @return tid
      */
-    public static long getTid() {
-        return Long.parseLong(getContextIfPresent().get(TID));
+    public static String getTid() {
+        return getContextIfPresent().get(TID);
     }
 
 

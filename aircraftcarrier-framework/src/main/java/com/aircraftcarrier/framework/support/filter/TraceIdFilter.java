@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.support.filter;
 
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
+import com.aircraftcarrier.framework.tookit.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -39,19 +40,22 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-        // 设置日志ID
-        String traceId = TraceIdUtil.getTraceId();
-        if (traceId == null) {
-            TraceIdUtil.setTraceId(getTraceIdFromRequest(httpServletRequest));
-        }
-
         try {
+            // 设置日志ID
+            String traceId = TraceIdUtil.getTraceId();
+            if (traceId == null) {
+                String traceIdFromRequest = getTraceIdFromRequest(httpServletRequest);
+                LogUtil.requestStartByTid(traceIdFromRequest);
+                TraceIdUtil.setTraceId(traceIdFromRequest);
+            }
             filterChain.doFilter(httpServletRequest, httpServletResponse);
         } catch (Throwable throwable) {
             log.error("TraceIdFilter Throwable: ", throwable);
             throw throwable;
         } finally {
             TraceIdUtil.removeAll();
+            LogUtil.requestEnd();
         }
     }
+
 }

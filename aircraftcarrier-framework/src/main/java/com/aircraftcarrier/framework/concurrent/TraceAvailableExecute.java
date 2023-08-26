@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.concurrent;
 
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
+import com.aircraftcarrier.framework.tookit.LogUtil;
 import org.slf4j.MDC;
 
 import java.util.HashMap;
@@ -26,19 +27,21 @@ public class TraceAvailableExecute {
 
         // 传递traceId
         String traceId = parentContext.get(TraceIdUtil.TRACE_ID);
+        String current;
         if (traceId != null) {
             String[] traceIdArr = TraceIdUtil.splitTraceId(traceId);
             String root = traceIdArr[0];
             if (traceIdArr.length > 1) {
                 String parent = traceIdArr[1];
-                traceId = TraceIdUtil.append(root, TraceIdUtil.uuid(), parent);
+                traceId = TraceIdUtil.append(root, current = TraceIdUtil.uuid(), parent);
             } else {
-                traceId = TraceIdUtil.append(root, TraceIdUtil.uuid());
+                traceId = TraceIdUtil.append(root, current = TraceIdUtil.uuid());
             }
         } else {
-            traceId = TraceIdUtil.uuid();
+            traceId = current = TraceIdUtil.uuid();
         }
         curMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
+        LogUtil.requestStartByTid(current);
 
         // new ContextMap
         MDC.setContextMap(curMdcMap);
@@ -48,6 +51,7 @@ public class TraceAvailableExecute {
         } finally {
             // 任务执行完, 清除本地变量, 以防对后续任务有影响
             MDC.clear();
+            LogUtil.requestEnd();
         }
     }
 

@@ -34,7 +34,7 @@ public class LogUtilTest {
             log.info("==================================================================case1");
             LogUtil.resetModule("没有启动tid case1");
             log.info("" + LogUtil.getTid());
-            Assert.isTrue(0 == LogUtil.getTid());
+            Assert.isTrue("0".equals(LogUtil.getTid()));
 
             log.info(LogUtil.getFullTid());
             Assert.isTrue("0".equals(LogUtil.getFullTid()));
@@ -108,11 +108,11 @@ public class LogUtilTest {
 
             log.info("==================================================================case2");
             LogUtil.requestStart("启动tid case2");
-            long tid = LogUtil.getTid();
+            String tid = LogUtil.getTid();
             String fullTid = LogUtil.getFullTid();
 
             log.info("" + LogUtil.getTid());
-            Assert.isTrue(tid == LogUtil.getTid());
+            Assert.isTrue(tid.equals(LogUtil.getTid()));
 
             log.info(LogUtil.getFullTid());
             Assert.isTrue(fullTid.equals(LogUtil.getFullTid()));
