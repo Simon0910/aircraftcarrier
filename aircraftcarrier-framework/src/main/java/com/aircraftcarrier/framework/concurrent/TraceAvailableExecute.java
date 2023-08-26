@@ -32,7 +32,7 @@ public class TraceAvailableExecute {
             String[] parentTraceId = traceId.split(StringPool.UNDERSCORE);
             traceId = StringUtil.append(parentTraceId[parentTraceId.length - 1], String.valueOf(System.nanoTime()), StringPool.UNDERSCORE);
         } else {
-            traceId = TraceIdUtil.genUuid();
+            traceId = TraceIdUtil.uuid();
         }
         curMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
 

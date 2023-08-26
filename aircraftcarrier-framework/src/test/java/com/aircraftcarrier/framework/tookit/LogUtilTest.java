@@ -260,6 +260,16 @@ public class LogUtilTest {
             log.info(LogUtil.getLogAutoJson("4444: {}, {}", JSON.toJSONString(orderInfo)), "4444");
             Assert.isTrue((fullTid + " - 4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(LogUtil.getLogAutoJson("4444: {}, {}", JSON.toJSONString(orderInfo))));
 
+            log.info(LogUtil.getLogAutoJson("4444: {}, {}", nullObject), "4444");
+            Assert.isTrue((fullTid + " - 4444: null, {}").equals(LogUtil.getLogAutoJson("4444: {}, {}", JSON.toJSONString(nullObject))));
+
+            log.info(LogUtil.getLogAutoJson("4444: {}, {}", emptyObject), "4444");
+            Assert.isTrue((fullTid + " - 4444: { }, {}").equals(LogUtil.getLogAutoJson("4444: {}, {}", JSON.toJSONString(emptyObject))));
+
+            log.info(LogUtil.getLogAutoJson("4444: {}, {}", orderInfo), "4444");
+            Assert.isTrue((fullTid + " - 4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(LogUtil.getLogAutoJson("4444: {}, {}", JSON.toJSONString(orderInfo))));
+
+
             log.info("==================================================================case6");
             LogUtil.resetModule("case6");
             log.error(LogUtil.getLogAutoJson("5555 ."), e); // ok

@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.support.trace;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -15,8 +16,9 @@ import java.util.UUID;
 public class TraceIdUtil {
 
     public static final String TRACE_ID = "traceId";
-
     public static final String REQUEST_ID = "requestId";
+    public static final String FIXED_NAME = "fixedName";
+    public static final String MODULE_NAME = "moduleName";
 
     private TraceIdUtil() {
     }
@@ -29,8 +31,10 @@ public class TraceIdUtil {
         MDC.put(TRACE_ID, traceId);
     }
 
-    public static void removeTraceId() {
+    public static void removeAll() {
         MDC.remove(TRACE_ID);
+        MDC.remove(FIXED_NAME);
+        MDC.remove(MODULE_NAME);
     }
 
     /**
@@ -41,7 +45,7 @@ public class TraceIdUtil {
     public static String getTraceIdOrUuid() {
         String traceId = getTraceId();
         if (traceId == null) {
-            traceId = genUuid();
+            traceId = uuid();
         }
         return traceId;
     }
@@ -68,10 +72,26 @@ public class TraceIdUtil {
      * @return traceId
      */
     public static void setTraceIdByUuid() {
-        setTraceId(genUuid());
+        setTraceId(uuid());
     }
 
-    public static String genUuid() {
-        return UUID.randomUUID().toString().replace("-", "");
+    public static String uuid() {
+        // return UUID.randomUUID().toString().replace("-", "");
+        return String.valueOf(System.nanoTime());
     }
+
+    /**
+     * setFixedName
+     */
+    public static void setFixedName(String fixedName) {
+        MDC.put(FIXED_NAME, fixedName);
+    }
+
+    /**
+     * setModuleName
+     */
+    public static void setModuleName(String moduleName) {
+        MDC.put(MODULE_NAME, moduleName);
+    }
+
 }
