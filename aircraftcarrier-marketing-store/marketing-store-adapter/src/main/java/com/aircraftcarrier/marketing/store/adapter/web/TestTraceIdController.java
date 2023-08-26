@@ -32,8 +32,8 @@ public class TestTraceIdController {
     @ApiOperation("hello")
     @GetMapping("/hello")
     public SingleResponse<String> hello() {
-        TraceIdUtil.setFixedName("orderNo");
-        TraceIdUtil.setModuleName("校验模块");
+        LogUtil.setTraceFixedName("orderNo");
+        LogUtil.setTraceModuleName("校验模块");
         LogUtil.requestStart(Long.parseLong(TraceIdUtil.getTraceId()), "orderNo1", "校验模块1");
         try {
             log.info(LogUtil.getLog("hello trace start"));
@@ -57,8 +57,8 @@ public class TestTraceIdController {
         } catch (Exception e) {
             log.error(LogUtil.getLog("请求查询订单接口异常"), e);
         } finally {
-            TraceIdUtil.setFixedName(null);
-            TraceIdUtil.setModuleName(null);
+            LogUtil.setTraceFixedName(null);
+            LogUtil.setTraceModuleName(null);
             log.info(LogUtil.getLog("hello trace return"));
 
             LogUtil.requestEnd();
