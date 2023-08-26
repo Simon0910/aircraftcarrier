@@ -298,6 +298,20 @@ public class LogUtil {
         return getContextIfPresent().get(TID);
     }
 
+    /**
+     * 获取 tid （作用于接口入参）
+     *
+     * @return tid
+     */
+    public static long getTidLong() {
+        try {
+            return Long.parseLong(getContextIfPresent().get(TID));
+        } catch (Exception e) {
+            long l = System.nanoTime();
+            log.info(getLog("{} ==> {}"), getContextIfPresent().get(TID), l);
+            return l;
+        }
+    }
 
     /**
      * 获取 丰富的tid
