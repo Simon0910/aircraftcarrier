@@ -1,11 +1,16 @@
 package com.aircraftcarrier.framework.tookit;
 
-import cn.hutool.core.map.MapUtil;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.util.StringUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * LogUtil
@@ -16,39 +21,72 @@ import java.util.Map;
  */
 @Slf4j
 public class LogUtil {
-    public static void main(String[] args) {
-        try {
-            log.info(LogUtil.getLog("1111: {}", "aaa"));
-            log.info(LogUtil.getLog("2222: ", ""));
-            LogUtil.requestStart("模块1");
-            log.info(LogUtil.getLog("1111: {}", "aaa"));
-            log.info(LogUtil.getLog("2222"));
-            LogUtil.resetLogPre("模块2");
-            LogUtil.resetFixedPre("orderNo");
-            log.info(LogUtil.getLog("3333: {}"), "hhh");
-            LogUtil.resetFixedPre(null);
-            LogUtil.resetLogPre(null);
-            log.info(LogUtil.getLog("4444"));
-            log.info("" + LogUtil.getTid());
-        } finally {
-            LogUtil.remove();
-        }
-    }
-
-    private static final ThreadLocal<Map<String, Object>> THREAD_LOCAL = new ThreadLocal<>();
-
+    private static final ThreadLocal<Map<String, String>> THREAD_LOCAL = new ThreadLocal<>();
     private static final String TID = "tid";
+    private static final String FIXED = "fixed";
+    private static final String MODULE = "module";
+    private static final String FULL_TID = "fullTid";
+    private static final String LOG_CONNECTOR = "%s - %s";
 
-    private static final String FIXED_PRE = "fixedPre";
-    private static final String LOG_PRE = "logPre";
-    private static final String TID_LOG_PRE = "log";
+    private static final String LOG_EX_CONNECTOR = "%s - %s\n%s";
+    private static final String LOG_EX_CONNECTOR2 = "%s\n%s";
 
-    private static final String CONNECTOR = " - ";
     private static final String EMPTY = "";
-    private static final String SPACE = " ";
+    private static final String LEFT = "【";
+    private static final String RIGHT = "】";
+    private static final String LOG_PLACEHOLDER = "{}";
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\}");
+    private static final String EMPTY_JSON_OBJECT = "{ }";
 
     private LogUtil() {
     }
+
+    private static long getRequestId() {
+        return System.nanoTime();
+    }
+
+    private static String fixString(String str) {
+        return str == null ? EMPTY : str;
+    }
+
+    private static String getReplacedFirst(String log) {
+        return PLACEHOLDER_PATTERN.matcher(log).replaceFirst("null");
+    }
+
+    /**
+     * get`
+     */
+    private static Map<String, String> getContextIfPresent() {
+        Map<String, String> context = THREAD_LOCAL.get();
+        if (context == null) {
+            context = new HashMap<>(6);
+            // 模块名称
+            // tid
+            context.put(TID, "0");
+            // orderNo etc.
+            context.put(FIXED, EMPTY);
+            // 模块名称
+            context.put(MODULE, EMPTY);
+            // tid orderNo 模块名称
+            context.put(FULL_TID, "0");
+        }
+        return context;
+    }
+
+    /**
+     * set
+     */
+    private static void setContext(Map<String, String> context) {
+        THREAD_LOCAL.set(context);
+    }
+
+    /**
+     * removeContext
+     */
+    private static void removeContext() {
+        THREAD_LOCAL.remove();
+    }
+
 
     /**
      * 请求一个标识
@@ -56,121 +94,166 @@ public class LogUtil {
      * <p>
      * 使用方式
      * <pre> {@code
+     *  LogUtil.requestStart("订单号", "模块1");
      *  try {
-     *      LogUtil.requestStart("模块名称1");
-     *      log.info(LogUtil.getLog("开始..{}", "aaa"));
-     *      log.info(LogUtil.getLog("结束.."));
-     *      LogUtil.resetLogPre("模块名称2");
-     *      log.info(LogUtil.getLog("开始.."));
-     *      log.info(LogUtil.getLog("结束.."));
+     *      log.info(LogUtil.getLog("入参: 【{}】", JSON.toJSONString(orderInfo)));
+     *      log.info(LogUtil.getLog("出参: 【{}】", "orderNo"));
+     *      LogUtil.resetModule("模块2");
+     *      log.info(LogUtil.getLog("入参: 【{}】", JSON.toJSONString(orderInfo)));
+     *      log.info(LogUtil.getLog("出参: 【{}】", "orderNo"));
      *  } finally {
-     *      LogUtil.remove();
+     *      LogUtil.requestEnd();
      *  }
      *
      * }</pre>
      *
-     * @param logPre 请求标识
+     * @param fixed 请求标识
      */
-    public static void requestStart(String logPre) {
-        requestStart(getTid(), logPre);
+    public static void requestStart(String fixed) {
+        requestStart(getRequestId(), fixed, EMPTY);
     }
 
-    public static void requestStart(long tid, String logPre) {
-        long uid = getTid();
-        tid = tid != 0 ? tid : uid;
-        logPre = logPre == null ? EMPTY : logPre;
+    public static void requestStart(String fixed, String module) {
+        requestStart(getRequestId(), fixed, module);
+    }
 
-        Map<String, Object> context = THREAD_LOCAL.get();
-        if (context == null) {
-            context = MapUtil.newHashMap(4);
-            // orderNo etc.
-            context.put(FIXED_PRE, EMPTY);
-            THREAD_LOCAL.set(context);
-        }
+    public static void requestStart(long tid, String fixed) {
+        requestStart(tid, fixed, EMPTY);
+    }
+
+    public static void requestStart(long tid, String fixed, String module) {
+        // get
+        Map<String, String> context = getContextIfPresent();
 
         // tid
-        context.put(TID, tid);
-        // 模块名称
-        context.put(LOG_PRE, logPre);
+        context.put(TID, String.valueOf(tid));
+        // orderNo etc.
+        context.put(FIXED, fixString(fixed));
+        // 模块名称.
+        context.put(MODULE, fixString(module));
         // tid orderNo 模块名称
-        concat(context);
+        concatContext(context);
+
+        // set
+        setContext(context);
     }
 
     /**
-     * {tid} {fixedPre} {logPre}
+     * {tid} {fixed} {module}
      */
-    private static String concat(Map<String, Object> context) {
-        String format = String.format("%s%s%s%s%s", context.get(TID), SPACE, context.get(FIXED_PRE), SPACE, context.get(LOG_PRE));
-        context.put(TID_LOG_PRE, format);
-        return format;
-    }
-
-
-    /**
-     * 重置 fixedPre
-     *
-     * @param fixedPre fixedPre
-     */
-    public static String resetFixedPre(String fixedPre) {
-        Map<String, Object> context = THREAD_LOCAL.get();
-        if (context != null) {
-            fixedPre = fixedPre == null ? EMPTY : fixedPre;
-            Object preFixLog = context.get(FIXED_PRE);
-            context.put(FIXED_PRE, fixedPre);
-            concat(context);
-            return String.valueOf(preFixLog);
+    private static void concatContext(Map<String, String> context) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(context.get(TID));
+        if (!context.get(FIXED).isEmpty()) {
+            builder.append(LEFT).append(context.get(FIXED)).append(RIGHT);
         }
-        return EMPTY;
+        if (!context.get(MODULE).isEmpty()) {
+            builder.append(LEFT).append(context.get(MODULE)).append(RIGHT);
+        }
+        context.put(FULL_TID, builder.toString());
     }
 
     /**
-     * 重置 logPre
+     * 重置 fixed
      *
-     * @param logPre logPre
+     * @param fixed fixed
      */
-    public static String resetLogPre(String logPre) {
-        Map<String, Object> context = THREAD_LOCAL.get();
-        if (context != null) {
-            logPre = logPre == null ? EMPTY : logPre;
-            Object preLog = context.get(LOG_PRE);
-            context.put(LOG_PRE, logPre);
-            concat(context);
-            return String.valueOf(preLog);
-        }
-        return EMPTY;
+    public static void resetFixed(String fixed) {
+        Map<String, String> context = getContextIfPresent();
+        context.put(FIXED, fixString(fixed));
+        concatContext(context);
     }
 
     /**
-     * 获取 {tid} {fixedPre} {logPre}
+     * 重置 module
      *
-     * @return logPre logPre
+     * @param module module
      */
-    public static String getTidAndLogPre() {
-        Map<String, Object> context = THREAD_LOCAL.get();
-        if (context != null) {
-            return String.valueOf(context.get(TID_LOG_PRE));
-        }
-        return EMPTY;
+    public static void resetModule(String module) {
+        Map<String, String> context = getContextIfPresent();
+        context.put(MODULE, fixString(module));
+        concatContext(context);
     }
+
 
     /**
      * 获取   tid 固定前缀 模块标识 - 用户日志
      *
-     * @param log 用户日志
-     * @return tid 固定前缀 模块标识 - 用户日志
+     * @param log  例如:  接单入参orderInfo：{} {}
+     * @param args 例如: JSON.toJSONString(orderInfo)
+     * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     public static String getLog(String log, String... args) {
-        Map<String, Object> context = THREAD_LOCAL.get();
-        if (context == null) {
-            if (args.length > 0) {
-                return MessageFormatter.arrayFormat(log, args).getMessage();
+        return getLogAutoJson(log, (Object[]) args);
+    }
+
+
+    /**
+     * 获取   tid 固定前缀 模块标识 - 用户日志
+     *
+     * @param log  例如:  接单入参orderInfo：{} {}
+     * @param args 例如: JSON.toJSONString(orderInfo)
+     * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
+     */
+    public static String getLogAutoJson(String log, Object... args) {
+        Map<String, String> context = getContextIfPresent();
+
+        if (StringUtils.isEmpty(log)) {
+            return String.format(LOG_CONNECTOR, context.get(FULL_TID), EMPTY);
+        }
+        if (!log.contains(LOG_PLACEHOLDER)) {
+            if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ((Throwable) args[args.length - 1]).printStackTrace(new PrintStream(bos));
+                args[args.length - 1] = bos;
+                return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, args[args.length - 1]);
             }
-            return log;
+            return String.format(LOG_CONNECTOR, context.get(FULL_TID), log);
         }
-        if (args.length > 0) {
-            return MessageFormatter.arrayFormat(String.format("%s%s%s", context.get(TID_LOG_PRE), CONNECTOR, log), args).getMessage();
+        if (args == null) {
+            return String.format(LOG_CONNECTOR, context.get(FULL_TID), getReplacedFirst(log));
         }
-        return String.format("%s%s%s", context.get(TID_LOG_PRE), CONNECTOR, log);
+        if (args.length < 1) {
+            return String.format(LOG_CONNECTOR, context.get(FULL_TID), log);
+        }
+
+        // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
+        Throwable throwable = null;
+        for (int i = 0; i < args.length; i++) {
+            Object argObj = args[i];
+            if (argObj instanceof Throwable) {
+                if (i != args.length - 1) {
+                    args[i] = args[i].toString();
+                } else {
+                    throwable = ((Throwable) args[i]);
+                    args[i] = EMPTY_JSON_OBJECT;
+                }
+                continue;
+            }
+            if (argObj instanceof String) {
+                if (LOG_PLACEHOLDER.equals(argObj)) {
+                    args[i] = EMPTY_JSON_OBJECT;
+                } else {
+                    String argString = (String) argObj;
+                    if (argString.contains(LOG_PLACEHOLDER)) {
+                        args[i] = StringUtils.replace(argString, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
+                    }
+                }
+            } else {
+                String argJson = JSON.toJSONString(argObj);
+                if (argJson.contains(LOG_PLACEHOLDER)) {
+                    args[i] = StringUtils.replace(argJson, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
+                }
+            }
+        }
+
+        if (throwable != null) {
+            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(String.format(LOG_CONNECTOR, context.get(FULL_TID), log), args, throwable);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
+            return String.format(LOG_EX_CONNECTOR2, formattingTuple.getMessage(), bos);
+        }
+        return MessageFormatter.arrayFormat(String.format(LOG_CONNECTOR, context.get(FULL_TID), log), args).getMessage();
     }
 
 
@@ -180,30 +263,28 @@ public class LogUtil {
      * @return tid
      */
     public static long getTid() {
-        Map<String, Object> context = THREAD_LOCAL.get();
-        if (context == null) {
-            return System.nanoTime();
-        }
-        return (long) context.get(TID);
+        return Long.parseLong(getContextIfPresent().get(TID));
     }
 
+
     /**
-     * 获取 tid （作用于接口入参）
+     * 获取 丰富的tid
      *
-     * @return tid
+     * @return fullTid : {tid} {fixed} {module}
      */
-    public static String getTidStr() {
-        return String.valueOf(getTid());
+    public static String getFullTid() {
+        return getContextIfPresent().get(FULL_TID);
     }
 
     /**
      * remove
      */
-    public static void remove() {
-        Map<String, Object> context = THREAD_LOCAL.get();
+    public static void requestEnd() {
+        Map<String, String> context = THREAD_LOCAL.get();
         if (context != null) {
             context.clear();
         }
-        THREAD_LOCAL.remove();
+        // removeContext
+        removeContext();
     }
 }
