@@ -13,7 +13,7 @@ import org.slf4j.MDC;
  */
 @Slf4j
 public class TraceIdUtil {
-
+    public static final String SEPARATOR = StringPool.COLON;
     public static final String TRACE_ID = "traceId";
     public static final String REQUEST_ID = "requestId";
     public static final String FIXED_NAME = "fixedName";
@@ -26,17 +26,17 @@ public class TraceIdUtil {
         if (traceId == null) {
             return new String[0];
         }
-        return traceId.split(StringPool.DASH);
+        return traceId.split(SEPARATOR);
     }
 
     public static String append(String root, String current) {
         // traceId: root-current
-        return StringUtil.append(StringPool.DASH, root, current);
+        return StringUtil.append(SEPARATOR, root, current);
     }
 
     public static String append(String root, String current, String parent) {
         // traceId: root-current-parent
-        return StringUtil.append(StringPool.DASH, root, current, parent);
+        return StringUtil.append(SEPARATOR, root, current, parent);
     }
 
     public static String getTraceId() {
