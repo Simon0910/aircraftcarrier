@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.adapter.es;
+package com.aircraftcarrier.marketing.store.adapter.web.es;
 
 import com.aircraftcarrier.framework.model.response.MultiResponse;
 import com.aircraftcarrier.framework.model.response.SingleResponse;

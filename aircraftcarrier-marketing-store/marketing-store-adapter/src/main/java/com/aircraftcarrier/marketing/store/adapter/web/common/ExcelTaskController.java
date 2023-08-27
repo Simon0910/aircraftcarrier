@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.adapter.exceltask;
+package com.aircraftcarrier.marketing.store.adapter.web.common;
 
 import com.aircraftcarrier.marketing.store.adapter.exceltask.task01.MyExcelTask;
 import lombok.extern.slf4j.Slf4j;

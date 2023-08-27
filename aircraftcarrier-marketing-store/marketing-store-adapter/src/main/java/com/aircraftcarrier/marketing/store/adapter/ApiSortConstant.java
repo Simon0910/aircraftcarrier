@@ -1,5 +1,8 @@
 package com.aircraftcarrier.marketing.store.adapter;
 
+import com.aircraftcarrier.marketing.store.adapter.web.common.CommonController;
+import com.aircraftcarrier.marketing.store.adapter.web.common.EnumController;
+
 /**
  * Api 排序
  *
@@ -8,12 +11,12 @@ package com.aircraftcarrier.marketing.store.adapter;
 public final class ApiSortConstant {
 
     /**
-     * {@link com.aircraftcarrier.marketing.store.adapter.common.EnumController}
+     * {@link EnumController}
      */
     public static final int ENUM_CONTROLLER = 10;
 
     /**
-     * {@link com.aircraftcarrier.marketing.store.adapter.common.CommonController}
+     * {@link CommonController}
      */
     public static final int COMMON_CONTROLLER = 1;
 }
