@@ -294,11 +294,11 @@ public class LogUtilTest {
 
             log.info("==================================================================case8 推荐");
             LogUtil.resetModule("case8 推荐写法");
-            log.error(LogUtil.getLog("5555 {}", JSON.toJSONString(orderInfo)), e); // 推荐
-            log.error(LogUtil.getLogToJson("5555 {}", orderInfo), e); // 推荐
+            log.error(LogUtil.getLog("666 {}, {}"), LogUtil.toJsonString(orderInfo), "666", e); // 推荐
+            log.error(LogUtil.getLogToJson("666 {}, {}", orderInfo, "666"), e); // 推荐
+
             Assert.isTrue(validGetLog());
             caseSet.clear();
-
             Thread.sleep(1000); // 等待log4j2 异步日志结束
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
