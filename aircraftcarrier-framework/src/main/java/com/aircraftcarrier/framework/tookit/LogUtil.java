@@ -27,6 +27,7 @@ public class LogUtil {
     private static final String MODULE = "module";
     private static final String FULL_TID = "fullTid";
     private static final String LOG_FORMAT = "%s%s";
+    private static final String LOG_FORMAT_MSG = "{}{}";
     private static final String LOG_EX_CONNECTOR = "%s%s\n%s";
     private static final String LOG_CONNECTOR = " - ";
     private static final String NULL = "null";
@@ -230,7 +231,8 @@ public class LogUtil {
         Map<String, String> context = getContextIfPresent();
 
         if (!StringUtils.hasText(log)) {
-            return String.format(LOG_FORMAT, context.get(FULL_TID), log);
+            // return String.format(LOG_FORMAT, context.get(FULL_TID), log);
+            return MessageFormatter.format(LOG_FORMAT_MSG, context.get(FULL_TID), log).getMessage();
         }
         if (!log.contains(LOG_PLACEHOLDER)) {
             if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
@@ -238,14 +240,18 @@ public class LogUtil {
                 ((Throwable) args[args.length - 1]).printStackTrace(new PrintStream(bos));
                 return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, bos);
             }
-            return String.format(LOG_FORMAT, context.get(FULL_TID), log);
+            // return String.format(LOG_FORMAT, context.get(FULL_TID), log);
+            return MessageFormatter.format(LOG_FORMAT_MSG, context.get(FULL_TID), log).getMessage();
         }
         if (args == null) {
-            return String.format(LOG_FORMAT, context.get(FULL_TID), getReplacedFirst(log));
+            // return String.format(LOG_FORMAT, context.get(FULL_TID), getReplacedFirst(log));
+            return MessageFormatter.format(LOG_FORMAT_MSG, context.get(FULL_TID), getReplacedFirst(log)).getMessage();
         }
         if (args.length < 1) {
-            return String.format(LOG_FORMAT, context.get(FULL_TID), log);
+            // return String.format(LOG_FORMAT, context.get(FULL_TID), log);
+            return MessageFormatter.format(LOG_FORMAT_MSG, context.get(FULL_TID), log).getMessage();
         }
+
 
         // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
         Throwable throwable = null;
@@ -282,6 +288,7 @@ public class LogUtil {
             throwable.printStackTrace(new PrintStream(bos));
             return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, bos);
         }
+
         return MessageFormatter.arrayFormat(String.format(LOG_FORMAT, context.get(FULL_TID), log), args).getMessage();
     }
 
