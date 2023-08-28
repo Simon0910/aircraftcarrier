@@ -36,7 +36,7 @@ public class LogUtilTest {
             LogUtil.resetModule("没有启动tid case1");
 
 
-            String rr = "" + LogUtil.getTid();
+            String rr = LogUtil.getTid();
             log.info(rr);
             Assert.isTrue("".equals(rr));
 
@@ -154,7 +154,7 @@ public class LogUtilTest {
             String fullTid = LogUtil.getFullTid();
 
 
-            rr = "" + LogUtil.getTid();
+            rr = LogUtil.getTid();
             log.info(rr);
             Assert.isTrue(tid.equals(rr));
 
@@ -171,12 +171,12 @@ public class LogUtilTest {
 
             rr = LogUtil.getLog("", "");
             log.info(rr);
-            Assert.isTrue((fullTid + "").equals(rr));
+            Assert.isTrue((fullTid).equals(rr));
 
 
             rr = LogUtil.getLog("", null);
             log.info(rr);
-            Assert.isTrue((fullTid + "").equals(rr));
+            Assert.isTrue((fullTid).equals(rr));
 
 
             rr = LogUtil.getLog(null, "");
@@ -263,7 +263,7 @@ public class LogUtilTest {
             LogUtil.resetFixed("同一个tid哦 orderNo");
             LogUtil.resetModule("模块2");
             LogUtil.resetModule("同一个tid哦 case3");
-            log.info("" + LogUtil.getTid());
+            log.info(LogUtil.getTid());
             log.info(LogUtil.getFullTid());
 
             log.info("==================================================================case4");
@@ -280,9 +280,9 @@ public class LogUtilTest {
             fullTid = LogUtil.getFullTid();
 
 
-            rr = "" + LogUtil.getTid();
+            rr = LogUtil.getTid();
             log.info(rr);
-            Assert.isTrue(tid == LogUtil.getTid());
+            Assert.isTrue(tid.equals(LogUtil.getTid()));
 
 
             rr = LogUtil.getFullTid();
@@ -297,12 +297,12 @@ public class LogUtilTest {
 
             rr = LogUtil.getLogToJson("", "");
             log.info(rr);
-            Assert.isTrue((fullTid + "").equals(rr));
+            Assert.isTrue((fullTid).equals(rr));
 
 
             rr = LogUtil.getLogToJson("", null);
             log.info(rr);
-            Assert.isTrue((fullTid + "").equals(rr));
+            Assert.isTrue((fullTid).equals(rr));
 
 
             rr = LogUtil.getLogToJson(null, "");
