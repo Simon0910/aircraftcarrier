@@ -224,13 +224,13 @@ public class LogUtil {
      * 获取   tid 固定前缀 模块标识 - 用户日志
      *
      * @param log  例如:  接单入参orderInfo：{} {}
-     * @param args 例如: LogUtil.toJsonString(orderInfo)
+     * @param args 例如: orderInfo
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     public static String getLogAutoJson(String log, Object... args) {
         Map<String, String> context = getContextIfPresent();
 
-        if (StringUtils.isEmpty(log)) {
+        if (!StringUtils.hasText(log)) {
             return String.format(LOG_CONNECTOR, context.get(FULL_TID), EMPTY);
         }
         if (!log.contains(LOG_PLACEHOLDER)) {
