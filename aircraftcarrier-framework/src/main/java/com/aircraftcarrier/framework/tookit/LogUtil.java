@@ -27,7 +27,7 @@ public class LogUtil {
     private static final String FIXED = "fixed";
     private static final String MODULE = "module";
     private static final String FULL_TID = "fullTid";
-    private static final String LOG_EX_CONNECTOR = "%s%s\n%s";
+    private static final String NEWLINE = "\n";
     private static final String LOG_CONNECTOR = " - ";
     private static final String NULL = "null";
     private static final String EMPTY = "";
@@ -53,7 +53,6 @@ public class LogUtil {
     }
 
     private static String getReplaceAll(String inString, String oldPattern, String newPattern) {
-        // return StringUtils.replace(inString, oldPattern, newPattern);
         return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(newPattern);
     }
 
@@ -242,7 +241,7 @@ public class LogUtil {
             if (formattingTuple.getThrowable() != null) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-                return formattingTuple.getMessage() + "\n" + bos;
+                return formattingTuple.getMessage() + NEWLINE + bos;
             }
             return formattingTuple.getMessage();
         }
@@ -283,7 +282,7 @@ public class LogUtil {
         if (formattingTuple.getThrowable() != null) {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-            return formattingTuple.getMessage() + "\n" + bos;
+            return formattingTuple.getMessage() + NEWLINE + bos;
         }
 
         return formattingTuple.getMessage();
