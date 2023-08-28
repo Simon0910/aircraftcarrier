@@ -3,7 +3,6 @@ package com.aircraftcarrier.framework.tookit;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.util.StringUtils;
 
@@ -28,7 +27,7 @@ public class LogUtil {
     private static final String MODULE = "module";
     private static final String FULL_TID = "fullTid";
     private static final String LOG_FORMAT = "%s%s";
-    private static final String LOG_EX_CONNECTOR = "%s\n%s";
+    private static final String LOG_EX_CONNECTOR = "%s%s\n%s";
     private static final String LOG_CONNECTOR = " - ";
     private static final String NULL = "null";
     private static final String EMPTY = "";
@@ -240,8 +239,7 @@ public class LogUtil {
             if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 ((Throwable) args[args.length - 1]).printStackTrace(new PrintStream(bos));
-                args[args.length - 1] = bos;
-                return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, args[args.length - 1]);
+                return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, bos);
             }
             return String.format(LOG_FORMAT, context.get(FULL_TID), log);
         }
@@ -283,10 +281,9 @@ public class LogUtil {
         }
 
         if (throwable != null) {
-            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(String.format(LOG_FORMAT, context.get(FULL_TID), log), args, throwable);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-            return String.format(LOG_EX_CONNECTOR, formattingTuple.getMessage(), bos);
+            throwable.printStackTrace(new PrintStream(bos));
+            return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, bos);
         }
         return MessageFormatter.arrayFormat(String.format(LOG_FORMAT, context.get(FULL_TID), log), args).getMessage();
     }
