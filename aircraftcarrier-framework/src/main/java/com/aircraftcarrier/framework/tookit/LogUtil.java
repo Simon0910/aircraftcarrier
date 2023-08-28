@@ -180,11 +180,8 @@ public class LogUtil {
         if (!context.get(MODULE).isEmpty()) {
             builder.append(LEFT).append(context.get(MODULE)).append(RIGHT);
         }
-        if (context.get(TID).isEmpty()) {
-            context.put(FULL_TID, builder.toString());
-        } else {
-            context.put(FULL_TID, builder + LOG_CONNECTOR);
-        }
+        builder.append(LOG_CONNECTOR);
+        context.put(FULL_TID, builder.toString());
     }
 
     /**
