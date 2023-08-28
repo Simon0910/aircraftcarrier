@@ -47,8 +47,13 @@ public class LogUtil {
         return str == null ? EMPTY : str;
     }
 
-    private static String getReplacedFirst(String log) {
-        return PLACEHOLDER_PATTERN.matcher(log).replaceFirst(NULL);
+    private static String getReplaceFirst(String inString, String oldPattern, String newPattern) {
+        return PLACEHOLDER_PATTERN.matcher(inString).replaceFirst(newPattern);
+    }
+
+    private static String getReplaceAll(String inString, String oldPattern, String newPattern) {
+        // return StringUtils.replace(inString, oldPattern, newPattern);
+        return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(newPattern);
     }
 
     /**
@@ -240,7 +245,7 @@ public class LogUtil {
             return context.get(FULL_TID) + log;
         }
         if (args == null) {
-            return context.get(FULL_TID) + getReplacedFirst(log);
+            return context.get(FULL_TID) + getReplaceFirst(log, LOG_PLACEHOLDER, NULL);
         }
         if (args.length < 1) {
             return context.get(FULL_TID) + log;
@@ -266,13 +271,15 @@ public class LogUtil {
                 } else {
                     String argString = (String) argObj;
                     if (argString.contains(LOG_PLACEHOLDER)) {
-                        args[i] = StringUtils.replace(argString, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
+                        args[i] = getReplaceAll(argString, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
                     }
                 }
             } else {
                 String argJson = toJsonString(argObj);
-                if (argJson.contains(LOG_PLACEHOLDER)) {
-                    args[i] = StringUtils.replace(argJson, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
+                if (LOG_PLACEHOLDER.equals(argJson)) {
+                    args[i] = EMPTY_JSON_OBJECT;
+                } else if (argJson.contains(LOG_PLACEHOLDER)) {
+                    args[i] = getReplaceAll(argJson, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
                 }
             }
         }
@@ -306,7 +313,7 @@ public class LogUtil {
             return Long.parseLong(getContextIfPresent().get(TID));
         } catch (Exception e) {
             long l = System.nanoTime();
-            log.info(getLog("{} ==>tid {}"), getContextIfPresent().get(FULL_TID), l);
+            log.info(getLog("{} tidString==>tidLong {}"), getContextIfPresent().get(FULL_TID), l);
             return l;
         }
     }

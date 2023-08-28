@@ -30,77 +30,119 @@ public class LogUtilTest {
         orderInfo.put("orderInfoDetail", emptyObject);
         orderInfo.put("isNull", nullObject);
 
+
         try {
             log.info("==================================================================case1");
             LogUtil.resetModule("没有启动tid case1");
-            log.info("" + LogUtil.getTid());
-            Assert.isTrue("".equals(LogUtil.getTid()));
-
-            log.info(LogUtil.getFullTid());
-            Assert.isTrue("".equals(LogUtil.getFullTid()));
-
-            log.info(LogUtil.getLog(null, null));
-            Assert.isTrue("null".equals(LogUtil.getLog(null, null)));
-
-            log.info(LogUtil.getLog("", ""));
-            Assert.isTrue("".equals(LogUtil.getLog("", "")));
-
-            log.info(LogUtil.getLog(null, ""));
-            Assert.isTrue("".equals(LogUtil.getLog("", "")));
-
-            log.info(LogUtil.getLog("", null));
-            Assert.isTrue("".equals(LogUtil.getLog("", "")));
-
-            log.info(LogUtil.getLog("1111"));
-            Assert.isTrue("1111".equals(LogUtil.getLog("1111")));
-
-            log.info(LogUtil.getLog("1111", null));
-            Assert.isTrue("1111".equals(LogUtil.getLog("1111")));
-
-            log.info(LogUtil.getLog("1111", ""));
-            Assert.isTrue("1111".equals(LogUtil.getLog("1111")));
 
 
-            log.info(LogUtil.getLog("2222: {}", null));
-            Assert.isTrue("2222: null".equals(LogUtil.getLog("2222: {}", null)));
-
-            log.info(LogUtil.getLog("2222: {}", ""));
-            Assert.isTrue("2222: ".equals(LogUtil.getLog("2222: {}", "")));
-
-            log.info(LogUtil.getLog("2222: {}", "2222"));
-            Assert.isTrue("2222: 2222".equals(LogUtil.getLog("2222: {}", "2222")));
+            String rr = "" + LogUtil.getTid();
+            log.info(rr);
+            Assert.isTrue("".equals(rr));
 
 
-            log.info(LogUtil.getLog("3333: {}, {}", null, null));
-            Assert.isTrue("3333: null, null".equals(LogUtil.getLog("3333: {}, {}", null, null)));
-
-            log.info(LogUtil.getLog("3333: {}, {}", "", ""));
-            Assert.isTrue("3333: , ".equals(LogUtil.getLog("3333: {}, {}", "", "")));
-
-            log.info(LogUtil.getLog("3333: {}, {}", null), "");
-            Assert.isTrue("3333: null, {}".equals(LogUtil.getLog("3333: {}, {}", null)));
-
-            log.info(LogUtil.getLog("3333: {}, {}", ""), "");
-            Assert.isTrue("3333: , {}".equals(LogUtil.getLog("3333: {}, {}", "")));
-
-            log.info(LogUtil.getLog("3333: {}, {}", ""), nullObject);
-            Assert.isTrue("3333: , {}".equals(LogUtil.getLog("3333: {}, {}", "")));
+            rr = LogUtil.getFullTid();
+            log.info(rr);
+            Assert.isTrue("".equals(rr));
 
 
-            log.info(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(nullObject)), "4444");
-            Assert.isTrue("4444: null, {}".equals(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(nullObject))));
+            rr = LogUtil.getLog(null, null);
+            log.info(rr);
+            Assert.isTrue("null".equals(rr));
 
-            log.info(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(emptyObject)), "4444");
-            Assert.isTrue("4444: { }, {}".equals(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(emptyObject))));
 
-            log.info(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(orderInfo)), "4444");
-            Assert.isTrue("4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}".equals(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(orderInfo))));
+            rr = LogUtil.getLog("", "");
+            log.info(rr);
+            Assert.isTrue("".equals(rr));
+
+
+            rr = LogUtil.getLog(null, "");
+            log.info(rr);
+            Assert.isTrue("null".equals(rr));
+
+
+            rr = LogUtil.getLog("", null);
+            log.info(rr);
+            Assert.isTrue("".equals(rr));
+
+
+            rr = LogUtil.getLog("1111");
+            log.info(rr);
+            Assert.isTrue("1111".equals(rr));
+
+
+            rr = LogUtil.getLog("1111", null);
+            log.info(rr);
+            Assert.isTrue("1111".equals(rr));
+
+
+            rr = LogUtil.getLog("1111", "");
+            log.info(rr);
+            Assert.isTrue("1111".equals(rr));
+
+
+            rr = LogUtil.getLog("2222: {}", null);
+            log.info(rr);
+            Assert.isTrue("2222: null".equals(rr));
+
+
+            rr = LogUtil.getLog("2222: {}", "");
+            log.info(rr);
+            Assert.isTrue("2222: ".equals(rr));
+
+
+            rr = LogUtil.getLog("2222: {}", "2222");
+            log.info(rr);
+            Assert.isTrue("2222: 2222".equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", null, null);
+            log.info(rr);
+            Assert.isTrue("3333: null, null".equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", "", "");
+            log.info(rr);
+            Assert.isTrue("3333: , ".equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", null);
+            log.info(rr, "");
+            Assert.isTrue("3333: null, {}".equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", "");
+            log.info(rr, "");
+            Assert.isTrue("3333: , {}".equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", "");
+            log.info(rr, nullObject);
+            Assert.isTrue("3333: , {}".equals(rr));
+
+
+            rr = LogUtil.getLog("4444: {}, {}", JSON.toJSONString(nullObject));
+            log.info(rr, "4444");
+            Assert.isTrue("4444: null, {}".equals(rr));
+
+
+            rr = LogUtil.getLog("4444: {}, {}", JSON.toJSONString(emptyObject));
+            log.info(rr, "4444");
+            Assert.isTrue("4444: { }, {}".equals(rr));
+
+
+            rr = LogUtil.getLog("4444: {}, {}", JSON.toJSONString(orderInfo));
+            log.info(rr, "4444");
+            Assert.isTrue("4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}".equals(rr));
 
             log.error(LogUtil.getLog("5555 ."), e); // ok
             log.error(LogUtil.getLog("5555 ."), e, e2); // ok
             log.error(LogUtil.getLog("5555 {}."), "1", e); // ok
             log.error(LogUtil.getLog("5555 {}."), e);                   // 多一个{}
             log.error(LogUtil.getLog("5555 {} {}."), "1", e, "3");      // e参数中间只打印messge 当string使用 3被忽略
+
+
+            rr = LogUtil.getLog(null, null);
             log.error(LogUtil.getLog("5555 {} {} {}."), "1", e, "3");   // e参数中间只打印messge 当string使用
             Assert.isTrue(validGetLog());
             caseSet.clear();
@@ -111,69 +153,109 @@ public class LogUtilTest {
             String tid = LogUtil.getTid();
             String fullTid = LogUtil.getFullTid();
 
-            log.info("" + LogUtil.getTid());
-            Assert.isTrue(tid.equals(LogUtil.getTid()));
 
-            log.info(LogUtil.getFullTid());
-            Assert.isTrue(fullTid.equals(LogUtil.getFullTid()));
-
-            log.info(LogUtil.getLog(null, null));
-            Assert.isTrue((fullTid + "null").equals(LogUtil.getLog(null, null)));
-
-            log.info(LogUtil.getLog("", ""));
-            Assert.isTrue((fullTid + "").equals(LogUtil.getLog("", "")));
-
-            log.info(LogUtil.getLog("", null));
-            Assert.isTrue((fullTid + "").equals(LogUtil.getLog("", "")));
-
-            log.info(LogUtil.getLog(null, ""));
-            Assert.isTrue((fullTid + "").equals(LogUtil.getLog("", "")));
-
-            log.info(LogUtil.getLog("1111"));
-            Assert.isTrue((fullTid + "1111").equals(LogUtil.getLog("1111")));
-
-            log.info(LogUtil.getLog("1111", null));
-            Assert.isTrue((fullTid + "1111").equals(LogUtil.getLog("1111")));
-
-            log.info(LogUtil.getLog("1111", ""));
-            Assert.isTrue((fullTid + "1111").equals(LogUtil.getLog("1111")));
+            rr = "" + LogUtil.getTid();
+            log.info(rr);
+            Assert.isTrue(tid.equals(rr));
 
 
-            log.info(LogUtil.getLog("2222: {}", null));
-            Assert.isTrue((fullTid + "2222: null").equals(LogUtil.getLog("2222: {}", null)));
-
-            log.info(LogUtil.getLog("2222: {}", ""));
-            Assert.isTrue((fullTid + "2222: ").equals(LogUtil.getLog("2222: {}", "")));
-
-            log.info(LogUtil.getLog("2222: {}", "2222"));
-            Assert.isTrue((fullTid + "2222: 2222").equals(LogUtil.getLog("2222: {}", "2222")));
+            rr = LogUtil.getFullTid();
+            log.info(rr);
+            Assert.isTrue(fullTid.equals(rr));
 
 
-            log.info(LogUtil.getLog("3333: {}, {}", null, null));
-            Assert.isTrue((fullTid + "3333: null, null").equals(LogUtil.getLog("3333: {}, {}", null, null)));
-
-            log.info(LogUtil.getLog("3333: {}, {}", "", ""));
-            Assert.isTrue((fullTid + "3333: , ").equals(LogUtil.getLog("3333: {}, {}", "", "")));
-
-            log.info(LogUtil.getLog("3333: {}, {}", null), "");
-            Assert.isTrue((fullTid + "3333: null, {}").equals(LogUtil.getLog("3333: {}, {}", null)));
-
-            log.info(LogUtil.getLog("3333: {}, {}", ""), "");
-            Assert.isTrue((fullTid + "3333: , {}").equals(LogUtil.getLog("3333: {}, {}", "")));
-
-            log.info(LogUtil.getLog("3333: {}, {}", ""), nullObject);
-            Assert.isTrue((fullTid + "3333: , {}").equals(LogUtil.getLog("3333: {}, {}", "")));
+            rr = LogUtil.getLog(null, null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "null").equals(rr));
 
 
-            log.info(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(nullObject)), "4444");
-            Assert.isTrue((fullTid + "4444: null, {}").equals(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(nullObject))));
+            rr = LogUtil.getLog("", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "").equals(rr));
 
-            log.info(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(emptyObject)), "4444");
-            Assert.isTrue((fullTid + "4444: { }, {}").equals(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(emptyObject))));
 
-            log.info(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(orderInfo)), "4444");
-            Assert.isTrue((fullTid + "4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(LogUtil.getLog("4444: {}, {}", JSON.toJSONString(orderInfo))));
+            rr = LogUtil.getLog("", null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "").equals(rr));
 
+
+            rr = LogUtil.getLog(null, "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "null").equals(rr));
+
+
+            rr = LogUtil.getLog("1111");
+            log.info(rr);
+            Assert.isTrue((fullTid + "1111").equals(rr));
+
+
+            rr = LogUtil.getLog("1111", null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "1111").equals(rr));
+
+
+            rr = LogUtil.getLog("1111", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "1111").equals(rr));
+
+
+            rr = LogUtil.getLog("2222: {}", null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "2222: null").equals(rr));
+
+
+            rr = LogUtil.getLog("2222: {}", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "2222: ").equals(rr));
+
+
+            rr = LogUtil.getLog("2222: {}", "2222");
+            log.info(rr);
+            Assert.isTrue((fullTid + "2222: 2222").equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", null, null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "3333: null, null").equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", "", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "3333: , ").equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", null);
+            log.info(rr, "");
+            Assert.isTrue((fullTid + "3333: null, {}").equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", "");
+            log.info(rr, "");
+            Assert.isTrue((fullTid + "3333: , {}").equals(rr));
+
+
+            rr = LogUtil.getLog("3333: {}, {}", "");
+            log.info(rr, nullObject);
+            Assert.isTrue((fullTid + "3333: , {}").equals(rr));
+
+
+            rr = LogUtil.getLog("4444: {}, {}", JSON.toJSONString(nullObject));
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: null, {}").equals(rr));
+
+
+            rr = LogUtil.getLog("4444: {}, {}", JSON.toJSONString(emptyObject));
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: { }, {}").equals(rr));
+
+
+            rr = LogUtil.getLog("4444: {}, {}", JSON.toJSONString(orderInfo));
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(rr));
+
+
+            rr = LogUtil.getLog(null, null);
+            
             Assert.isTrue(validGetLog());
             caseSet.clear();
 
@@ -197,77 +279,120 @@ public class LogUtilTest {
             tid = LogUtil.getTid();
             fullTid = LogUtil.getFullTid();
 
-            log.info("" + LogUtil.getTid());
+
+            rr = "" + LogUtil.getTid();
+            log.info(rr);
             Assert.isTrue(tid == LogUtil.getTid());
 
-            log.info(LogUtil.getFullTid());
-            Assert.isTrue(fullTid.equals(LogUtil.getFullTid()));
 
-            log.info(LogUtil.getLogToJson(null, null));
-            Assert.isTrue((fullTid + "null").equals(LogUtil.getLogToJson(null, null)));
-
-            log.info(LogUtil.getLogToJson("", ""));
-            Assert.isTrue((fullTid + "").equals(LogUtil.getLogToJson("", "")));
-
-            log.info(LogUtil.getLogToJson("", null));
-            Assert.isTrue((fullTid + "").equals(LogUtil.getLogToJson("", "")));
-
-            log.info(LogUtil.getLogToJson(null, ""));
-            Assert.isTrue((fullTid + "null").equals(LogUtil.getLogToJson(null, "")));
-
-            log.info(LogUtil.getLogToJson("1111"));
-            Assert.isTrue((fullTid + "1111").equals(LogUtil.getLogToJson("1111")));
-
-            log.info(LogUtil.getLogToJson("1111", null));
-            Assert.isTrue((fullTid + "1111").equals(LogUtil.getLogToJson("1111")));
-
-            log.info(LogUtil.getLogToJson("1111", ""));
-            Assert.isTrue((fullTid + "1111").equals(LogUtil.getLogToJson("1111")));
+            rr = LogUtil.getFullTid();
+            log.info(rr);
+            Assert.isTrue(fullTid.equals(rr));
 
 
-            log.info(LogUtil.getLogToJson("2222: {}", null));
-            Assert.isTrue((fullTid + "2222: null").equals(LogUtil.getLogToJson("2222: {}", null)));
-
-            log.info(LogUtil.getLogToJson("2222: {}", ""));
-            Assert.isTrue((fullTid + "2222: ").equals(LogUtil.getLogToJson("2222: {}", "")));
-
-            log.info(LogUtil.getLogToJson("2222: {}", "2222"));
-            Assert.isTrue((fullTid + "2222: 2222").equals(LogUtil.getLogToJson("2222: {}", "2222")));
+            rr = LogUtil.getLogToJson(null, null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "null").equals(rr));
 
 
-            log.info(LogUtil.getLogToJson("3333: {}, {}", null, null));
-            Assert.isTrue((fullTid + "3333: null, null").equals(LogUtil.getLogToJson("3333: {}, {}", null, null)));
-
-            log.info(LogUtil.getLogToJson("3333: {}, {}", "", ""));
-            Assert.isTrue((fullTid + "3333: , ").equals(LogUtil.getLogToJson("3333: {}, {}", "", "")));
-
-            log.info(LogUtil.getLogToJson("3333: {}, {}", null), "");
-            Assert.isTrue((fullTid + "3333: null, {}").equals(LogUtil.getLogToJson("3333: {}, {}", null)));
-
-            log.info(LogUtil.getLogToJson("3333: {}, {}", ""), "");
-            Assert.isTrue((fullTid + "3333: , {}").equals(LogUtil.getLogToJson("3333: {}, {}", "")));
-
-            log.info(LogUtil.getLogToJson("3333: {}, {}", ""), nullObject);
-            Assert.isTrue((fullTid + "3333: , {}").equals(LogUtil.getLogToJson("3333: {}, {}", "")));
+            rr = LogUtil.getLogToJson("", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "").equals(rr));
 
 
-            log.info(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(nullObject)), "4444");
-            Assert.isTrue((fullTid + "4444: null, {}").equals(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(nullObject))));
+            rr = LogUtil.getLogToJson("", null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "").equals(rr));
 
-            log.info(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(emptyObject)), "4444");
-            Assert.isTrue((fullTid + "4444: { }, {}").equals(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(emptyObject))));
 
-            log.info(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(orderInfo)), "4444");
-            Assert.isTrue((fullTid + "4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(orderInfo))));
+            rr = LogUtil.getLogToJson(null, "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "null").equals(rr));
 
-            log.info(LogUtil.getLogToJson("4444: {}, {}", nullObject), "4444");
-            Assert.isTrue((fullTid + "4444: null, {}").equals(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(nullObject))));
 
-            log.info(LogUtil.getLogToJson("4444: {}, {}", emptyObject), "4444");
-            Assert.isTrue((fullTid + "4444: { }, {}").equals(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(emptyObject))));
+            rr = LogUtil.getLogToJson("1111");
+            log.info(rr);
+            Assert.isTrue((fullTid + "1111").equals(rr));
 
-            log.info(LogUtil.getLogToJson("4444: {}, {}", orderInfo), "4444");
-            Assert.isTrue((fullTid + "4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(orderInfo))));
+
+            rr = LogUtil.getLogToJson("1111", null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "1111").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("1111", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "1111").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("2222: {}", null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "2222: null").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("2222: {}", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "2222: ").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("2222: {}", "2222");
+            log.info(rr);
+            Assert.isTrue((fullTid + "2222: 2222").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("3333: {}, {}", null, null);
+            log.info(rr);
+            Assert.isTrue((fullTid + "3333: null, null").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("3333: {}, {}", "", "");
+            log.info(rr);
+            Assert.isTrue((fullTid + "3333: , ").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("3333: {}, {}", null);
+            log.info(rr, "");
+            Assert.isTrue((fullTid + "3333: null, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("3333: {}, {}", "");
+            log.info(rr, "");
+            Assert.isTrue((fullTid + "3333: , {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("3333: {}, {}", "");
+            log.info(rr, nullObject);
+            Assert.isTrue((fullTid + "3333: , {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(nullObject));
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: null, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(emptyObject));
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: { }, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("4444: {}, {}", JSON.toJSONString(orderInfo));
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("4444: {}, {}", nullObject);
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: null, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("4444: {}, {}", emptyObject);
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: { }, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("4444: {}, {}", orderInfo);
+            log.info(rr, "4444");
+            Assert.isTrue((fullTid + "4444: {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, {}").equals(rr));
 
 
             log.info("==================================================================case6");
@@ -294,8 +419,27 @@ public class LogUtilTest {
 
             log.info("==================================================================case8 推荐");
             LogUtil.resetModule("case8 推荐写法");
-            log.error(LogUtil.getLog("666 {}, {}"), LogUtil.toJsonString(orderInfo), "666", e); // 推荐
-            log.error(LogUtil.getLogToJson("666 {}, {}", orderInfo, "666"), e); // 推荐
+
+
+            rr = LogUtil.getLog("666 {}, {}, {}");
+            log.error(rr, LogUtil.toJsonString(orderInfo), LogUtil.toJsonString(emptyObject), LogUtil.toJsonString(orderInfo), e); // 推荐
+            Assert.isTrue((LogUtil.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {}, {}, {}").equals(rr));
+
+
+            rr = LogUtil.getLog("666 {}, {}, {}");
+            log.error(rr, LogUtil.toJsonString(orderInfo), LogUtil.toJsonString(nullObject), LogUtil.toJsonString(orderInfo), e); // 推荐
+            Assert.isTrue((LogUtil.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {}, {}, {}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("666 {}, {}, {}", orderInfo, emptyObject, orderInfo);
+            log.error(rr, e); // 推荐
+            Assert.isTrue((LogUtil.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, { }, {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}").equals(rr));
+
+
+            rr = LogUtil.getLogToJson("666 {}, {}, {}", orderInfo, nullObject, orderInfo);
+            log.error(rr, e); // 推荐
+            Assert.isTrue((LogUtil.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, null, {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}").equals(rr));
+
 
             Assert.isTrue(validGetLog());
             caseSet.clear();
