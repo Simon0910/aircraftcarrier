@@ -27,11 +27,10 @@ public class LogUtil {
     private static final String FIXED = "fixed";
     private static final String MODULE = "module";
     private static final String FULL_TID = "fullTid";
-    private static final String LOG_CONNECTOR = "%s - %s";
-
-    private static final String LOG_EX_CONNECTOR = "%s - %s\n%s";
-    private static final String LOG_EX_CONNECTOR2 = "%s\n%s";
-
+    private static final String LOG_FORMAT = "%s%s";
+    private static final String LOG_EX_CONNECTOR = "%s\n%s";
+    private static final String LOG_CONNECTOR = " - ";
+    private static final String NULL = "null";
     private static final String EMPTY = "";
     private static final String LEFT = "【";
     private static final String RIGHT = "】";
@@ -51,7 +50,7 @@ public class LogUtil {
     }
 
     private static String getReplacedFirst(String log) {
-        return PLACEHOLDER_PATTERN.matcher(log).replaceFirst("null");
+        return PLACEHOLDER_PATTERN.matcher(log).replaceFirst(NULL);
     }
 
     /**
@@ -63,13 +62,13 @@ public class LogUtil {
             context = new HashMap<>(6);
             // 模块名称
             // tid
-            context.put(TID, "0");
+            context.put(TID, EMPTY);
             // orderNo etc.
             context.put(FIXED, EMPTY);
             // 模块名称
             context.put(MODULE, EMPTY);
             // tid orderNo 模块名称
-            context.put(FULL_TID, "0");
+            context.put(FULL_TID, EMPTY);
         }
         return context;
     }
@@ -182,7 +181,11 @@ public class LogUtil {
         if (!context.get(MODULE).isEmpty()) {
             builder.append(LEFT).append(context.get(MODULE)).append(RIGHT);
         }
-        context.put(FULL_TID, builder.toString());
+        if (context.get(TID).isEmpty()) {
+            context.put(FULL_TID, builder.toString());
+        } else {
+            context.put(FULL_TID, builder + LOG_CONNECTOR);
+        }
     }
 
     /**
@@ -216,7 +219,7 @@ public class LogUtil {
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     public static String getLog(String log, String... args) {
-        return getLogAutoJson(log, (Object[]) args);
+        return getLogToJson(log, (Object[]) args);
     }
 
 
@@ -227,11 +230,11 @@ public class LogUtil {
      * @param args 例如: orderInfo
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
-    public static String getLogAutoJson(String log, Object... args) {
+    public static String getLogToJson(String log, Object... args) {
         Map<String, String> context = getContextIfPresent();
 
         if (!StringUtils.hasText(log)) {
-            return String.format(LOG_CONNECTOR, context.get(FULL_TID), EMPTY);
+            return String.format(LOG_FORMAT, context.get(FULL_TID), log);
         }
         if (!log.contains(LOG_PLACEHOLDER)) {
             if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
@@ -240,13 +243,13 @@ public class LogUtil {
                 args[args.length - 1] = bos;
                 return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, args[args.length - 1]);
             }
-            return String.format(LOG_CONNECTOR, context.get(FULL_TID), log);
+            return String.format(LOG_FORMAT, context.get(FULL_TID), log);
         }
         if (args == null) {
-            return String.format(LOG_CONNECTOR, context.get(FULL_TID), getReplacedFirst(log));
+            return String.format(LOG_FORMAT, context.get(FULL_TID), getReplacedFirst(log));
         }
         if (args.length < 1) {
-            return String.format(LOG_CONNECTOR, context.get(FULL_TID), log);
+            return String.format(LOG_FORMAT, context.get(FULL_TID), log);
         }
 
         // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
@@ -280,12 +283,12 @@ public class LogUtil {
         }
 
         if (throwable != null) {
-            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(String.format(LOG_CONNECTOR, context.get(FULL_TID), log), args, throwable);
+            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(String.format(LOG_FORMAT, context.get(FULL_TID), log), args, throwable);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-            return String.format(LOG_EX_CONNECTOR2, formattingTuple.getMessage(), bos);
+            return String.format(LOG_EX_CONNECTOR, formattingTuple.getMessage(), bos);
         }
-        return MessageFormatter.arrayFormat(String.format(LOG_CONNECTOR, context.get(FULL_TID), log), args).getMessage();
+        return MessageFormatter.arrayFormat(String.format(LOG_FORMAT, context.get(FULL_TID), log), args).getMessage();
     }
 
 
@@ -308,7 +311,7 @@ public class LogUtil {
             return Long.parseLong(getContextIfPresent().get(TID));
         } catch (Exception e) {
             long l = System.nanoTime();
-            log.info(getLog("{} ==> {}"), getContextIfPresent().get(TID), l);
+            log.info(getLog("{} ==>tid {}"), getContextIfPresent().get(FULL_TID), l);
             return l;
         }
     }

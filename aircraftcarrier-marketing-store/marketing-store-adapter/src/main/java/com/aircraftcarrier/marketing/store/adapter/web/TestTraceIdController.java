@@ -53,13 +53,13 @@ public class TestTraceIdController {
             Map<String, Object> orderInfo = new HashMap<>();
             orderInfo.put("id", 123);
             orderInfo.put("name", null);
-            log.info(LogUtil.getLogAutoJson("如参校验 orderInfo：{}", orderInfo));
+            log.info(LogUtil.getLogToJson("如参校验 orderInfo：{}", orderInfo));
 
             Map<String, Object> nullObj = null;
-            log.info(LogUtil.getLogAutoJson("如参校验 nullObj：{}", nullObj));
+            log.info(LogUtil.getLogToJson("如参校验 nullObj：{}", nullObj));
 
             Map<String, Object> emptyObj = new HashMap<>();
-            log.info(LogUtil.getLogAutoJson("如参校验 emptyObj：{}", emptyObj));
+            log.info(LogUtil.getLogToJson("如参校验 emptyObj：{}", emptyObj));
 
             if (i % 3 == 0) {
                 throw new ApiException("orderNo must not be null!");
