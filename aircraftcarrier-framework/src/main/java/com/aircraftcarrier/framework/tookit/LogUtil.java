@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.tookit;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.util.StringUtils;
 
@@ -237,12 +238,13 @@ public class LogUtil {
             return context.get(FULL_TID) + log;
         }
         if (!log.contains(LOG_PLACEHOLDER)) {
-            if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
+            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args);
+            if (formattingTuple.getThrowable() != null) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ((Throwable) args[args.length - 1]).printStackTrace(new PrintStream(bos));
-                return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, bos);
+                formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
+                return formattingTuple.getMessage() + "\n" + bos;
             }
-            return context.get(FULL_TID) + log;
+            return formattingTuple.getMessage();
         }
         if (args == null) {
             return context.get(FULL_TID) + getReplaceFirst(log, LOG_PLACEHOLDER, NULL);
@@ -251,18 +253,10 @@ public class LogUtil {
             return context.get(FULL_TID) + log;
         }
 
-
         // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
-        Throwable throwable = null;
         for (int i = 0; i < args.length; i++) {
             Object argObj = args[i];
             if (argObj instanceof Throwable) {
-                if (i != args.length - 1) {
-                    args[i] = args[i].toString();
-                } else {
-                    throwable = ((Throwable) args[i]);
-                    args[i] = EMPTY_JSON_OBJECT;
-                }
                 continue;
             }
             if (argObj instanceof String) {
@@ -284,13 +278,15 @@ public class LogUtil {
             }
         }
 
-        if (throwable != null) {
+        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args);
+
+        if (formattingTuple.getThrowable() != null) {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            throwable.printStackTrace(new PrintStream(bos));
-            return String.format(LOG_EX_CONNECTOR, context.get(FULL_TID), log, bos);
+            formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
+            return formattingTuple.getMessage() + "\n" + bos;
         }
 
-        return MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args).getMessage();
+        return formattingTuple.getMessage();
     }
 
 
