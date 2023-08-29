@@ -520,6 +520,9 @@ public class LogUtilTest {
             Assert.isTrue(validGetLog());
             caseSet.clear();
 
+            // 如何解决行号问题
+            LogUtils.info(log, "入参数：{}", () -> orderInfo);
+
         } finally {
             try {
                 Thread.sleep(1000); // 等待log4j2 异步日志结束
