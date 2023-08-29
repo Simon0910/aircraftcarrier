@@ -439,30 +439,30 @@ public class LogUtilTest {
 
             rr = LogUtil.getLogToJson("5555.", e);
             log.error(rr); // ok
-            String expect = LogUtil.getFullTid() + "5555.\n" +
-                    "java.lang.RuntimeException: 错误了！\n" +
-                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\n";
+            String expect = LogUtil.getFullTid() + "5555.\r\n" +
+                    "java.lang.RuntimeException: 错误了！\r\n" +
+                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\r\n";
             Assert.isTrue(expect.equals(rr));
 
             rr = LogUtil.getLogToJson("5555.", e, e2);
             log.error(rr); // ok
-            expect = LogUtil.getFullTid() + "5555.\n" +
-                    "java.lang.RuntimeException: 最后一个错误了！\n" +
-                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:24)\n";
+            expect = LogUtil.getFullTid() + "5555.\r\n" +
+                    "java.lang.RuntimeException: 最后一个错误了！\r\n" +
+                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:24)\r\n";
             Assert.isTrue(expect.equals(rr));
 
             rr = LogUtil.getLogToJson("5555 {}.", "1", e);
             log.error(rr); // ok
-            expect = LogUtil.getFullTid() + "5555 1.\n" +
-                    "java.lang.RuntimeException: 错误了！\n" +
-                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\n";
+            expect = LogUtil.getFullTid() + "5555 1.\r\n" +
+                    "java.lang.RuntimeException: 错误了！\r\n" +
+                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\r\n";
             Assert.isTrue(expect.equals(rr));
 
             rr = LogUtil.getLogToJson("5555 {}.", e);
             log.error(rr); // 多一个{}
-            expect = LogUtil.getFullTid() + "5555 {}.\n" +
-                    "java.lang.RuntimeException: 错误了！\n" +
-                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\n";
+            expect = LogUtil.getFullTid() + "5555 {}.\r\n" +
+                    "java.lang.RuntimeException: 错误了！\r\n" +
+                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\r\n";
             Assert.isTrue(expect.equals(rr));
 
             rr = LogUtil.getLogToJson("5555 {} {}.", "1", e, "3");
@@ -480,18 +480,18 @@ public class LogUtilTest {
 
             rr = LogUtil.getLogToJson("5555 {} {} {}", "1", e);
             log.error(rr, "2", "3");
-            expect = LogUtil.getFullTid() + "5555 1 {} {}\n" +
-                    "java.lang.RuntimeException: 错误了！\n" +
-                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\n";
+            expect = LogUtil.getFullTid() + "5555 1 {} {}\r\n" +
+                    "java.lang.RuntimeException: 错误了！\r\n" +
+                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\r\n";
             Assert.isTrue(expect.equals(rr));
 
             log.error(rr, "2", e2);
 
             rr = LogUtil.getLogToJson("5555 {} {} {}", e);
             log.error(rr, e2);
-            expect = LogUtil.getFullTid() + "5555 {} {} {}\n" +
-                    "java.lang.RuntimeException: 错误了！\n" +
-                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\n";
+            expect = LogUtil.getFullTid() + "5555 {} {} {}\r\n" +
+                    "java.lang.RuntimeException: 错误了！\r\n" +
+                    "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)\r\n";
             Assert.isTrue(expect.equals(rr));
 
             log.info("==================================================================case8 推荐");
