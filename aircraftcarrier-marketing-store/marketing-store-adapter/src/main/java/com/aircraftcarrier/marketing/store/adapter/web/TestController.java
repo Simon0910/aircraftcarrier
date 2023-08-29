@@ -10,6 +10,7 @@ import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
+import com.aircraftcarrier.framework.tookit.ValueUtil;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import com.aircraftcarrier.marketing.store.adapter.test.ConfigurationTestProperties;
 import com.aircraftcarrier.marketing.store.adapter.test.TestProperties;
@@ -74,6 +75,7 @@ public class TestController {
     @ApiOperation("hello")
     @GetMapping("/hello")
     public SingleResponse<String> hello() {
+        String value = ValueUtil.getValue("receive.emails");
         testProperties.test();
         configurationTestProperties.test();
         return SingleResponse.ok("hello world");
