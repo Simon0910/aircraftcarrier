@@ -27,7 +27,7 @@ public class LogUtil {
     private static final String FIXED = "fixed";
     private static final String MODULE = "module";
     private static final String FULL_TID = "fullTid";
-    private static final String NEWLINE = "\r\n";
+    private static final String NEWLINE = System.lineSeparator();
     private static final String LOG_CONNECTOR = " - ";
     private static final String NULL = "null";
     private static final String EMPTY = "";
