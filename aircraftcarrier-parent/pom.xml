@@ -25,6 +25,16 @@
         <spring-cloud.version>2022.0.0-M4</spring-cloud.version>
     </properties>
     <dependencies>
+        <!-- slf4j 2.0 依赖 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </dependency>
+
         <!-- https://mapstruct.org/documentation/stable/reference/html/#lombok -->
         <!-- https://dev.to/tleipzig/using-mapstruct-with-maven-and-lombok-peb -->
         <dependency>

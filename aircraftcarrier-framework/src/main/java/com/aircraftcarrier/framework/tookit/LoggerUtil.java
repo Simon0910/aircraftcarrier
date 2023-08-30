@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
+import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
-import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -18,68 +18,88 @@ public class LoggerUtil {
     private LoggerUtil() {
     }
 
-    public static void info(Logger logger, String message, Supplier<?>... suppliers) {
-        log(Level.INFO, logger, message, suppliers);
-    }
-
-    public static void debug(Logger logger, String message, Supplier<?>... suppliers) {
-        log(Level.DEBUG, logger, message, suppliers);
-    }
-
-    public static void warn(Logger logger, String message, Supplier<?>... suppliers) {
-        log(Level.WARN, logger, message, suppliers);
-    }
-
-    public static void error(Logger logger, String message, Supplier<?>... suppliers) {
-        log(Level.ERROR, logger, message, suppliers);
-    }
-
-    public static void trace(Logger logger, String message, Supplier<?>... suppliers) {
-        log(Level.TRACE, logger, message, suppliers);
-    }
-
-    private static void log(Level level, Logger logger, String message, Supplier<?>... suppliers) {
-        // 判断日志级别是否被启用
-        switch (level) {
-            case DEBUG -> {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
-                }
-            }
-            case INFO -> {
-                if (logger.isInfoEnabled()) {
-                    logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
-                }
-            }
-            case ERROR -> {
-                if (logger.isErrorEnabled()) {
-                    logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
-                }
-            }
-            case WARN -> {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
-                }
-            }
-            case TRACE -> {
-                if (logger.isTraceEnabled()) {
-                    logger.trace(message, getLogArgs(suppliers));
-                }
-            }
-            default -> throw new IllegalArgumentException("Unexpected Level: " + level);
+    public static void info(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
         }
     }
 
-    private static Object[] getLogArgs(Supplier<?>... suppliers) {
-        if (suppliers == null || suppliers.length == 0) {
+    public static void debug(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void warn(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isWarnEnabled()) {
+            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void error(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isErrorEnabled()) {
+            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void trace(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isTraceEnabled()) {
+            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void infoAutoJson(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+        }
+    }
+
+    public static void debugAutoJson(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+        }
+    }
+
+    public static void warnAutoJson(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isWarnEnabled()) {
+            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+        }
+    }
+
+    public static void errorAutoJson(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isErrorEnabled()) {
+            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+        }
+    }
+
+    public static void traceAutoJson(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isTraceEnabled()) {
+            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+        }
+    }
+
+    private static Object[] getLogArgs(Supplier<?>... args) {
+        if (args == null || args.length == 0) {
             return new Object[]{};
         } else {
-            return Arrays.stream(suppliers).map(Supplier::get).toArray();
+            return Arrays.stream(args).map(Supplier::get).toArray();
+        }
+    }
+
+    private static Object[] getLogArgsAutoJson(Supplier<?>... args) {
+        if (args == null || args.length == 0) {
+            return new Object[]{};
+        } else {
+            String[] jsonArgs = new String[args.length];
+            for (int i = 0, len = args.length; i < len; i++) {
+                jsonArgs[i] = JSON.toJSONString(args[i].get());
+            }
+            return jsonArgs;
         }
     }
 
     private static StackTraceElement getCallerStackTrace() {
-        return Thread.currentThread().getStackTrace()[4];
+        return Thread.currentThread().getStackTrace()[3];
     }
 
     private static String formatLogMessage(StackTraceElement caller, String message) {

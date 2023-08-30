@@ -8,19 +8,19 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 
 /**
- * 测试 {@link LoggerUtil}
+ * 测试 {@link Logger2Util}
  *
  * @author zhipengliu
  * @date 2023/8/30
  * @since 1.0
  */
 @Slf4j
-public class LoggerUtilTest {
+public class Logger2UtilTest {
     private static final Logger logger = LoggerFactory.getLogger(LoggerUtilTest.class);
     // private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static void main(String[] args) {
-        LogUtil.requestStart("你好");
+        LogUtil.requestStart("你好你好");
 
         RuntimeException e = new RuntimeException("错误了！");
         RuntimeException e2 = new RuntimeException("最后一个错误了！");
@@ -33,11 +33,10 @@ public class LoggerUtilTest {
         orderInfo.put("isNull", nullObject);
 
         // 如何解决行号问题
+        Logger2Util.info(logger, "11入参数：{}", () -> JSON.toJSONString(orderInfo));
+        Logger2Util.info(log, "22入参数：{}", () -> JSON.toJSONString(orderInfo));
 
-        LoggerUtil.info(logger, "1入参数：{}", () -> JSON.toJSONString(orderInfo));
-        LoggerUtil.info(log, "2入参数：{}", () -> JSON.toJSONString(orderInfo));
-
-        LoggerUtil.infoAutoJson(logger, "3入参数：{}", () -> orderInfo);
-        LoggerUtil.infoAutoJson(log, "4入参数：{}", () -> orderInfo);
+        Logger2Util.infoAutoJson(logger, "33入参数：{}", () -> orderInfo);
+        Logger2Util.infoAutoJson(log, "44入参数：{}", () -> orderInfo);
     }
 }
