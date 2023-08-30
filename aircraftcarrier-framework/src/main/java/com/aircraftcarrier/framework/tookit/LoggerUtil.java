@@ -2,6 +2,7 @@ package com.aircraftcarrier.framework.tookit;
 
 import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -15,64 +16,66 @@ import java.util.function.Supplier;
  */
 public class LoggerUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoggerUtil.class);
+
     private LoggerUtil() {
     }
 
-    public static void info(Logger logger, String message, Supplier<?>... args) {
+    public static void info(String message, Supplier<?>... args) {
         if (logger.isInfoEnabled()) {
             logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
         }
     }
 
-    public static void debug(Logger logger, String message, Supplier<?>... args) {
+    public static void debug(String message, Supplier<?>... args) {
         if (logger.isDebugEnabled()) {
             logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
         }
     }
 
-    public static void warn(Logger logger, String message, Supplier<?>... args) {
+    public static void warn(String message, Supplier<?>... args) {
         if (logger.isWarnEnabled()) {
             logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
         }
     }
 
-    public static void error(Logger logger, String message, Supplier<?>... args) {
+    public static void error(String message, Supplier<?>... args) {
         if (logger.isErrorEnabled()) {
             logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
         }
     }
 
-    public static void trace(Logger logger, String message, Supplier<?>... args) {
+    public static void trace(String message, Supplier<?>... args) {
         if (logger.isTraceEnabled()) {
             logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
         }
     }
 
-    public static void infoAutoJson(Logger logger, String message, Object... args) {
+    public static void infoAutoJson(String message, Object... args) {
         if (logger.isInfoEnabled()) {
             logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void debugAutoJson(Logger logger, String message, Object... args) {
+    public static void debugAutoJson(String message, Object... args) {
         if (logger.isDebugEnabled()) {
             logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void warnAutoJson(Logger logger, String message, Object... args) {
+    public static void warnAutoJson(String message, Object... args) {
         if (logger.isWarnEnabled()) {
             logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void errorAutoJson(Logger logger, String message, Object... args) {
+    public static void errorAutoJson(String message, Object... args) {
         if (logger.isErrorEnabled()) {
             logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void traceAutoJson(Logger logger, String message, Object... args) {
+    public static void traceAutoJson(String message, Object... args) {
         if (logger.isTraceEnabled()) {
             logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }

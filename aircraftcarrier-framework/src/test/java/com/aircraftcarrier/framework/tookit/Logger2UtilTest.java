@@ -33,14 +33,14 @@ public class Logger2UtilTest {
         orderInfo.put("isNull", nullObject);
 
         // 如何解决行号问题
-        Logger2Util.info(logger, "11入参数：{}", () -> JSON.toJSONString(orderInfo));
-        Logger2Util.info(log, "22入参数：{}", () -> JSON.toJSONString(orderInfo));
-        Logger2Util.info(log, "33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
-        Logger2Util.info(log, "333入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
+        Logger2Util.info("11入参数：{}", () -> JSON.toJSONString(orderInfo));
+        Logger2Util.info("22入参数：{}", () -> JSON.toJSONString(orderInfo));
+        Logger2Util.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
+        Logger2Util.info("333入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
 
-        Logger2Util.infoAutoJson(logger, "44参数：{}", orderInfo);
-        Logger2Util.infoAutoJson(log, "55入参数：{}", orderInfo);
-        Logger2Util.infoAutoJson(log, "66入参数：{}", orderInfo, e);
-        Logger2Util.infoAutoJson(log, "666入参数：{}", orderInfo, e, e2);
+        Logger2Util.infoAutoJson("44参数：{}", orderInfo);
+        Logger2Util.infoAutoJson("55入参数：{}", orderInfo);
+        Logger2Util.infoAutoJson("66入参数：{}", orderInfo, e);
+        Logger2Util.infoAutoJson("666入参数：{}", orderInfo, e, e2);
     }
 }
