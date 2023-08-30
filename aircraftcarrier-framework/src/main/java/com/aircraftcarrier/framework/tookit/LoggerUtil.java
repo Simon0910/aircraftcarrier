@@ -107,8 +107,7 @@ public class LoggerUtil {
     }
 
     private static String formatLogMessage(StackTraceElement caller, String message) {
-        return caller.getClassName() + "." + caller.getMethodName() +
-                "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") " +
+        return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")." + caller.getMethodName() + " " +
                 LogUtil.getFullTid() +
                 message;
     }

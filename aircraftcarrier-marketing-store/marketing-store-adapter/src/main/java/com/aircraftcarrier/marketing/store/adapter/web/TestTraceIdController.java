@@ -6,8 +6,10 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.tookit.LogUtil;
+import com.aircraftcarrier.framework.tookit.LoggerUtil;
 import com.aircraftcarrier.framework.web.client.ApiException;
 import com.aircraftcarrier.marketing.store.client.TestService;
+import com.alibaba.fastjson.JSON;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -80,7 +82,7 @@ public class TestTraceIdController {
     }
 
 
-    @ApiOperationSupport(order = 10)
+    @ApiOperationSupport(order = 2)
     @ApiOperation("事件发布")
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {
@@ -133,6 +135,50 @@ public class TestTraceIdController {
         });
 
         return SingleResponse.ok(null);
+    }
+
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("hello log")
+    @GetMapping("/testLog")
+    public SingleResponse<String> testLog() {
+        LogUtil.requestStart("me");
+        LogUtil.setTraceFixedName("orderNo");
+        LogUtil.setTraceModuleName("校验模块");
+
+        try {
+            RuntimeException e = new RuntimeException("错误了！");
+            RuntimeException e2 = new RuntimeException("最后一个错误了！");
+            Object nullObject = null;
+            HashMap<Object, Object> emptyObject = new HashMap<>();
+            HashMap<Object, Object> orderInfo = new HashMap<>();
+            orderInfo.put("id", "1");
+            orderInfo.put("orderNo", "123");
+            orderInfo.put("orderInfoDetail", emptyObject);
+            orderInfo.put("isNull", nullObject);
+
+            // 如何解决行号问题
+
+            LoggerUtil.info(log, "1入参数：{}", () -> JSON.toJSONString(orderInfo));
+            LoggerUtil.info(log, "2入参数：{}", () -> JSON.toJSONString(orderInfo));
+            LoggerUtil.info(log, "3入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
+            LoggerUtil.info(log, "33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
+
+            LoggerUtil.infoAutoJson(log, "4入参数：{}", orderInfo);
+            LoggerUtil.infoAutoJson(log, "5入参数：{}", orderInfo);
+            LoggerUtil.infoAutoJson(log, "6入参数：{}", orderInfo, e);
+            LoggerUtil.infoAutoJson(log, "66入参数：{}", orderInfo, e, e2);
+        } catch (Exception e) {
+            log.error(LogUtil.getLog("请求查询订单接口异常"), e);
+        } finally {
+            LogUtil.setTraceFixedName(null);
+            LogUtil.setTraceModuleName(null);
+            log.info(LogUtil.getLog("hello trace return"));
+
+            LogUtil.requestEnd();
+            i++;
+        }
+        return SingleResponse.ok("hello Trace");
     }
 
 }
