@@ -48,31 +48,31 @@ public class LoggerUtil {
         }
     }
 
-    public static void infoAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void infoAutoJson(Logger logger, String message, Object... args) {
         if (logger.isInfoEnabled()) {
             logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void debugAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void debugAutoJson(Logger logger, String message, Object... args) {
         if (logger.isDebugEnabled()) {
             logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void warnAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void warnAutoJson(Logger logger, String message, Object... args) {
         if (logger.isWarnEnabled()) {
             logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void errorAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void errorAutoJson(Logger logger, String message, Object... args) {
         if (logger.isErrorEnabled()) {
             logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
     }
 
-    public static void traceAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void traceAutoJson(Logger logger, String message, Object... args) {
         if (logger.isTraceEnabled()) {
             logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
         }
@@ -86,13 +86,17 @@ public class LoggerUtil {
         }
     }
 
-    private static Object[] getLogArgsAutoJson(Supplier<?>... args) {
+    private static Object[] getLogArgsAutoJson(Object... args) {
         if (args == null || args.length == 0) {
             return new Object[]{};
         } else {
-            String[] jsonArgs = new String[args.length];
+            Object[] jsonArgs = new Object[args.length];
             for (int i = 0, len = args.length; i < len; i++) {
-                jsonArgs[i] = JSON.toJSONString(args[i].get());
+                if (args[i] instanceof Throwable) {
+                    jsonArgs[i] = args[i];
+                    continue;
+                }
+                jsonArgs[i] = JSON.toJSONString(args[i]);
             }
             return jsonArgs;
         }
@@ -103,8 +107,8 @@ public class LoggerUtil {
     }
 
     private static String formatLogMessage(StackTraceElement caller, String message) {
-        return caller.getMethodName() +
-                " (" + caller.getFileName() + ":" + caller.getLineNumber() + ") " +
+        return caller.getClassName() + "." + caller.getMethodName() +
+                "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") " +
                 LogUtil.getFullTid() +
                 message;
     }

@@ -21,68 +21,68 @@ public class Logger2Util {
 
     public static void info(org.slf4j.Logger logger, String message, Supplier<?>... args) {
         if (logger.isInfoEnabled()) {
-            log(formatLogMessage(getCallerStackTrace(), message), args, logger.atInfo());
+            log(logger.atInfo(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
 
     public static void debug(org.slf4j.Logger logger, String message, Supplier<?>... args) {
         if (logger.isDebugEnabled()) {
-            log(formatLogMessage(getCallerStackTrace(), message), args, logger.atDebug());
+            log(logger.atDebug(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
     public static void warn(org.slf4j.Logger logger, String message, Supplier<?>... args) {
         if (logger.isWarnEnabled()) {
-            log(formatLogMessage(getCallerStackTrace(), message), args, logger.atWarn());
+            log(logger.atWarn(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
     public static void error(org.slf4j.Logger logger, String message, Supplier<?>... args) {
         if (logger.isErrorEnabled()) {
-            log(formatLogMessage(getCallerStackTrace(), message), args, logger.atError());
+            log(logger.atError(), formatLogMessage(getCallerStackTrace(), message), args);
         }
 
     }
 
     public static void trace(org.slf4j.Logger logger, String message, Supplier<?>... args) {
         if (logger.isTraceEnabled()) {
-            log(formatLogMessage(getCallerStackTrace(), message), args, logger.atTrace());
+            log(logger.atTrace(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void infoAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void infoAutoJson(Logger logger, String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logAutoJson(formatLogMessage(getCallerStackTrace(), message), args, logger.atInfo());
+            logAutoJson(logger.atInfo(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void debugAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void debugAutoJson(Logger logger, String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logAutoJson(formatLogMessage(getCallerStackTrace(), message), args, logger.atDebug());
+            logAutoJson(logger.atDebug(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void warnAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void warnAutoJson(Logger logger, String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logAutoJson(formatLogMessage(getCallerStackTrace(), message), args, logger.atWarn());
+            logAutoJson(logger.atWarn(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void errorAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void errorAutoJson(Logger logger, String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logAutoJson(formatLogMessage(getCallerStackTrace(), message), args, logger.atError());
+            logAutoJson(logger.atError(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void traceAutoJson(Logger logger, String message, Supplier<?>... args) {
+    public static void traceAutoJson(Logger logger, String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logAutoJson(formatLogMessage(getCallerStackTrace(), message), args, logger.atTrace());
+            logAutoJson(logger.atTrace(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
 
-    private static void log(String message, Supplier<?>[] args, LoggingEventBuilder loggingEventBuilder) {
+    private static void log(LoggingEventBuilder loggingEventBuilder, String message, Supplier<?>[] args) {
         loggingEventBuilder.setMessage(message);
         for (Supplier<?> arg : args) {
             loggingEventBuilder.addArgument(arg);
@@ -90,10 +90,13 @@ public class Logger2Util {
         loggingEventBuilder.log();
     }
 
-    private static void logAutoJson(String message, Supplier<?>[] args, LoggingEventBuilder loggingEventBuilder) {
+    private static void logAutoJson(LoggingEventBuilder loggingEventBuilder, String message, Object... args) {
         loggingEventBuilder.setMessage(message);
-        for (Supplier<?> arg : args) {
-            loggingEventBuilder.addArgument(JSON.toJSONString(arg.get()));
+        for (Object arg : args) {
+            if (arg instanceof Throwable) {
+                loggingEventBuilder.setCause((Throwable) arg);
+            }
+            loggingEventBuilder.addArgument(JSON.toJSONString(arg));
         }
         loggingEventBuilder.log();
     }
@@ -103,8 +106,8 @@ public class Logger2Util {
     }
 
     private static String formatLogMessage(StackTraceElement caller, String message) {
-        return caller.getMethodName() +
-                " (" + caller.getFileName() + ":" + caller.getLineNumber() + ") " +
+        return caller.getClassName() + "." + caller.getMethodName() +
+                "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") " +
                 LogUtil.getFullTid() +
                 message;
     }

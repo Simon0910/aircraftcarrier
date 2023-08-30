@@ -11,7 +11,7 @@
         <property name="LOG_PATTERN">
             <!-- %d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}][%X{fixedName}][%X{moduleName}] [%thread] %-5level %class{50.}:%L(%M) - %msg%xEx%n -->
             <!-- %d{MM-dd HH:mm:ss.SSS} [%t] %level [%X{traceId}][%X{fixedName}][%X{moduleName}] %c{1.1}#%M (%F:%L) - %msg %n -->
-            %d{MM-dd HH:mm:ss.SSS} [%t] %level [%X{traceId}][%X{fixedName}][%X{moduleName}] %M (%F:%L) - %msg %n
+            %d{MM-dd HH:mm:ss.SSS} [%t] %level [%X{traceId}][%X{fixedName}][%X{moduleName}] %c{1.1}.%M(%F:%L) - %msg %n
         </property>
     </properties>
 
