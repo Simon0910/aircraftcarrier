@@ -6,7 +6,6 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.tookit.LogUtil;
-import com.aircraftcarrier.framework.tookit.LoggerUtil;
 import com.aircraftcarrier.framework.web.client.ApiException;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.alibaba.fastjson.JSON;
@@ -159,25 +158,15 @@ public class TestTraceIdController {
 
             // 如何解决行号问题
 
-            // LoggerUtil.info(log, "1入参数：{}", () -> JSON.toJSONString(orderInfo));
-            // LoggerUtil.info(log, "2入参数：{}", () -> JSON.toJSONString(orderInfo));
-            // LoggerUtil.info(log, "3入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
-            // LoggerUtil.info(log, "33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
-            //
-            // LoggerUtil.infoAutoJson(log, "4入参数：{}", orderInfo);
-            // LoggerUtil.infoAutoJson(log, "5入参数：{}", orderInfo);
-            // LoggerUtil.infoAutoJson(log, "6入参数：{}", orderInfo, e);
-            // LoggerUtil.infoAutoJson(log, "66入参数：{}", orderInfo, e, e2);
+            LogUtil.info("1入参数：{}", () -> JSON.toJSONString(orderInfo));
+            LogUtil.info("2入参数：{}", () -> JSON.toJSONString(orderInfo));
+            LogUtil.info("3入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
+            LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
 
-            LoggerUtil.info("1入参数：{}", () -> JSON.toJSONString(orderInfo));
-            LoggerUtil.info("2入参数：{}", () -> JSON.toJSONString(orderInfo));
-            LoggerUtil.info("3入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
-            LoggerUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
-
-            LoggerUtil.infoAutoJson("4入参数：{}", orderInfo);
-            LoggerUtil.infoAutoJson("5入参数：{}", orderInfo);
-            LoggerUtil.infoAutoJson("6入参数：{}", orderInfo, e);
-            LoggerUtil.infoAutoJson("66入参数：{}", orderInfo, e, e2);
+            LogUtil.infoAutoJson("4入参数：{}", orderInfo);
+            LogUtil.infoAutoJson("5入参数：{}", orderInfo);
+            LogUtil.infoAutoJson("6入参数：{}", orderInfo, e);
+            LogUtil.infoAutoJson("66入参数：{}", orderInfo, e, e2);
         } catch (Exception e) {
             log.error(LogUtil.getLog("请求查询订单接口异常"), e);
         } finally {
