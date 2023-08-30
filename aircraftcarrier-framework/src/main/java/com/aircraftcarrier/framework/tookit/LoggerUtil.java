@@ -13,9 +13,9 @@ import java.util.function.Supplier;
  * @author Dioxide.CN
  * @date 2023/5/24
  */
-public class LogUtils {
+public class LoggerUtil {
 
-    private LogUtils() {
+    private LoggerUtil() {
     }
 
     public static void info(Logger logger, String message, Supplier<?>... suppliers) {
@@ -43,22 +43,22 @@ public class LogUtils {
         switch (level) {
             case DEBUG -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(message, getLogArgs(suppliers));
+                    logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
                 }
             }
             case INFO -> {
                 if (logger.isInfoEnabled()) {
-                    logger.info(message, getLogArgs(suppliers));
+                    logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
                 }
             }
             case ERROR -> {
                 if (logger.isErrorEnabled()) {
-                    logger.error(message, getLogArgs(suppliers));
+                    logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
                 }
             }
             case WARN -> {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(message, getLogArgs(suppliers));
+                    logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(suppliers));
                 }
             }
             case TRACE -> {
@@ -76,6 +76,17 @@ public class LogUtils {
         } else {
             return Arrays.stream(suppliers).map(Supplier::get).toArray();
         }
+    }
+
+    private static StackTraceElement getCallerStackTrace() {
+        return Thread.currentThread().getStackTrace()[4];
+    }
+
+    private static String formatLogMessage(StackTraceElement caller, String message) {
+        return caller.getMethodName() +
+                " (" + caller.getFileName() + ":" + caller.getLineNumber() + ") " +
+                LogUtil.getFullTid() +
+                message;
     }
 
 }

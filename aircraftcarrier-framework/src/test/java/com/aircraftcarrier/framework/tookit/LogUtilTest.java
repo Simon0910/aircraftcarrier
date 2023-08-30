@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * 验证 LogUtil
+ * 验证 {@link LogUtil}
  *
  * @author zhipengliu
  * @date 2023/8/26
@@ -16,8 +16,8 @@ import java.util.HashSet;
  */
 @Slf4j
 public class LogUtilTest {
-    private static String lineSeparator = System.lineSeparator();
     public static HashSet caseSet = new HashSet<>();
+    private static final String lineSeparator = System.lineSeparator();
 
     public static void main(String[] args) {
         RuntimeException e = new RuntimeException("错误了！");
@@ -521,7 +521,7 @@ public class LogUtilTest {
             caseSet.clear();
 
             // 如何解决行号问题
-            LogUtils.info(log, "入参数：{}", () -> orderInfo);
+            LoggerUtil.info(log, "入参数：{}", () -> orderInfo);
 
         } finally {
             try {
