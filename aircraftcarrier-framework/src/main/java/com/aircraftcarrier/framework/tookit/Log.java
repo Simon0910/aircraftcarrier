@@ -19,6 +19,25 @@ import java.util.regex.Pattern;
 
 /**
  * LogUtil
+ * <p>
+ * <p>
+ * 使用方式
+ * <pre> {@code
+ * Log.requestStart("订单号", "模块1");
+ *  try {
+ *      // .....
+ *      Log.info("1入参数：{}", Log.toJsonSupplier(orderInfo));
+ *      // .....
+ *      Log.infoToJson("2入参数：{}", orderInfo);
+ *      // .....
+ *      } catch (Exception e) {
+ *          Log.error("helloLog2接口异常", e);
+ *  } finally {
+ *      Log.requestEnd();
+ *  }
+ *
+ * }</pre>
+ *
  *
  * @author zhipengliu
  * @date 2023/8/20
@@ -698,6 +717,4 @@ public class Log {
         removeContext();
     }
 
-    public static void errordfdf(String s, String number, String number1, Exception e) {
-    }
 }
