@@ -79,33 +79,93 @@ public class LogUtil {
         }
     }
 
-    public static void infoAutoJson(String message, Object... args) {
+    public static void infoToJson(String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
         }
     }
 
-    public static void debugAutoJson(String message, Object... args) {
+    public static void debugToJson(String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
         }
     }
 
-    public static void warnAutoJson(String message, Object... args) {
+    public static void warnToJson(String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
         }
     }
 
-    public static void errorAutoJson(String message, Object... args) {
+    public static void errorToJson(String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
         }
     }
 
-    public static void traceAutoJson(String message, Object... args) {
+    public static void traceToJson(String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsAutoJson(args));
+            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+        }
+    }
+
+    public static void info(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void debug(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void warn(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isWarnEnabled()) {
+            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void error(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isErrorEnabled()) {
+            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void trace(Logger logger, String message, Supplier<?>... args) {
+        if (logger.isTraceEnabled()) {
+            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+        }
+    }
+
+    public static void infoToJson(Logger logger, String message, Object... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+        }
+    }
+
+    public static void debugToJson(Logger logger, String message, Object... args) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+        }
+    }
+
+    public static void warnToJson(Logger logger, String message, Object... args) {
+        if (logger.isWarnEnabled()) {
+            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+        }
+    }
+
+    public static void errorToJson(Logger logger, String message, Object... args) {
+        if (logger.isErrorEnabled()) {
+            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+        }
+    }
+
+    public static void traceToJson(Logger logger, String message, Object... args) {
+        if (logger.isTraceEnabled()) {
+            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
         }
     }
 
@@ -117,7 +177,7 @@ public class LogUtil {
         }
     }
 
-    private static Object[] getLogArgsAutoJson(Object... args) {
+    private static Object[] getLogArgsToJson(Object... args) {
         if (args == null || args.length == 0) {
             return new Object[]{};
         } else {

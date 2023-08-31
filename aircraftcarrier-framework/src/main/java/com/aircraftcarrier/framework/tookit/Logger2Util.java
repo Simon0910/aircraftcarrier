@@ -53,33 +53,33 @@ public class Logger2Util {
         }
     }
 
-    public static void infoAutoJson(String message, Object... args) {
+    public static void infoToJson(String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logAutoJson(logger.atInfo(), formatLogMessage(getCallerStackTrace(), message), args);
+            logToJson(logger.atInfo(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void debugAutoJson(String message, Object... args) {
+    public static void debugToJson(String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logAutoJson(logger.atDebug(), formatLogMessage(getCallerStackTrace(), message), args);
+            logToJson(logger.atDebug(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void warnAutoJson(String message, Object... args) {
+    public static void warnToJson(String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logAutoJson(logger.atWarn(), formatLogMessage(getCallerStackTrace(), message), args);
+            logToJson(logger.atWarn(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void errorAutoJson(String message, Object... args) {
+    public static void errorToJson(String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logAutoJson(logger.atError(), formatLogMessage(getCallerStackTrace(), message), args);
+            logToJson(logger.atError(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
-    public static void traceAutoJson(String message, Object... args) {
+    public static void traceToJson(String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logAutoJson(logger.atTrace(), formatLogMessage(getCallerStackTrace(), message), args);
+            logToJson(logger.atTrace(), formatLogMessage(getCallerStackTrace(), message), args);
         }
     }
 
@@ -92,7 +92,7 @@ public class Logger2Util {
         loggingEventBuilder.log();
     }
 
-    private static void logAutoJson(LoggingEventBuilder loggingEventBuilder, String message, Object... args) {
+    private static void logToJson(LoggingEventBuilder loggingEventBuilder, String message, Object... args) {
         loggingEventBuilder.setMessage(message);
         for (Object arg : args) {
             if (arg instanceof Throwable) {

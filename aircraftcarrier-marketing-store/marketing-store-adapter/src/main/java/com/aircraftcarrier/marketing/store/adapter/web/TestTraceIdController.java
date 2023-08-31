@@ -163,10 +163,10 @@ public class TestTraceIdController {
             LogUtil.info("3入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
             LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
 
-            LogUtil.infoAutoJson("4入参数：{}", orderInfo);
-            LogUtil.infoAutoJson("5入参数：{}", orderInfo);
-            LogUtil.infoAutoJson("6入参数：{}", orderInfo, e);
-            LogUtil.infoAutoJson("66入参数：{}", orderInfo, e, e2);
+            LogUtil.infoToJson("4入参数：{}", orderInfo);
+            LogUtil.infoToJson("5入参数：{}", orderInfo);
+            LogUtil.infoToJson("6入参数：{}", orderInfo, e);
+            LogUtil.infoToJson("66入参数：{}", orderInfo, e, e2);
         } catch (Exception e) {
             log.error(LogUtil.getLog("请求查询订单接口异常"), e);
         } finally {

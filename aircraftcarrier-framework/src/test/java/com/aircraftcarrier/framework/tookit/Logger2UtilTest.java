@@ -38,9 +38,9 @@ public class Logger2UtilTest {
         Logger2Util.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
         Logger2Util.info("333入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
 
-        Logger2Util.infoAutoJson("44参数：{}", orderInfo);
-        Logger2Util.infoAutoJson("55入参数：{}", orderInfo);
-        Logger2Util.infoAutoJson("66入参数：{}", orderInfo, e);
-        Logger2Util.infoAutoJson("666入参数：{}", orderInfo, e, e2);
+        Logger2Util.infoToJson("44参数：{}", orderInfo);
+        Logger2Util.infoToJson("55入参数：{}", orderInfo);
+        Logger2Util.infoToJson("66入参数：{}", orderInfo, e);
+        Logger2Util.infoToJson("666入参数：{}", orderInfo, e, e2);
     }
 }
