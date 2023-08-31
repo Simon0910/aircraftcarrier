@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
- * LogUtil
+ * Log
  * <p>
  * <p>
  * 使用方式
@@ -240,15 +240,13 @@ public class Log {
         if (args == null || args.length == 0) {
             return new Object[]{};
         } else {
-            Object[] jsonArgs = new Object[args.length];
             for (int i = 0, len = args.length; i < len; i++) {
                 if (args[i] instanceof Throwable) {
-                    jsonArgs[i] = args[i];
                     continue;
                 }
-                jsonArgs[i] = JSON.toJSONString(args[i]);
+                args[i] = JSON.toJSONString(args[i]);
             }
-            return jsonArgs;
+            return args;
         }
     }
 
