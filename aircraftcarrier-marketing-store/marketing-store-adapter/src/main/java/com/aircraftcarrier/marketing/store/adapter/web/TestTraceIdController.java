@@ -30,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping(value = "/web/test/trace")
 @RestController
 public class TestTraceIdController {
-    private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(1, 1, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-
     static Object nullObject = null;
     static HashMap<Object, Object> emptyObject = new HashMap<>();
     static HashMap<Object, Object> orderInfo = new HashMap<>();
@@ -43,6 +41,7 @@ public class TestTraceIdController {
         orderInfo.put("isNull", nullObject);
     }
 
+    private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(1, 1, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     @Resource
     private TestService testService;
     private int i = 1;
@@ -96,8 +95,10 @@ public class TestTraceIdController {
                 throw new RuntimeException("错误了！");
             }
         } catch (Exception e) {
-            Log.error("helloLog2接口异常", e);
-            // Log.error("helloLog2接口异常 {} {}", Log.getSupplier(11), Log.getSupplier(11), Log.getSupplier(e));
+            Log.error("helloLog2接口异常1", e);
+            Log.error("helloLog2接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
+            Log.error("helloLog2接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
+            Log.errorToJson("helloLog2接口异常4 {}, {}", orderInfo, 11, e);
         } finally {
             Log.requestEnd();
             i++;

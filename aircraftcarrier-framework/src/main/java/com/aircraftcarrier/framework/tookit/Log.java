@@ -30,8 +30,11 @@ import java.util.regex.Pattern;
  *      // .....
  *      Log.infoToJson("2入参数：{}", orderInfo);
  *      // .....
- *      } catch (Exception e) {
- *          Log.error("helloLog2接口异常", e);
+ *  }  catch (Exception e) {
+ *      Log.error("接口异常1", e);
+ *      Log.error("接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
+ *      Log.error("接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
+ *      Log.errorToJson("接口异常4 {}, {}", orderInfo, 11, e);
  *  } finally {
  *      Log.requestEnd();
  *  }
@@ -102,6 +105,21 @@ public class Log {
         return () -> throwable;
     }
 
+    /**
+     * <p>
+     * 使用方式
+     * <pre> {@code
+     *
+     *  Log.error("接口异常1", e);
+     *
+     *  Log.error("接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
+     *
+     *  Log.error("接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
+     *
+     *  Log.errorToJson("接口异常4 {}, {}", orderInfo, 11, e);
+     *
+     * }</pre>
+     */
     public static void error(String message, Throwable t) {
         if (logger.isErrorEnabled()) {
             logger.error(formatLogMessage(getCallerStackTrace(), message), t);
