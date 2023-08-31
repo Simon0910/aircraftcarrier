@@ -31,7 +31,13 @@ import java.util.regex.Pattern;
  *      // 模块2
  *      Log.resetModule("模块2");
  *      Log.infoToJson("入参：{}", orderInfo);
+ *
+ *      // 模块n
+ *      Log.resetModule("模块n");
+ *      Log.infoToJson("入参：{}", orderInfo);
+ *
  *      // .....
+ *
  *  }  catch (Exception e) {
  *      Log.error("接口异常1", e);
  *      Log.error("接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
