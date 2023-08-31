@@ -521,7 +521,7 @@ public class LogUtilTest {
             caseSet.clear();
 
             // 如何解决行号问题
-            LoggerUtil.info(log, "入参数：{}", () -> orderInfo);
+            LoggerUtil.info("入参数：{}", () -> orderInfo);
 
         } finally {
             try {
