@@ -53,13 +53,13 @@ public class LogUtil {
      * 使用方式
      * <pre> {@code
      *
-     *  LogUtil.info("3入参数：{}", LogUtil.getToJsonSupplier(orderInfo));
+     *  LogUtil.info("3入参数：{}", LogUtil.getJsonSupplier(orderInfo));
      *  或
      *  LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo));
      *
      * }</pre>
      */
-    public static Supplier<?> getToJsonSupplier(Object obj) {
+    public static Supplier<?> getJsonSupplier(Object obj) {
         return () -> JSON.toJSONString(obj);
     }
 
@@ -68,7 +68,7 @@ public class LogUtil {
      * 使用方式
      * <pre> {@code
      *
-     *  LogUtil.info("3入参数：{}", LogUtil.getToJsonSupplier(orderInfo), LogUtil.getExceptionSupplier(e));
+     *  LogUtil.info("3入参数：{}", LogUtil.getJsonSupplier(orderInfo), LogUtil.getExceptionSupplier(e));
      *  或
      *  LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
      *
@@ -319,13 +319,16 @@ public class LogUtil {
      * <p>
      * 使用方式
      * <pre> {@code
+     *
      *  LogUtil.requestStart("订单号", "模块1");
      *  try {
-     *      log.info(LogUtil.getLog("入参: 【{}】", LogUtil.toJsonString(orderInfo)));
-     *      log.info(LogUtil.getLog("出参: 【{}】", "orderNo"));
+     *      log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
+     *      log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
+     *
      *      LogUtil.resetModule("模块2");
-     *      log.info(LogUtil.getLog("入参: 【{}】", LogUtil.toJsonString(orderInfo)));
-     *      log.info(LogUtil.getLog("出参: 【{}】", "orderNo"));
+     *
+     *      log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
+     *      log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
      *  } finally {
      *      LogUtil.requestEnd();
      *  }
@@ -404,6 +407,21 @@ public class LogUtil {
         context.put(MODULE, fixString(module));
         concatContext(context);
     }
+
+    /**
+     * 重置 fixed
+     * 重置 module
+     *
+     * @param fixed fixed
+     * @param module module
+     */
+    public static void resetFixAndModule(String fixed, String module) {
+        Map<String, String> context = getContextIfPresent();
+        context.put(FIXED, fixString(fixed));
+        context.put(MODULE, fixString(module));
+        concatContext(context);
+    }
+
 
     public static String getErrorLog(String log, String... args) {
         if (logger.isErrorEnabled()) {
