@@ -26,9 +26,11 @@ import java.util.regex.Pattern;
  * Log.requestStart("订单号", "模块1");
  *  try {
  *      // .....
- *      Log.info("1入参数：{}", Log.toJsonSupplier(orderInfo));
- *      // .....
- *      Log.infoToJson("2入参数：{}", orderInfo);
+ *      Log.info("入参：{}", Log.toJsonSupplier(orderInfo));
+ *
+ *      // 模块2
+ *      Log.resetModule("模块2");
+ *      Log.infoToJson("入参：{}", orderInfo);
  *      // .....
  *  }  catch (Exception e) {
  *      Log.error("接口异常1", e);
