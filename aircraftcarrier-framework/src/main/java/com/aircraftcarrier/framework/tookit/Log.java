@@ -27,14 +27,17 @@ import java.util.regex.Pattern;
  *  try {
  *      // .....
  *      Log.info("入参：{}", Log.toJsonSupplier(orderInfo));
+ *      // (TestController.java:89).method() 1273227570368791【订单号】【模块1】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块2
  *      Log.resetModule("模块2");
  *      Log.infoToJson("入参：{}", orderInfo);
+ *      // (TestController.java:93).method() 1273227570368791【订单号】【模块2】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块n
  *      Log.resetModule("模块n");
  *      Log.infoToJson("入参：{}", orderInfo);
+ *      // (TestController.java:97).method() 1273227570368791【订单号】【模块n】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // .....
  *
@@ -43,6 +46,11 @@ import java.util.regex.Pattern;
  *      Log.error("接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
  *      Log.error("接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
  *      Log.errorToJson("接口异常4 {}, {}", orderInfo, 11, e);
+ *
+ *      // (TestController.java:107).method() 1273227570368791【订单号】【模块n】 - 接口异常4 {"orderNo":"123","id":"1","orderInfoDetail":{}}, 11
+ *      // java.lang.RuntimeException: 错误了！
+ * 	    //        at com.xx.xxx.TestController.method(TestController.java:101)
+ * 	    //        ...
  *  } finally {
  *      Log.requestEnd();
  *  }
