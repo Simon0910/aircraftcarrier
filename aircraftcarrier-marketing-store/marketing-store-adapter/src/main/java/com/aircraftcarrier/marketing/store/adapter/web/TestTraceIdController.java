@@ -49,30 +49,30 @@ public class TestTraceIdController {
         try {
             log.info("普通日志 {}, {}", LogUtil.toJsonString(null), LogUtil.toJsonString(new HashMap<>()));
 
-            log.info(LogUtil.getLog("hello trace start"));
+            log.info(LogUtil.getInfoLog("hello trace start"));
 
             Map<String, Object> orderInfo = new HashMap<>();
             orderInfo.put("id", 123);
             orderInfo.put("name", null);
-            log.info(LogUtil.getLogToJson("如参校验 orderInfo：{}", orderInfo));
+            log.info(LogUtil.getInfoLogJson("如参校验 orderInfo：{}", orderInfo));
 
             Map<String, Object> nullObj = null;
-            log.info(LogUtil.getLogToJson("如参校验 nullObj：{}", nullObj));
+            log.info(LogUtil.getInfoLogJson("如参校验 nullObj：{}", nullObj));
 
             Map<String, Object> emptyObj = new HashMap<>();
-            log.info(LogUtil.getLogToJson("如参校验 emptyObj：{}", emptyObj));
+            log.info(LogUtil.getInfoLogJson("如参校验 emptyObj：{}", emptyObj));
 
             if (i % 3 == 0) {
                 throw new ApiException("orderNo must not be null!");
             }
 
-            log.info(LogUtil.getLog("hello trace end"));
+            log.info(LogUtil.getInfoLog("hello trace end"));
         } catch (Exception e) {
-            log.error(LogUtil.getLog("请求查询订单接口异常"), e);
+            log.error(LogUtil.getInfoLog("请求查询订单接口异常"), e);
         } finally {
             LogUtil.setTraceFixedName(null);
             LogUtil.setTraceModuleName(null);
-            log.info(LogUtil.getLog("hello trace return"));
+            log.info(LogUtil.getInfoLog("hello trace return"));
 
             LogUtil.requestEnd();
             i++;
@@ -92,42 +92,42 @@ public class TestTraceIdController {
         LogUtil.resetModule("main");
 
         LoginUser loginUser = LoginUserUtil.getLoginUser();
-        log.info(LogUtil.getLog("start..."));
+        log.info(LogUtil.getInfoLog("start..."));
         log.info("Main LoginUser：{}", LogUtil.toJsonString(loginUser));
 
         new Thread(new TraceRunnable(() -> {
             LogUtil.resetModule("线程1");
-            log.info(LogUtil.getLog("线程1"));
+            log.info(LogUtil.getInfoLog("线程1"));
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
-            log.info(LogUtil.getLog("线程1 loginUser1：{}", LogUtil.toJsonString(loginUser1)));
+            log.info(LogUtil.getInfoLog("线程1 loginUser1：{}", LogUtil.toJsonString(loginUser1)));
         })).start();
 
         testService.publishEvent();
 
         threadPoolExecutor.execute(() -> {
             LogUtil.resetModule("线程2");
-            log.info(LogUtil.getLog("线程2"));
+            log.info(LogUtil.getInfoLog("线程2"));
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
-            log.info(LogUtil.getLog("线程3 loginUser2：{}", LogUtil.toJsonString(loginUser2)));
+            log.info(LogUtil.getInfoLog("线程3 loginUser2：{}", LogUtil.toJsonString(loginUser2)));
         });
 
         threadPoolExecutor.execute(() -> {
             LogUtil.resetModule("线程3");
-            log.info(LogUtil.getLog("线程3"));
+            log.info(LogUtil.getInfoLog("线程3"));
             LoginUser loginUser3 = LoginUserUtil.getLoginUser();
-            log.info(LogUtil.getLog("线程3 loginUser3：{}", LogUtil.toJsonString(loginUser3)));
+            log.info(LogUtil.getInfoLog("线程3 loginUser3：{}", LogUtil.toJsonString(loginUser3)));
 
             new Thread(new TraceRunnable(() -> {
                 LogUtil.resetModule("线程4");
-                log.info(LogUtil.getLog("线程4"));
+                log.info(LogUtil.getInfoLog("线程4"));
                 LoginUser loginUser4 = LoginUserUtil.getLoginUser();
-                log.info(LogUtil.getLog("线程4 loginUser1：{}", LogUtil.toJsonString(loginUser4)));
+                log.info(LogUtil.getInfoLog("线程4 loginUser1：{}", LogUtil.toJsonString(loginUser4)));
 
                 new Thread(new TraceRunnable(() -> {
                     LogUtil.resetModule("线程5");
-                    log.info(LogUtil.getLog("线程5"));
+                    log.info(LogUtil.getInfoLog("线程5"));
                     LoginUser loginUser5 = LoginUserUtil.getLoginUser();
-                    log.info(LogUtil.getLog("线程5 loginUser5：{}", LogUtil.toJsonString(loginUser5)));
+                    log.info(LogUtil.getInfoLog("线程5 loginUser5：{}", LogUtil.toJsonString(loginUser5)));
                 })).start();
 
             })).start();
@@ -163,16 +163,20 @@ public class TestTraceIdController {
             LogUtil.info("3入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
             LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e, () -> e2);
 
+            LogUtil.info("getToJsonSupplier11入参数：{}", LogUtil.getToJsonSupplier(orderInfo), () -> e);
+            LogUtil.info("getToJsonSupplier22入参数：{}", LogUtil.getToJsonSupplier(orderInfo), () -> e, () -> e2);
+
             LogUtil.infoToJson("4入参数：{}", orderInfo);
             LogUtil.infoToJson("5入参数：{}", orderInfo);
             LogUtil.infoToJson("6入参数：{}", orderInfo, e);
             LogUtil.infoToJson("66入参数：{}", orderInfo, e, e2);
+
         } catch (Exception e) {
-            log.error(LogUtil.getLog("请求查询订单接口异常"), e);
+            log.error(LogUtil.getInfoLog("请求查询订单接口异常"), e);
         } finally {
             LogUtil.setTraceFixedName(null);
             LogUtil.setTraceModuleName(null);
-            log.info(LogUtil.getLog("hello trace return"));
+            log.info(LogUtil.getInfoLog("hello trace return"));
 
             LogUtil.requestEnd();
             i++;
