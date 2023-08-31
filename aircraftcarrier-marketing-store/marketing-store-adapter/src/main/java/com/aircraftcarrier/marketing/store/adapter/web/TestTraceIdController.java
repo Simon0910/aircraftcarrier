@@ -5,6 +5,7 @@ import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
+import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.Log;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -51,8 +52,8 @@ public class TestTraceIdController {
     @ApiOperation("hello log")
     @GetMapping("/helloLog")
     public SingleResponse<String> helloLog() {
-        Log.setTraceFixedName("orderNo");
-        Log.setTraceModuleName("校验模块");
+        TraceIdUtil.setFixedName("orderNo");
+        TraceIdUtil.setModuleName("校验模块");
 
         Log.requestStart("订单号", "模块1");
         try {
@@ -82,8 +83,8 @@ public class TestTraceIdController {
     @ApiOperation("hello log2")
     @GetMapping("/helloLog2")
     public SingleResponse<String> helloLog2() {
-        Log.setTraceFixedName("orderNo");
-        Log.setTraceModuleName("校验模块");
+        TraceIdUtil.setFixedName("orderNo");
+        TraceIdUtil.setModuleName("校验模块");
 
         Log.requestStart("订单号", "模块1");
         try {
@@ -111,8 +112,8 @@ public class TestTraceIdController {
     @ApiOperation("事件发布")
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {
-        Log.setTraceFixedName("orderNo");
-        Log.setTraceModuleName("校验模块");
+        TraceIdUtil.setFixedName("orderNo");
+        TraceIdUtil.setModuleName("校验模块");
 
         Log.requestStart("订单号", "main线程");
 

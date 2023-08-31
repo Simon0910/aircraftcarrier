@@ -50,6 +50,10 @@ public class TraceIdUtil {
         return null;
     }
 
+    /**
+     * setTraceId
+     * 需要 remove
+     */
     public static void setTraceId(String traceId) {
         MDC.put(TRACE_ID, traceId);
     }
@@ -105,6 +109,7 @@ public class TraceIdUtil {
 
     /**
      * setFixedName
+     * 需要 remove
      */
     public static void setFixedName(String fixedName) {
         MDC.put(FIXED_NAME, fixedName);
@@ -112,6 +117,7 @@ public class TraceIdUtil {
 
     /**
      * setModuleName
+     * 需要 remove
      */
     public static void setModuleName(String moduleName) {
         MDC.put(MODULE_NAME, moduleName);

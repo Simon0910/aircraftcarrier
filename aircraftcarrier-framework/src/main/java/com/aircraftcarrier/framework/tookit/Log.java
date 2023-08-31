@@ -1,6 +1,5 @@
 package com.aircraftcarrier.framework.tookit;
 
-import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -298,7 +297,7 @@ public class Log {
 
 
     public static String uuid() {
-        return TraceIdUtil.uuid();
+        return String.valueOf(System.nanoTime());
     }
 
     private static String fixString(String str) {
@@ -345,34 +344,6 @@ public class Log {
      */
     private static void removeContext() {
         THREAD_LOCAL.remove();
-    }
-
-    /**
-     * setFixedName
-     */
-    public static void setTraceFixedName(String fixedName) {
-        TraceIdUtil.setFixedName(fixedName);
-    }
-
-    /**
-     * setModuleName
-     */
-    public static void setTraceModuleName(String moduleName) {
-        TraceIdUtil.setModuleName(moduleName);
-    }
-
-    /**
-     * getRootTraceId
-     */
-    public static String getTraceId() {
-        return TraceIdUtil.getTraceIdOrUuid();
-    }
-
-    /**
-     * getTraceIdLong
-     */
-    public static String getTraceIdLong() {
-        return getTraceId();
     }
 
     /**
