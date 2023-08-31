@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
  * @since 1.0
  */
 @Slf4j
-public class LogUtil {
-    private static final Logger logger = LoggerFactory.getLogger(LogUtil.class);
+public class Log {
+    private static final Logger logger = LoggerFactory.getLogger(Log.class);
 
     private static final ThreadLocal<Map<String, String>> THREAD_LOCAL = new ThreadLocal<>();
     private static final String TID = "tid";
@@ -43,7 +43,7 @@ public class LogUtil {
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\}");
     private static final String EMPTY_JSON_OBJECT = "{ }";
 
-    private LogUtil() {
+    private Log() {
     }
 
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<LOG START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -228,7 +228,7 @@ public class LogUtil {
 
     private static String formatLogMessage(StackTraceElement caller, String message) {
         return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")." + caller.getMethodName() + "() " +
-                LogUtil.getFullTid() +
+                Log.getFullTid() +
                 message;
     }
 

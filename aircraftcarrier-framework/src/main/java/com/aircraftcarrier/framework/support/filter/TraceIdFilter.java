@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.support.filter;
 
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
-import com.aircraftcarrier.framework.tookit.LogUtil;
+import com.aircraftcarrier.framework.tookit.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -45,7 +45,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
             String traceId = TraceIdUtil.getTraceId();
             if (traceId == null) {
                 String traceIdFromRequest = getTraceIdFromRequest(httpServletRequest);
-                LogUtil.requestStartByTid(traceIdFromRequest);
+                Log.requestStartByTid(traceIdFromRequest);
                 TraceIdUtil.setTraceId(traceIdFromRequest);
             }
             filterChain.doFilter(httpServletRequest, httpServletResponse);
@@ -54,7 +54,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
             throw throwable;
         } finally {
             TraceIdUtil.removeAll();
-            LogUtil.requestEnd();
+            Log.requestEnd();
         }
     }
 

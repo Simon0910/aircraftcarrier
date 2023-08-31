@@ -5,7 +5,7 @@ import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.framework.security.core.LoginUser;
 import com.aircraftcarrier.framework.security.core.LoginUserUtil;
-import com.aircraftcarrier.framework.tookit.LogUtil;
+import com.aircraftcarrier.framework.tookit.Log;
 import com.aircraftcarrier.marketing.store.client.TestService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
@@ -52,26 +52,26 @@ public class TestTraceIdController {
     @ApiOperation("hello log")
     @GetMapping("/helloLog")
     public SingleResponse<String> helloLog() {
-        LogUtil.setTraceFixedName("orderNo");
-        LogUtil.setTraceModuleName("校验模块");
+        Log.setTraceFixedName("orderNo");
+        Log.setTraceModuleName("校验模块");
 
-        LogUtil.requestStart("订单号", "模块1");
+        Log.requestStart("订单号", "模块1");
         try {
-            log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
-            log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
+            log.info(Log.getInfoLog("入参: 【{}】", Log.toJsonStringInfo(orderInfo)));
+            log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
 
-            LogUtil.resetModule("模块2");
+            Log.resetModule("模块2");
 
-            log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
-            log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
+            log.info(Log.getInfoLog("入参: 【{}】", Log.toJsonStringInfo(orderInfo)));
+            log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
 
             if (i % 5 == 0) {
                 throw new RuntimeException("错误了！");
             }
         } catch (Exception e) {
-            log.error(LogUtil.getErrorLog("helloLog接口异常"), e);
+            log.error(Log.getErrorLog("helloLog接口异常"), e);
         } finally {
-            LogUtil.requestEnd();
+            Log.requestEnd();
             i++;
         }
 
@@ -83,22 +83,22 @@ public class TestTraceIdController {
     @ApiOperation("hello log2")
     @GetMapping("/helloLog2")
     public SingleResponse<String> helloLog2() {
-        LogUtil.setTraceFixedName("orderNo");
-        LogUtil.setTraceModuleName("校验模块");
+        Log.setTraceFixedName("orderNo");
+        Log.setTraceModuleName("校验模块");
 
-        LogUtil.requestStart("订单号", "模块1");
+        Log.requestStart("订单号", "模块1");
         try {
-            LogUtil.info("1入参数：{}", LogUtil.getJsonSupplier(orderInfo));
+            Log.info("1入参数：{}", Log.getJsonSupplier(orderInfo));
 
-            LogUtil.infoToJson("2入参数：{}", orderInfo);
+            Log.infoToJson("2入参数：{}", orderInfo);
 
             if (i % 5 == 0) {
                 throw new RuntimeException("错误了！");
             }
         } catch (Exception e) {
-            log.error(LogUtil.getInfoLog("helloLog2接口异常"), e);
+            log.error(Log.getInfoLog("helloLog2接口异常"), e);
         } finally {
-            LogUtil.requestEnd();
+            Log.requestEnd();
             i++;
         }
         return SingleResponse.ok("hello log2");
@@ -109,48 +109,48 @@ public class TestTraceIdController {
     @ApiOperation("事件发布")
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {
-        LogUtil.setTraceFixedName("orderNo");
-        LogUtil.setTraceModuleName("校验模块");
+        Log.setTraceFixedName("orderNo");
+        Log.setTraceModuleName("校验模块");
 
-        LogUtil.requestStart("订单号", "main线程");
+        Log.requestStart("订单号", "main线程");
 
         LoginUser loginUser = LoginUserUtil.getLoginUser();
-        LogUtil.info("start...");
-        LogUtil.info("Main LoginUser：{}", LogUtil.getJsonSupplier(loginUser));
+        Log.info("start...");
+        Log.info("Main LoginUser：{}", Log.getJsonSupplier(loginUser));
 
         new Thread(new TraceRunnable(() -> {
-            LogUtil.resetFixAndModule("订单号", "线程1");
-            LogUtil.info("start1");
+            Log.resetFixAndModule("订单号", "线程1");
+            Log.info("start1");
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
-            LogUtil.info("end1 loginUser1：{}", LogUtil.getJsonSupplier(loginUser1));
+            Log.info("end1 loginUser1：{}", Log.getJsonSupplier(loginUser1));
         })).start();
 
         testService.publishEvent();
 
         threadPoolExecutor.execute(() -> {
-            LogUtil.resetFixAndModule("订单号", "线程2");
-            LogUtil.info("start2");
+            Log.resetFixAndModule("订单号", "线程2");
+            Log.info("start2");
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
-            LogUtil.info("end2 loginUser2：{}", LogUtil.getJsonSupplier(loginUser2));
+            Log.info("end2 loginUser2：{}", Log.getJsonSupplier(loginUser2));
         });
 
         threadPoolExecutor.execute(() -> {
-            LogUtil.resetFixAndModule("订单号", "线程3");
-            LogUtil.info("start3");
+            Log.resetFixAndModule("订单号", "线程3");
+            Log.info("start3");
             LoginUser loginUser3 = LoginUserUtil.getLoginUser();
-            LogUtil.info("end3 loginUser3：{}", LogUtil.getJsonSupplier(loginUser3));
+            Log.info("end3 loginUser3：{}", Log.getJsonSupplier(loginUser3));
 
             new Thread(new TraceRunnable(() -> {
-                LogUtil.resetFixAndModule("订单号", "线程4");
-                LogUtil.info("start4");
+                Log.resetFixAndModule("订单号", "线程4");
+                Log.info("start4");
                 LoginUser loginUser4 = LoginUserUtil.getLoginUser();
-                LogUtil.info("end4 loginUser4：{}", LogUtil.getJsonSupplier(loginUser4));
+                Log.info("end4 loginUser4：{}", Log.getJsonSupplier(loginUser4));
 
                 new Thread(new TraceRunnable(() -> {
-                    LogUtil.resetFixAndModule("订单号", "线程5");
-                    LogUtil.info("start5");
+                    Log.resetFixAndModule("订单号", "线程5");
+                    Log.info("start5");
                     LoginUser loginUser5 = LoginUserUtil.getLoginUser();
-                    LogUtil.info("end5 loginUser5：{}", LogUtil.getJsonSupplier(loginUser5));
+                    Log.info("end5 loginUser5：{}", Log.getJsonSupplier(loginUser5));
                 })).start();
 
             })).start();
