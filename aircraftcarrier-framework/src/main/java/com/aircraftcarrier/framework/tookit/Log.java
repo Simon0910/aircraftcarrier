@@ -59,9 +59,14 @@ public class Log {
      *
      * }</pre>
      */
-    public static Supplier<?> getJsonSupplier(Object obj) {
+    public static Supplier<?> toJsonSupplier(Object obj) {
         return () -> JSON.toJSONString(obj);
     }
+
+    public static Supplier<?> getSupplier(Object obj) {
+        return () -> obj;
+    }
+
 
     /**
      * <p>
@@ -76,6 +81,12 @@ public class Log {
      */
     public static Supplier<?> getExceptionSupplier(Throwable throwable) {
         return () -> throwable;
+    }
+
+    public static void error(String message, Throwable t) {
+        if (logger.isErrorEnabled()) {
+            logger.error(formatLogMessage(getCallerStackTrace(), message), t);
+        }
     }
 
     public static void error(String message, Supplier<?>... args) {
@@ -687,4 +698,6 @@ public class Log {
         removeContext();
     }
 
+    public static void errordfdf(String s, String number, String number1, Exception e) {
+    }
 }
