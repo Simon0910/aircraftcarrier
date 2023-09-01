@@ -67,7 +67,11 @@ public class Log {
 
     private static final ThreadLocal<Map<String, String>> THREAD_LOCAL = new ThreadLocal<>();
     private static final String TID = "tid";
+    private static final String FIXED_0 = "fixed0";
+    private static final String FIXED_PREV = "fixedPrev";
     private static final String FIXED = "fixed";
+    private static final String MODULE_0 = "module0";
+    private static final String MODULE_PREV = "modulePrev";
     private static final String MODULE = "module";
     private static final String FULL_TID = "fullTid";
     private static final String NEWLINE = System.lineSeparator();
@@ -318,7 +322,7 @@ public class Log {
     private static Map<String, String> getContextIfPresent() {
         Map<String, String> context = THREAD_LOCAL.get();
         if (context == null) {
-            context = new HashMap<>(6);
+            context = new HashMap<>(11);
             // 模块名称
             // tid
             context.put(TID, EMPTY);
@@ -399,6 +403,11 @@ public class Log {
         // tid orderNo 模块名称
         concatContext(context);
 
+        // orderNo etc.
+        context.put(FIXED_0, context.get(FIXED));
+        // 模块名称.
+        context.put(MODULE_0, context.get(MODULE));
+
         // set
         setContext(context);
     }
@@ -426,7 +435,20 @@ public class Log {
      */
     public static void resetFixed(String fixed) {
         Map<String, String> context = getContextIfPresent();
+        context.put(FIXED_PREV, context.get(FIXED));
         context.put(FIXED, fixString(fixed));
+        concatContext(context);
+    }
+
+    public static void resetFixed() {
+        Map<String, String> context = getContextIfPresent();
+        context.put(FIXED, context.get(FIXED_PREV));
+        concatContext(context);
+    }
+
+    public static void resetFixed0() {
+        Map<String, String> context = getContextIfPresent();
+        context.put(FIXED, context.get(FIXED_0));
         concatContext(context);
     }
 
@@ -437,7 +459,20 @@ public class Log {
      */
     public static void resetModule(String module) {
         Map<String, String> context = getContextIfPresent();
+        context.put(MODULE_PREV, context.get(MODULE));
         context.put(MODULE, fixString(module));
+        concatContext(context);
+    }
+
+    public static void resetModule() {
+        Map<String, String> context = getContextIfPresent();
+        context.put(MODULE, context.get(MODULE_PREV));
+        concatContext(context);
+    }
+
+    public static void resetModule0() {
+        Map<String, String> context = getContextIfPresent();
+        context.put(MODULE, context.get(MODULE_0));
         concatContext(context);
     }
 
@@ -450,11 +485,26 @@ public class Log {
      */
     public static void resetFixAndModule(String fixed, String module) {
         Map<String, String> context = getContextIfPresent();
+        context.put(FIXED_PREV, context.get(FIXED));
+        context.put(MODULE_PREV, context.get(MODULE));
         context.put(FIXED, fixString(fixed));
         context.put(MODULE, fixString(module));
         concatContext(context);
     }
 
+    public static void resetFixAndModule() {
+        Map<String, String> context = getContextIfPresent();
+        context.put(FIXED, context.get(FIXED_PREV));
+        context.put(MODULE, context.get(MODULE_PREV));
+        concatContext(context);
+    }
+
+    public static void resetFixAndModule0() {
+        Map<String, String> context = getContextIfPresent();
+        context.put(FIXED, context.get(FIXED_0));
+        context.put(MODULE, context.get(MODULE_0));
+        concatContext(context);
+    }
 
     public static String getErrorLog(String log, String... args) {
         if (logger.isErrorEnabled()) {
@@ -707,6 +757,7 @@ public class Log {
         }
         return EMPTY;
     }
+
 
     /**
      * remove
