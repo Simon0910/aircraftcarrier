@@ -550,49 +550,6 @@ public class Log {
     // *****************************************************************************************************************
 
     // *****************************************************************************************************************
-    //                                              toJsonString START
-    // *****************************************************************************************************************
-
-    /**
-     * @see JSON#toJSONString(Object)
-     */
-    public static String toJsonString(Object obj) {
-        return JSON.toJSONString(obj);
-    }
-
-    public static String toJsonStringError(Object obj) {
-        if (logger.isErrorEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    public static String toJsonStringWarn(Object obj) {
-        if (logger.isWarnEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    public static String toJsonStringInfo(Object obj) {
-        if (logger.isInfoEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    public static String toJsonStringDebug(Object obj) {
-        if (logger.isDebugEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    // *****************************************************************************************************************
-    //                                              toJsonString END
-    // *****************************************************************************************************************
-
-    // *****************************************************************************************************************
     //                                              获取日志 START
     // *****************************************************************************************************************
 
@@ -753,4 +710,49 @@ public class Log {
     // *****************************************************************************************************************
     //                                              获取日志 END
     // *****************************************************************************************************************
+
+
+    // *****************************************************************************************************************
+    //                                              toJsonString START
+    // *****************************************************************************************************************
+
+    /**
+     * @see JSON#toJSONString(Object)
+     */
+    public static String toJsonString(Object obj) {
+        return JSON.toJSONString(obj);
+    }
+
+    public static String toJsonStringError(Object obj) {
+        if (logger.isErrorEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    public static String toJsonStringWarn(Object obj) {
+        if (logger.isWarnEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    public static String toJsonStringInfo(Object obj) {
+        if (logger.isInfoEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    public static String toJsonStringDebug(Object obj) {
+        if (logger.isDebugEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    // *****************************************************************************************************************
+    //                                              toJsonString END
+    // *****************************************************************************************************************
+
 }
