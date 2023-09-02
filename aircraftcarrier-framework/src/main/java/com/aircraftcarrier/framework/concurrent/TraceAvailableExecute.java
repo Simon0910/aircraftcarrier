@@ -31,11 +31,12 @@ public class TraceAvailableExecute {
         if (traceId != null) {
             String[] traceIdArr = TraceIdUtil.splitTraceId(traceId);
             String root = traceIdArr[0];
+            current = TraceIdUtil.uuid();
             if (traceIdArr.length > 1) {
                 String parent = traceIdArr[1];
-                traceId = TraceIdUtil.append(root, current = TraceIdUtil.uuid(), parent);
+                traceId = TraceIdUtil.append(root, parent, current);
             } else {
-                traceId = TraceIdUtil.append(root, current = TraceIdUtil.uuid());
+                traceId = TraceIdUtil.append(root, current);
             }
         } else {
             traceId = current = TraceIdUtil.uuid();

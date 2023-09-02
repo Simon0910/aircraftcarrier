@@ -530,8 +530,6 @@ public class LogUtilTest {
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            // remove
-            Log.requestEnd();
         }
     }
 

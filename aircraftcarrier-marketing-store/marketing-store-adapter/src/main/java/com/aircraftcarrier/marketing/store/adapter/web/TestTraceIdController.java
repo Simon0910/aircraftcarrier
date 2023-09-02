@@ -82,7 +82,7 @@ public class TestTraceIdController {
         TraceIdUtil.setFixedName("orderNo");
         TraceIdUtil.setModuleName("校验模块");
 
-        Log.requestStart("订单号", "模块1");
+        Log.resetFixAndModule("订单号", "模块1");
         try {
             log.info(Log.getInfoLog("入参: 【{}】", Log.toInfoJsonString(orderInfo)));
             log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
@@ -98,7 +98,6 @@ public class TestTraceIdController {
         } catch (Exception e) {
             log.error(Log.getErrorLog("helloLog接口异常"), e);
         } finally {
-            Log.requestEnd();
             i++;
         }
 
@@ -112,7 +111,7 @@ public class TestTraceIdController {
         TraceIdUtil.setFixedName("orderNo");
         TraceIdUtil.setModuleName("校验模块");
 
-        Log.requestStart("订单号", "模块1");
+        Log.resetFixAndModule("订单号", "模块1");
         try {
             Log.info("1入参数：{}", Log.toJsonSupplier(orderInfo));
 
@@ -127,7 +126,6 @@ public class TestTraceIdController {
             Log.error("helloLog2接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
             Log.errorToJson("helloLog2接口异常4 {}, {}", orderInfo, 11, e);
         } finally {
-            Log.requestEnd();
             i++;
         }
         return SingleResponse.ok("hello log2");
