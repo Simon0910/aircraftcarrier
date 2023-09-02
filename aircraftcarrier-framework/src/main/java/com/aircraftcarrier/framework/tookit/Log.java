@@ -55,7 +55,6 @@ import java.util.regex.Pattern;
  * }</pre>
  *
  * @author zhipengliu
- * @date 2023/8/20
  * @since 1.0
  */
 public class Log {
@@ -711,7 +710,7 @@ public class Log {
                     }
                 }
             } else {
-                String argJson = toJsonString(argObj);
+                String argJson = JSON.toJSONString(argObj);
                 if (LOG_PLACEHOLDER.equals(argJson)) {
                     args[i] = EMPTY_JSON_OBJECT;
                 } else if (argJson.contains(LOG_PLACEHOLDER)) {
