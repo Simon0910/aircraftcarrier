@@ -27,12 +27,12 @@ import java.util.regex.Pattern;
  *      // (TestController.java:89).method() 1273227570368791【订单号】【模块1】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块2
- *      Log.resetModule("模块2");
+ *      Log.setModule("模块2");
  *      Log.infoToJson("入参：{}", orderInfo);
  *      // (TestController.java:93).method() 1273227570368791【订单号】【模块2】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块n
- *      Log.resetModule("模块n");
+ *      Log.setModule("模块n");
  *      Log.infoToJson("入参：{}", orderInfo);
  *      // (TestController.java:97).method() 1273227570368791【订单号】【模块n】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
@@ -353,7 +353,7 @@ public class Log {
      *      log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
      *      log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
      *
-     *      LogUtil.resetModule("模块2");
+     *      LogUtil.setModule("模块2");
      *
      *      log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
      *      log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
