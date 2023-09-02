@@ -720,28 +720,28 @@ public class Log {
         return JSON.toJSONString(obj);
     }
 
-    public static String toJsonStringError(Object obj) {
+    public static String toErrorJsonString(Object obj) {
         if (logger.isErrorEnabled()) {
             return JSON.toJSONString(obj);
         }
         return EMPTY;
     }
 
-    public static String toJsonStringWarn(Object obj) {
+    public static String toWarnJsonString(Object obj) {
         if (logger.isWarnEnabled()) {
             return JSON.toJSONString(obj);
         }
         return EMPTY;
     }
 
-    public static String toJsonStringInfo(Object obj) {
+    public static String toInfoJsonString(Object obj) {
         if (logger.isInfoEnabled()) {
             return JSON.toJSONString(obj);
         }
         return EMPTY;
     }
 
-    public static String toJsonStringDebug(Object obj) {
+    public static String toDebugJsonString(Object obj) {
         if (logger.isDebugEnabled()) {
             return JSON.toJSONString(obj);
         }

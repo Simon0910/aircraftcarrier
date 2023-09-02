@@ -48,6 +48,34 @@ public class TestTraceIdController {
     private int i = 1;
 
 
+    /**
+     * 考点：
+     * log4j定义了8个级别的log（除去OFF和ALL，可以说分为6个级别），优先级从高到低依次为：
+     * OFF、FATAL、ERROR、WARN、INFO、DEBUG、TRACE、 ALL。
+     * 级别越低打得越多
+     */
+    @GetMapping("/")
+    public String hello() {
+        // 调整日志级别 观察是否打印
+        log.error("error...{}", Log.toErrorJsonString(orderInfo));
+        log.warn("warn...{}", Log.toWarnJsonString(orderInfo));
+        log.info("info...{}", Log.toInfoJsonString(orderInfo));
+        log.debug("debug...{}", Log.toDebugJsonString(orderInfo));
+
+        Log.error(log, "error2...{}", Log.toJsonSupplier(orderInfo));
+        Log.warn(log, "warn2...{}", Log.toJsonSupplier(orderInfo));
+        Log.info(log, "info2...{}", Log.toJsonSupplier(orderInfo));
+        Log.debug(log, "debug2...{}", Log.toJsonSupplier(orderInfo));
+
+        Log.errorToJson(log, "error3...{}", orderInfo);
+        Log.warnToJson(log, "warn3...{}", orderInfo);
+        Log.infoToJson(log, "info3...{}", orderInfo);
+        Log.debugToJson(log, "debug3...{}", orderInfo);
+
+        return "hi";
+    }
+
+
     @ApiOperationSupport(order = 1)
     @ApiOperation("hello log")
     @GetMapping("/helloLog")
@@ -57,12 +85,12 @@ public class TestTraceIdController {
 
         Log.requestStart("订单号", "模块1");
         try {
-            log.info(Log.getInfoLog("入参: 【{}】", Log.toJsonStringInfo(orderInfo)));
+            log.info(Log.getInfoLog("入参: 【{}】", Log.toInfoJsonString(orderInfo)));
             log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
 
             Log.resetModule("模块2");
 
-            log.info(Log.getInfoLog("入参: 【{}】", Log.toJsonStringInfo(orderInfo)));
+            log.info(Log.getInfoLog("入参: 【{}】", Log.toInfoJsonString(orderInfo)));
             log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
 
             if (i % 5 == 0) {
