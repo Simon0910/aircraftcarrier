@@ -522,6 +522,7 @@ public class LogUtilTest {
 
             // 如何解决行号问题
             LoggerUtil.info("入参数：{}", () -> orderInfo);
+            Log.info("入参数：{}", () -> orderInfo);
 
         } finally {
             try {

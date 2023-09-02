@@ -138,127 +138,127 @@ public class Log {
      */
     public static void error(String message, Throwable t) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(getCallerStackTrace(), message), t);
+            logger.error(formatLogMessage(message), t);
         }
     }
 
     public static void error(String message, Supplier<?>... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.error(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void error(Logger logger, String message, Supplier<?>... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.error(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void errorToJson(String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.error(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void errorToJson(Logger logger, String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.error(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void warn(String message, Supplier<?>... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.warn(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void warn(Logger logger, String message, Supplier<?>... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.warn(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void warnToJson(String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.warn(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void warnToJson(Logger logger, String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.warn(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void info(String message, Supplier<?>... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.info(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void info(Logger logger, String message, Supplier<?>... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.info(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void infoToJson(String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.info(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void infoToJson(Logger logger, String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.info(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void debug(String message, Supplier<?>... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.debug(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void debug(Logger logger, String message, Supplier<?>... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.debug(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void debugToJson(String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.debug(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void debugToJson(Logger logger, String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.debug(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void trace(String message, Supplier<?>... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.trace(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void trace(Logger logger, String message, Supplier<?>... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgs(args));
+            logger.trace(formatLogMessage(message), getLogArgs(args));
         }
     }
 
     public static void traceToJson(String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.trace(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void traceToJson(Logger logger, String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(getCallerStackTrace(), message), getLogArgsToJson(args));
+            logger.trace(formatLogMessage(message), getLogArgsToJson(args));
         }
     }
 
@@ -288,7 +288,8 @@ public class Log {
         return Thread.currentThread().getStackTrace()[3];
     }
 
-    private static String formatLogMessage(StackTraceElement caller, String message) {
+    private static String formatLogMessage(String message) {
+        StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
         return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")." + caller.getMethodName() + "() " +
                 Log.getFullTid() +
                 message;
