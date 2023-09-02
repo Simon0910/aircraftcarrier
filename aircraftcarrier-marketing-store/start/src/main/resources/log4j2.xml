@@ -7,12 +7,17 @@
 <configuration status="warn" monitorInterval="5">
 
     <!-- 日志文件目录、日志格式配置 -->
+    <!-- https://logging.apache.org/log4j/2.x/manual/layouts.html -->
+    <!-- https://www.docs4dev.com/docs/zh/log4j2/2.x/all/manual-layouts.html -->
+    <!-- https://www.cnblogs.com/bmwhero/p/16951505.html -->
     <properties>
         <Property name="fileName">~/export/logs/aircraftcarrier</Property>
         <property name="LOG_PATTERN">
             <!-- %d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}][%X{fixedName}][%X{moduleName}] [%thread] %-5level %class{50.}:%L(%M) - %msg%xEx%n -->
-            <!-- %d{MM-dd HH:mm:ss.SSS} [%t] %level [%X{traceId}][%X{fixedName}][%X{moduleName}] %c{1.1}#%M (%F:%L) - %msg %n -->
-            %d{MM-dd HH:mm:ss.SSS} [%t] %level [%X{traceId}][%X{fixedName}][%X{moduleName}] %c{1.1}(%F:%L).%M - %msg %n
+            <!-- %d{MM-dd HH:mm:ss.SSS} [%t] %level [%X{traceId}][%X{fixedName}][%X{moduleName}] %c{1.1}#%M (%F:%L) - %msg%n -->
+            <!-- %d{MM-dd HH:mm:ss.SSS} %-5level %pid [%t] %X{traceId} %X{fixedName} %X{moduleName} %c{1.1} - %M(%F:%L) - %msg%n -->
+            %d{MM-dd HH:mm:ss.SSS} %-5level %pid [%t] %X{traceId} %X{fixedName} %X{moduleName} %c{1.1}.%M(%F:%L) - %highlight{%msg}%n
+            <!-- %d{MM-dd HH:mm:ss.SSS} %-5level %pid [%t] %X{traceId} %X{fixedName} %X{moduleName} %c{1.1}.%M() - %highlight{%msg} (%F:%L)%n -->
         </property>
     </properties>
 

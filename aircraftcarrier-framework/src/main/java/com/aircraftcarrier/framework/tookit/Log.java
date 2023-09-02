@@ -286,7 +286,7 @@ public class Log {
 
     private static String formatLogMessage(String message) {
         StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
-        return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")." + caller.getMethodName() + "() " +
+        return caller.getMethodName() + "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") - " +
                 Log.getFullTid() +
                 message;
     }
@@ -694,7 +694,7 @@ public class Log {
         return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(Log.EMPTY_JSON_OBJECT);
     }
 
-    public static boolean isBlank(final CharSequence cs) {
+    public static boolean isBlank(final String cs) {
         if (cs == null || cs.isEmpty()) {
             return true;
         }
