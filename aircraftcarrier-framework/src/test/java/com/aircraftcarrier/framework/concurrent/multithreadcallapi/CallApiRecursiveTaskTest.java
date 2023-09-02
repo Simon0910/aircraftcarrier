@@ -80,7 +80,7 @@ public class CallApiRecursiveTaskTest {
 
     @Test
     public void testCall_For() {
-        long l = TimeLogUtil.beginTime();
+        long l = TimeLogUtil.startTime();
         List<Result> results = new ArrayList<>(num);
         for (Param param : params) {
             Result result = callApiService.getResult(param);
@@ -88,7 +88,7 @@ public class CallApiRecursiveTaskTest {
         }
 
         System.out.println("for ===> " + results.size());
-        TimeLogUtil.endTimePrintln(l);
+        TimeLogUtil.logElapsedTime(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }
@@ -96,7 +96,7 @@ public class CallApiRecursiveTaskTest {
     @Test
     public void testCall_RecursiveTask() {
         // 底层使用默认 ForkJoinPool.commonPool()
-        long l = TimeLogUtil.beginTime();
+        long l = TimeLogUtil.startTime();
         CallRecursiveTask<Param, Result> task = new CallRecursiveTask<>((param) -> callApiService.getResult(param), params);
 
 //        task.fork();
@@ -105,7 +105,7 @@ public class CallApiRecursiveTaskTest {
         List<Result> results = ThreadPoolUtil.invoke(task, 500);
 
         System.out.println("RecursiveTask ===> " + results.size());
-        TimeLogUtil.endTimePrintln(l);
+        TimeLogUtil.logElapsedTime(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }
@@ -114,7 +114,7 @@ public class CallApiRecursiveTaskTest {
     public void testCall_ForkJoinPool() {
         // https://www.bilibili.com/video/BV1M34y1q7M2/?spm_id_from=333.999.0.0&vd_source=5ae6c4b2dbcbc1516cef3f31fbe2abb2
         // ForkJoinPool 使用场景主要时为了解决流式处理，有依赖关系的操作避免队列引起的死循环 如stream底层，CompletableFuture底层
-        long l = TimeLogUtil.beginTime();
+        long l = TimeLogUtil.startTime();
 
         // example01
         // List<Callable<Result>> taskList = new ArrayList<>(num);
@@ -129,14 +129,14 @@ public class CallApiRecursiveTaskTest {
         List<Result> results = ThreadPoolUtil.invokeTask(parallelTask, 500);
 
         System.out.println("ForkJoinPool ===> " + results.size());
-        TimeLogUtil.endTimePrintln(l);
+        TimeLogUtil.logElapsedTime(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }
 
     @Test
     public void testCall_ThreadPoolExecutor() {
-        long l = TimeLogUtil.beginTime();
+        long l = TimeLogUtil.startTime();
 
         // example01
         // List<Callable<Result>> taskList = new ArrayList<>(num);
@@ -151,7 +151,7 @@ public class CallApiRecursiveTaskTest {
         List<Result> results = ThreadPoolUtil.invokeTask(parallelTask, 1000, "call ccc");
 
         System.out.println("ThreadPoolExecutor ===> " + results.size());
-        TimeLogUtil.endTimePrintln(l);
+        TimeLogUtil.logElapsedTime(l);
 
         Assert.isTrue(num == results.stream().map(Result::getName).distinct().count(), "error");
     }

@@ -21,7 +21,7 @@ public class CompletableFuture_Stream_Test {
     @Test
     public void comparePriceInOnePlat2() {
         List<String> products = List.of("JD", "TB", "PDD");
-        long l = TimeLogUtil.beginTime();
+        long l = TimeLogUtil.startTime();
         Integer integer = products.stream()
                 .map(product ->
                         CompletableFuture.supplyAsync(() -> getPrice(product))
@@ -31,7 +31,7 @@ public class CompletableFuture_Stream_Test {
                 .collect(Collectors.toList()).stream()
                 .map(CompletableFuture::join).min(Comparator.comparingInt(Integer::intValue))
                 .orElse(-1);
-        TimeLogUtil.endTimeLog("comparePriceInOnePlat2: {}", l);
+        TimeLogUtil.logElapsedTime("comparePriceInOnePlat2", l);
     }
 
     /**
@@ -40,7 +40,7 @@ public class CompletableFuture_Stream_Test {
     @Test
     public void comparePriceInOnePlat() {
         List<String> products = List.of("JD", "TB", "PDD");
-        long l = TimeLogUtil.beginTime();
+        long l = TimeLogUtil.startTime();
         products.stream()
                 .map(product ->
                         CompletableFuture.supplyAsync(() -> getPrice(product))
@@ -49,11 +49,11 @@ public class CompletableFuture_Stream_Test {
                 )
                 .map(CompletableFuture::join).min(Comparator.comparingInt(Integer::intValue))
                 .orElse(-1);
-        TimeLogUtil.endTimePrintln(l);
+        TimeLogUtil.logElapsedTime(l);
 
         // 等价于==>
 
-        l = TimeLogUtil.beginTime();
+        l = TimeLogUtil.startTime();
         products.stream()
                 .map(product ->
                         CompletableFuture.supplyAsync(() -> getPrice(product))
@@ -63,7 +63,7 @@ public class CompletableFuture_Stream_Test {
                 )
                 .min(Comparator.comparingInt(Integer::intValue))
                 .orElse(-1);
-        TimeLogUtil.endTimePrintln("comparePriceInOnePlat: {}", l);
+        TimeLogUtil.logElapsedTime("comparePriceInOnePlat", l);
     }
 
 

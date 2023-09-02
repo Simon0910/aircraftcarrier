@@ -4,7 +4,6 @@ import cn.easyes.starter.register.EsMapperScan;
 import com.aircraftcarrier.framework.tookit.TimeLogUtil;
 import com.aircraftcarrier.framework.web.config.SerializerConfiguration;
 import com.aircraftcarrier.security.app.AuthServiceImpl;
-import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -40,10 +39,10 @@ public class Application {
         System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
 
         log.info("Begin to start Spring Boot Application");
-        Stopwatch stopwatch = TimeLogUtil.startStopwatchTime();
+        long l = TimeLogUtil.startTime();
 
         SpringApplication.run(Application.class, args);
 
-        log.info("End starting Spring Boot Application, Time used: {}", TimeLogUtil.endStopwatchTime(stopwatch));
+        TimeLogUtil.logElapsedTime("End starting Spring Boot Application", l);
     }
 }
