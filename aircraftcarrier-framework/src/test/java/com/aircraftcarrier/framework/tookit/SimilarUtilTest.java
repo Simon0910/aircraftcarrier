@@ -12,9 +12,9 @@ import com.google.common.base.Stopwatch;
 public class SimilarUtilTest {
 
     public static void main(String[] args) throws InterruptedException {
-        Stopwatch start = TimeLogUtil.createStopwatch();
-        start.start();
-        Stopwatch stopwatch = TimeLogUtil.createStopwatch();
+        Stopwatch stopwatch0 = TimeLogUtil.startCreateStopwatch();
+        stopwatch0.start();
+        Stopwatch stopwatch = TimeLogUtil.startCreateStopwatch();
 
         stopwatch.start();
         double d = SimilarUtil.similar("福建省", "234福232建32省2");
@@ -34,6 +34,6 @@ public class SimilarUtilTest {
         System.out.println(SimilarUtil.similar("福建省", "湖建省") + " :: " + SimilarUtil.similarLevenshtein("福建省", "湖建省"));
 
         // 总耗时
-        TimeLogUtil.logElapsedTime(start);
+        TimeLogUtil.logElapsedTime(stopwatch0);
     }
 }

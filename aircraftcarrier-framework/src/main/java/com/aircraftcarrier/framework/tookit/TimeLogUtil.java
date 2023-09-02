@@ -40,7 +40,7 @@ public class TimeLogUtil {
      *
      * @return Stopwatch
      */
-    public static Stopwatch createStopwatch() {
+    public static Stopwatch startCreateStopwatch() {
         return Stopwatch.createUnstarted();
     }
 
