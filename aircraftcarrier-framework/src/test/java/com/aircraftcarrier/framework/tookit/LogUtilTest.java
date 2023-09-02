@@ -524,6 +524,19 @@ public class LogUtilTest {
             LoggerUtil.info("入参数：{}", () -> orderInfo);
             Log.info("入参数：{}", () -> orderInfo);
 
+            int i = 1 /0;
+        } catch (Exception ex) {
+            Log.resetFixAndModule("11", "22");
+            // 原生
+            log.error("原生接口错误", ex);
+            log.error("===================");
+            // tid
+            String errorLog = Log.getErrorLogJson("接口错误2", ex);
+            log.error(errorLog);
+            log.error("===================");
+            // tid
+            Log.errorToJson("接口错误3", ex);
+            Log.resetFixAndModule();
         } finally {
             try {
                 Thread.sleep(1000); // 等待log4j2 异步日志结束
@@ -531,6 +544,7 @@ public class LogUtilTest {
                 throw new RuntimeException(ex);
             }
         }
+        Log.info("测试 success.");
     }
 
     private static boolean validGetLog() {

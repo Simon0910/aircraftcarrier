@@ -23,63 +23,63 @@
 //
 //     public static void info(String message, Supplier<?>... args) {
 //         if (logger.isInfoEnabled()) {
-//             log(logger.atInfo(), formatLogMessage(getCallerStackTrace(), message), args);
+//             log(logger.atInfo(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //
 //     public static void debug(String message, Supplier<?>... args) {
 //         if (logger.isDebugEnabled()) {
-//             log(logger.atDebug(), formatLogMessage(getCallerStackTrace(), message), args);
+//             log(logger.atDebug(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void warn(String message, Supplier<?>... args) {
 //         if (logger.isWarnEnabled()) {
-//             log(logger.atWarn(), formatLogMessage(getCallerStackTrace(), message), args);
+//             log(logger.atWarn(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void error(String message, Supplier<?>... args) {
 //         if (logger.isErrorEnabled()) {
-//             log(logger.atError(), formatLogMessage(getCallerStackTrace(), message), args);
+//             log(logger.atError(), formatLogMessage(message), args);
 //         }
 //
 //     }
 //
 //     public static void trace(String message, Supplier<?>... args) {
 //         if (logger.isTraceEnabled()) {
-//             log(logger.atTrace(), formatLogMessage(getCallerStackTrace(), message), args);
+//             log(logger.atTrace(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void infoToJson(String message, Object... args) {
 //         if (logger.isInfoEnabled()) {
-//             logToJson(logger.atInfo(), formatLogMessage(getCallerStackTrace(), message), args);
+//             logToJson(logger.atInfo(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void debugToJson(String message, Object... args) {
 //         if (logger.isDebugEnabled()) {
-//             logToJson(logger.atDebug(), formatLogMessage(getCallerStackTrace(), message), args);
+//             logToJson(logger.atDebug(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void warnToJson(String message, Object... args) {
 //         if (logger.isWarnEnabled()) {
-//             logToJson(logger.atWarn(), formatLogMessage(getCallerStackTrace(), message), args);
+//             logToJson(logger.atWarn(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void errorToJson(String message, Object... args) {
 //         if (logger.isErrorEnabled()) {
-//             logToJson(logger.atError(), formatLogMessage(getCallerStackTrace(), message), args);
+//             logToJson(logger.atError(), formatLogMessage(message), args);
 //         }
 //     }
 //
 //     public static void traceToJson(String message, Object... args) {
 //         if (logger.isTraceEnabled()) {
-//             logToJson(logger.atTrace(), formatLogMessage(getCallerStackTrace(), message), args);
+//             logToJson(logger.atTrace(), formatLogMessage(message), args);
 //         }
 //     }
 //
@@ -103,13 +103,11 @@
 //         loggingEventBuilder.log();
 //     }
 //
-//     private static StackTraceElement getCallerStackTrace() {
-//         return Thread.currentThread().getStackTrace()[3];
-//     }
-//
-//     private static String formatLogMessage(StackTraceElement caller, String message) {
-//         return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")." + caller.getMethodName() + "() " +
+//     private static String formatLogMessage(String message) {
+//         StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
+//         return caller.getMethodName() + "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") - " +
 //                 Log.getFullTid() +
 //                 message;
 //     }
+//
 // }
