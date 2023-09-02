@@ -284,10 +284,6 @@ public class Log {
         }
     }
 
-    private static StackTraceElement getCallerStackTrace() {
-        return Thread.currentThread().getStackTrace()[3];
-    }
-
     private static String formatLogMessage(String message) {
         StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
         return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")." + caller.getMethodName() + "() " +
