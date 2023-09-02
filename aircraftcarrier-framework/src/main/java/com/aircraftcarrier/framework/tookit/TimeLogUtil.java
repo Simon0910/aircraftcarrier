@@ -72,8 +72,12 @@ public class TimeLogUtil {
     }
 
     public static void logElapsedTime(String message, Stopwatch stopwatch) {
-        logger.info(formatLogMessage(message + " - " + wrapElapsedTime(stopwatch.elapsed().toMillis())));
-        stopwatch.reset();
+        if (!stopwatch.isRunning()) {
+            logger.info(formatLogMessage("stopwatch is not start"));
+        } else {
+            logger.info(formatLogMessage(wrapElapsedTime(stopwatch.elapsed().toMillis())));
+            stopwatch.reset();
+        }
     }
 
     private static String formatLogMessage(String message) {
