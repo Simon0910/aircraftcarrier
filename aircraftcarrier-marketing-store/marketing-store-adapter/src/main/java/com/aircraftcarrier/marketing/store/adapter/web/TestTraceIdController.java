@@ -76,7 +76,6 @@ public class TestTraceIdController {
     }
 
 
-    @ApiOperationSupport(order = 1)
     @ApiOperation("hello log")
     @GetMapping("/helloLog")
     public SingleResponse<String> helloLog() {
@@ -107,7 +106,6 @@ public class TestTraceIdController {
     }
 
 
-    @ApiOperationSupport(order = 2)
     @ApiOperation("hello log2")
     @GetMapping("/helloLog2")
     public SingleResponse<String> helloLog2() {
@@ -136,7 +134,6 @@ public class TestTraceIdController {
     }
 
 
-    @ApiOperationSupport(order = 3)
     @ApiOperation("事件发布")
     @GetMapping("/publishEvent")
     public SingleResponse<Void> publishEvent() {

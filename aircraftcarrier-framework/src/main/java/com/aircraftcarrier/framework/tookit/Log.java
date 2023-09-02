@@ -404,6 +404,18 @@ public class Log {
     }
 
     /**
+     * remove
+     */
+    public static void requestEnd() {
+        Map<String, String> context = THREAD_LOCAL.get();
+        if (context != null) {
+            context.clear();
+        }
+        // removeContext
+        removeContext();
+    }
+
+    /**
      * {tid} {fixed} {module}
      */
     private static void concatContext(Map<String, String> context) {
@@ -530,17 +542,6 @@ public class Log {
         return getContextIfPresent().get(FULL_TID);
     }
 
-    /**
-     * remove
-     */
-    public static void requestEnd() {
-        Map<String, String> context = THREAD_LOCAL.get();
-        if (context != null) {
-            context.clear();
-        }
-        // removeContext
-        removeContext();
-    }
 
     // *****************************************************************************************************************
     //                                              TRACE END
