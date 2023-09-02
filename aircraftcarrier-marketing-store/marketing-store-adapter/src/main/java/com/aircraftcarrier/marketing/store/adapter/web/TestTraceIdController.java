@@ -81,12 +81,12 @@ public class TestTraceIdController {
         TraceIdUtil.setFixedName("orderNo");
         TraceIdUtil.setModuleName("校验模块");
 
-        Log.resetFixAndModule("订单号", "模块1");
+        Log.setFixAndModule("订单号", "模块1");
         try {
             log.info(Log.getInfoLog("入参: 【{}】", Log.toInfoJsonString(orderInfo)));
             log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
 
-            Log.resetModule("模块2");
+            Log.setModule("模块2");
 
             log.info(Log.getInfoLog("入参: 【{}】", Log.toInfoJsonString(orderInfo)));
             log.info(Log.getInfoLog("出参: 【{}】", "orderNo"));
@@ -110,7 +110,7 @@ public class TestTraceIdController {
         TraceIdUtil.setFixedName("orderNo");
         TraceIdUtil.setModuleName("校验模块");
 
-        Log.resetFixAndModule("订单号", "模块1");
+        Log.setFixAndModule("订单号", "模块1");
         try {
             Log.info("1入参数：{}", Log.toJsonSupplier(orderInfo));
 
@@ -144,7 +144,7 @@ public class TestTraceIdController {
         Log.info("Main LoginUser：{}", Log.toJsonSupplier(loginUser));
 
         new Thread(new TraceRunnable(() -> {
-            Log.resetFixAndModule("订单号", "线程1");
+            Log.setFixAndModule("订单号", "线程1");
             Log.info("start1");
             LoginUser loginUser1 = LoginUserUtil.getLoginUser();
             Log.info("end1 loginUser1：{}", Log.toJsonSupplier(loginUser1));
@@ -153,26 +153,26 @@ public class TestTraceIdController {
         testService.publishEvent();
 
         threadPoolExecutor.execute(() -> {
-            Log.resetFixAndModule("订单号", "线程2");
+            Log.setFixAndModule("订单号", "线程2");
             Log.info("start2");
             LoginUser loginUser2 = LoginUserUtil.getLoginUser();
             Log.info("end2 loginUser2：{}", Log.toJsonSupplier(loginUser2));
         });
 
         threadPoolExecutor.execute(() -> {
-            Log.resetFixAndModule("订单号", "线程3");
+            Log.setFixAndModule("订单号", "线程3");
             Log.info("start3");
             LoginUser loginUser3 = LoginUserUtil.getLoginUser();
             Log.info("end3 loginUser3：{}", Log.toJsonSupplier(loginUser3));
 
             new Thread(new TraceRunnable(() -> {
-                Log.resetFixAndModule("订单号", "线程4");
+                Log.setFixAndModule("订单号", "线程4");
                 Log.info("start4");
                 LoginUser loginUser4 = LoginUserUtil.getLoginUser();
                 Log.info("end4 loginUser4：{}", Log.toJsonSupplier(loginUser4));
 
                 new Thread(new TraceRunnable(() -> {
-                    Log.resetFixAndModule("订单号", "线程5");
+                    Log.setFixAndModule("订单号", "线程5");
                     Log.info("start5");
                     LoginUser loginUser5 = LoginUserUtil.getLoginUser();
                     Log.info("end5 loginUser5：{}", Log.toJsonSupplier(loginUser5));

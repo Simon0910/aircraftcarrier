@@ -33,9 +33,9 @@ public class LogUtilTest {
         String rr;
         try {
             log.info("==================================================================case1");
-            Log.resetModule("没有启动tid case1");
+            Log.setModule("没有启动tid case1");
 
-            long tidLong = Log.getTidLong();
+            long tidLong = Log.getLongTid();
             log.info("long: " + tidLong);
 
             rr = Log.getTid();
@@ -277,18 +277,18 @@ public class LogUtilTest {
             caseSet.clear();
 
             log.info("==================================================================case3");
-            Log.resetFixed("同一个tid哦 orderNo");
-            Log.resetModule("模块2");
-            Log.resetModule("同一个tid哦 case3");
+            Log.setFixed("同一个tid哦 orderNo");
+            Log.setModule("模块2");
+            Log.setModule("同一个tid哦 case3");
             log.info(Log.getTid());
             log.info(Log.getFullTid());
 
             log.info("==================================================================case4");
-            Log.resetModule("同一个tid哦 case4");
-            Log.resetModule(null);
+            Log.setModule("同一个tid哦 case4");
+            Log.setModule(null);
             log.info(Log.getFullTid());
 
-            Log.resetFixed(null);
+            Log.setFixed(null);
             log.info(Log.getFullTid());
 
             log.info("==================================================================case5");
@@ -410,7 +410,7 @@ public class LogUtilTest {
 
 
             log.info("==================================================================case6");
-            Log.resetModule("case6");
+            Log.setModule("case6");
 
             log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             rr = Log.getInfoLogJson("5555 .");
@@ -476,7 +476,7 @@ public class LogUtilTest {
             Assert.isTrue(expect.equals(rr));
 
             log.info("==================================================================case7");
-            Log.resetModule("case7");
+            Log.setModule("case7");
 
             rr = Log.getInfoLogJson("5555 {} {} {}", "1", e);
             log.error(rr, "2", "3");
@@ -495,7 +495,7 @@ public class LogUtilTest {
             Assert.isTrue(expect.equals(rr));
 
             log.info("==================================================================case8 推荐");
-            Log.resetModule("case8 推荐写法");
+            Log.setModule("case8 推荐写法");
 
             rr = Log.getInfoLog("666 {}, {}, {}");
             log.error(rr, Log.toJsonString(orderInfo), Log.toJsonString(emptyObject), Log.toJsonString(orderInfo), e); // 推荐
@@ -526,7 +526,7 @@ public class LogUtilTest {
 
             int i = 1 /0;
         } catch (Exception ex) {
-            Log.resetFixAndModule("11", "22");
+            Log.setFixAndModule("11", "22");
             // 原生
             log.error("原生接口错误", ex);
             log.error("===================");

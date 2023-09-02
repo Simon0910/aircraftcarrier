@@ -61,14 +61,14 @@ public class Log {
     private static final Logger logger = LoggerFactory.getLogger(Log.class);
 
     private static final ThreadLocal<Map<String, String>> THREAD_LOCAL = new ThreadLocal<>();
-    private static final String TID = "tid";
-    private static final String FIXED_0 = "fixed0";
-    private static final String FIXED_PREV = "fixedPrev";
-    private static final String FIXED = "fixed";
-    private static final String MODULE_0 = "module0";
-    private static final String MODULE_PREV = "modulePrev";
-    private static final String MODULE = "module";
-    private static final String FULL_TID = "fullTid";
+    private static final String TID_KEY = "tid";
+    private static final String FIXED_0_KEY = "fixed0";
+    private static final String FIXED_PREV_KEY = "fixedPrev";
+    private static final String FIXED_KEY = "fixed";
+    private static final String MODULE_0_KEY = "module0";
+    private static final String MODULE_PREV_KEY = "modulePrev";
+    private static final String MODULE_KEY = "module";
+    private static final String FULL_TID_KEY = "fullTid";
     private static final String NEWLINE = System.lineSeparator();
     private static final String LOG_CONNECTOR = " - ";
     private static final String NULL = "null";
@@ -316,13 +316,13 @@ public class Log {
             context = new HashMap<>(11);
             // 模块名称
             // tid
-            context.put(TID, EMPTY);
+            context.put(TID_KEY, EMPTY);
             // orderNo etc.
-            context.put(FIXED, EMPTY);
+            context.put(FIXED_KEY, EMPTY);
             // 模块名称
-            context.put(MODULE, EMPTY);
+            context.put(MODULE_KEY, EMPTY);
             // tid orderNo 模块名称
-            context.put(FULL_TID, EMPTY);
+            context.put(FULL_TID_KEY, EMPTY);
         }
         return context;
     }
@@ -386,18 +386,18 @@ public class Log {
         Map<String, String> context = getContextIfPresent();
 
         // tid
-        context.put(TID, tid);
+        context.put(TID_KEY, tid);
         // orderNo etc.
-        context.put(FIXED, fixString(fixed));
+        context.put(FIXED_KEY, fixString(fixed));
         // 模块名称.
-        context.put(MODULE, fixString(module));
+        context.put(MODULE_KEY, fixString(module));
         // tid orderNo 模块名称
         concatContext(context);
 
         // orderNo etc.
-        context.put(FIXED_0, context.get(FIXED));
+        context.put(FIXED_0_KEY, context.get(FIXED_KEY));
         // 模块名称.
-        context.put(MODULE_0, context.get(MODULE));
+        context.put(MODULE_0_KEY, context.get(MODULE_KEY));
 
         // set
         setContext(context);
@@ -420,15 +420,15 @@ public class Log {
      */
     private static void concatContext(Map<String, String> context) {
         StringBuilder builder = new StringBuilder();
-        builder.append(context.get(TID));
-        if (!context.get(FIXED).isEmpty()) {
-            builder.append(LEFT).append(context.get(FIXED)).append(RIGHT);
+        builder.append(context.get(TID_KEY));
+        if (!context.get(FIXED_KEY).isEmpty()) {
+            builder.append(LEFT).append(context.get(FIXED_KEY)).append(RIGHT);
         }
-        if (!context.get(MODULE).isEmpty()) {
-            builder.append(LEFT).append(context.get(MODULE)).append(RIGHT);
+        if (!context.get(MODULE_KEY).isEmpty()) {
+            builder.append(LEFT).append(context.get(MODULE_KEY)).append(RIGHT);
         }
         builder.append(LOG_CONNECTOR);
-        context.put(FULL_TID, builder.toString());
+        context.put(FULL_TID_KEY, builder.toString());
     }
 
     /**
@@ -436,22 +436,22 @@ public class Log {
      *
      * @param fixed fixed
      */
-    public static void resetFixed(String fixed) {
+    public static void setFixed(String fixed) {
         Map<String, String> context = getContextIfPresent();
-        context.put(FIXED_PREV, context.get(FIXED));
-        context.put(FIXED, fixString(fixed));
+        context.put(FIXED_PREV_KEY, context.get(FIXED_KEY));
+        context.put(FIXED_KEY, fixString(fixed));
         concatContext(context);
     }
 
     public static void resetFixed() {
         Map<String, String> context = getContextIfPresent();
-        context.put(FIXED, context.get(FIXED_PREV));
+        context.put(FIXED_KEY, context.get(FIXED_PREV_KEY));
         concatContext(context);
     }
 
     public static void resetFixed0() {
         Map<String, String> context = getContextIfPresent();
-        context.put(FIXED, context.get(FIXED_0));
+        context.put(FIXED_KEY, context.get(FIXED_0_KEY));
         concatContext(context);
     }
 
@@ -460,22 +460,22 @@ public class Log {
      *
      * @param module module
      */
-    public static void resetModule(String module) {
+    public static void setModule(String module) {
         Map<String, String> context = getContextIfPresent();
-        context.put(MODULE_PREV, context.get(MODULE));
-        context.put(MODULE, fixString(module));
+        context.put(MODULE_PREV_KEY, context.get(MODULE_KEY));
+        context.put(MODULE_KEY, fixString(module));
         concatContext(context);
     }
 
     public static void resetModule() {
         Map<String, String> context = getContextIfPresent();
-        context.put(MODULE, context.get(MODULE_PREV));
+        context.put(MODULE_KEY, context.get(MODULE_PREV_KEY));
         concatContext(context);
     }
 
     public static void resetModule0() {
         Map<String, String> context = getContextIfPresent();
-        context.put(MODULE, context.get(MODULE_0));
+        context.put(MODULE_KEY, context.get(MODULE_0_KEY));
         concatContext(context);
     }
 
@@ -486,26 +486,26 @@ public class Log {
      * @param fixed  fixed
      * @param module module
      */
-    public static void resetFixAndModule(String fixed, String module) {
+    public static void setFixAndModule(String fixed, String module) {
         Map<String, String> context = getContextIfPresent();
-        context.put(FIXED_PREV, context.get(FIXED));
-        context.put(MODULE_PREV, context.get(MODULE));
-        context.put(FIXED, fixString(fixed));
-        context.put(MODULE, fixString(module));
+        context.put(FIXED_PREV_KEY, context.get(FIXED_KEY));
+        context.put(MODULE_PREV_KEY, context.get(MODULE_KEY));
+        context.put(FIXED_KEY, fixString(fixed));
+        context.put(MODULE_KEY, fixString(module));
         concatContext(context);
     }
 
     public static void resetFixAndModule() {
         Map<String, String> context = getContextIfPresent();
-        context.put(FIXED, context.get(FIXED_PREV));
-        context.put(MODULE, context.get(MODULE_PREV));
+        context.put(FIXED_KEY, context.get(FIXED_PREV_KEY));
+        context.put(MODULE_KEY, context.get(MODULE_PREV_KEY));
         concatContext(context);
     }
 
     public static void resetFixAndModule0() {
         Map<String, String> context = getContextIfPresent();
-        context.put(FIXED, context.get(FIXED_0));
-        context.put(MODULE, context.get(MODULE_0));
+        context.put(FIXED_KEY, context.get(FIXED_0_KEY));
+        context.put(MODULE_KEY, context.get(MODULE_0_KEY));
         concatContext(context);
     }
 
@@ -515,7 +515,7 @@ public class Log {
      * @return tid
      */
     public static String getTid() {
-        return getContextIfPresent().get(TID);
+        return getContextIfPresent().get(TID_KEY);
     }
 
     /**
@@ -523,12 +523,12 @@ public class Log {
      *
      * @return tid
      */
-    public static long getTidLong() {
+    public static long getLongTid() {
         try {
-            return Long.parseLong(getContextIfPresent().get(TID));
+            return Long.parseLong(getContextIfPresent().get(TID_KEY));
         } catch (Exception e) {
             long l = System.nanoTime();
-            logger.info(getInfoLog("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID), l);
+            logger.info(getInfoLog("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID_KEY), l);
             return l;
         }
     }
@@ -539,7 +539,7 @@ public class Log {
      * @return fullTid : {tid} {fixed} {module}
      */
     public static String getFullTid() {
-        return getContextIfPresent().get(FULL_TID);
+        return getContextIfPresent().get(FULL_TID_KEY);
     }
 
 
@@ -631,10 +631,10 @@ public class Log {
         Map<String, String> context = getContextIfPresent();
 
         if (isBlank(log)) {
-            return context.get(FULL_TID) + log;
+            return context.get(FULL_TID_KEY) + log;
         }
         if (!log.contains(LOG_PLACEHOLDER)) {
-            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args);
+            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID_KEY) + log, args);
             if (formattingTuple.getThrowable() != null) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
@@ -643,10 +643,10 @@ public class Log {
             return formattingTuple.getMessage();
         }
         if (args == null) {
-            return context.get(FULL_TID) + getReplaceFirst(log);
+            return context.get(FULL_TID_KEY) + getReplaceFirst(log);
         }
         if (args.length < 1) {
-            return context.get(FULL_TID) + log;
+            return context.get(FULL_TID_KEY) + log;
         }
 
         // 空对象也是一个 `{}`, 防止被外层log.info解析 `{}` 转换成 `{ }`
@@ -674,7 +674,7 @@ public class Log {
             }
         }
 
-        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args);
+        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID_KEY) + log, args);
 
         if (formattingTuple.getThrowable() != null) {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
