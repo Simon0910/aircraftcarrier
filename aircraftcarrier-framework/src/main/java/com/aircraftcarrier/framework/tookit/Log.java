@@ -1,12 +1,10 @@
 package com.aircraftcarrier.framework.tookit;
 
 import com.alibaba.fastjson.JSON;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
-import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -60,7 +58,6 @@ import java.util.regex.Pattern;
  * @date 2023/8/20
  * @since 1.0
  */
-@Slf4j
 public class Log {
     private static final Logger logger = LoggerFactory.getLogger(Log.class);
 
@@ -101,11 +98,11 @@ public class Log {
      *
      * }</pre>
      */
-    public static Supplier<?> toJsonSupplier(Object obj) {
+    public static Supplier<String> toJsonSupplier(Object obj) {
         return () -> JSON.toJSONString(obj);
     }
 
-    public static Supplier<?> getSupplier(Object obj) {
+    public static Supplier<Object> getSupplier(Object obj) {
         return () -> obj;
     }
 
@@ -121,7 +118,7 @@ public class Log {
      *
      * }</pre>
      */
-    public static Supplier<?> getExceptionSupplier(Throwable throwable) {
+    public static Supplier<Throwable> getExceptionSupplier(Throwable throwable) {
         return () -> throwable;
     }
 
@@ -523,7 +520,7 @@ public class Log {
             return Long.parseLong(getContextIfPresent().get(TID));
         } catch (Exception e) {
             long l = System.nanoTime();
-            log.info(getInfoLog("{} tidString==>tidLong {}"), getContextIfPresent().get(FULL_TID), l);
+            logger.info(getInfoLog("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID), l);
             return l;
         }
     }
@@ -554,7 +551,7 @@ public class Log {
     // *****************************************************************************************************************
 
     // *****************************************************************************************************************
-    //                                              获取日志 START
+    //                                              toJsonString START
     // *****************************************************************************************************************
 
     /**
@@ -572,7 +569,7 @@ public class Log {
     }
 
     public static String toJsonStringWarn(Object obj) {
-        if (logger.isErrorEnabled()) {
+        if (logger.isWarnEnabled()) {
             return JSON.toJSONString(obj);
         }
         return EMPTY;
@@ -591,6 +588,14 @@ public class Log {
         }
         return EMPTY;
     }
+
+    // *****************************************************************************************************************
+    //                                              toJsonString END
+    // *****************************************************************************************************************
+
+    // *****************************************************************************************************************
+    //                                              获取日志 START
+    // *****************************************************************************************************************
 
     public static String getErrorLog(String log, String... args) {
         if (logger.isErrorEnabled()) {
@@ -657,7 +662,7 @@ public class Log {
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     private static String getLog(String log, String... args) {
-        return getLogAutoJsonString(log, args);
+        return getLogAutoJsonString(log, (Object[]) args);
     }
 
 
@@ -671,7 +676,7 @@ public class Log {
     private static String getLogAutoJsonString(String log, Object... args) {
         Map<String, String> context = getContextIfPresent();
 
-        if (!StringUtils.hasText(log)) {
+        if (isBlank(log)) {
             return context.get(FULL_TID) + log;
         }
         if (!log.contains(LOG_PLACEHOLDER)) {
@@ -684,13 +689,13 @@ public class Log {
             return formattingTuple.getMessage();
         }
         if (args == null) {
-            return context.get(FULL_TID) + getReplaceFirst(log, LOG_PLACEHOLDER, NULL);
+            return context.get(FULL_TID) + getReplaceFirst(log);
         }
         if (args.length < 1) {
             return context.get(FULL_TID) + log;
         }
 
-        // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
+        // 空对象也是一个 `{}`, 防止被外层log.info解析 `{}` 转换成 `{ }`
         for (int i = 0; i < args.length; i++) {
             Object argObj = args[i];
             if (argObj == null || argObj instanceof Throwable) {
@@ -702,7 +707,7 @@ public class Log {
                 } else {
                     String argString = (String) argObj;
                     if (argString.contains(LOG_PLACEHOLDER)) {
-                        args[i] = getReplaceAll(argString, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
+                        args[i] = getReplaceAll(argString);
                     }
                 }
             } else {
@@ -710,7 +715,7 @@ public class Log {
                 if (LOG_PLACEHOLDER.equals(argJson)) {
                     args[i] = EMPTY_JSON_OBJECT;
                 } else if (argJson.contains(LOG_PLACEHOLDER)) {
-                    args[i] = getReplaceAll(argJson, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
+                    args[i] = getReplaceAll(argJson);
                 }
             }
         }
@@ -727,14 +732,25 @@ public class Log {
     }
 
 
-    private static String getReplaceFirst(String inString, String oldPattern, String newPattern) {
-        return PLACEHOLDER_PATTERN.matcher(inString).replaceFirst(newPattern);
+    private static String getReplaceFirst(String inString) {
+        return PLACEHOLDER_PATTERN.matcher(inString).replaceFirst(Log.NULL);
     }
 
-    private static String getReplaceAll(String inString, String oldPattern, String newPattern) {
-        return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(newPattern);
+    private static String getReplaceAll(String inString) {
+        return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(Log.EMPTY_JSON_OBJECT);
     }
 
+    public static boolean isBlank(final CharSequence cs) {
+        if (cs == null || cs.isEmpty()) {
+            return true;
+        }
+        for (int i = 0, strLen = cs.length(); i < strLen; i++) {
+            if (!Character.isWhitespace(cs.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
     // *****************************************************************************************************************
     //                                              获取日志 END
     // *****************************************************************************************************************
