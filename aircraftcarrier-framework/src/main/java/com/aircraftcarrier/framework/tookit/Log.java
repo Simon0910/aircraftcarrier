@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * <p>
  * 使用方式
  * <pre> {@code
- * Log.requestStart("订单号", "模块1");
+ * Log.start("订单号", "模块1");
  *  try {
  *      // .....
  *      Log.info("入参：{}", Log.toJsonSupplier(orderInfo));
@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * 	    //        at com.xx.xxx.TestController.method(TestController.java:101)
  * 	    //        ...
  *  } finally {
- *      Log.requestEnd();
+ *      Log.end();
  *  }
  *
  * }</pre>
@@ -348,7 +348,7 @@ public class Log {
      * 使用方式
      * <pre> {@code
      *
-     *  LogUtil.requestStart("订单号", "模块1");
+     *  LogUtil.start("订单号", "模块1");
      *  try {
      *      log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
      *      log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
@@ -358,7 +358,7 @@ public class Log {
      *      log.info(LogUtil.getInfoLog("入参: 【{}】", LogUtil.toJsonStringInfo(orderInfo)));
      *      log.info(LogUtil.getInfoLog("出参: 【{}】", "orderNo"));
      *  } finally {
-     *      LogUtil.requestEnd();
+     *      LogUtil.end();
      *  }
      *
      * }</pre>
