@@ -167,7 +167,7 @@ public class LogUtilTest {
 
 
             log.info("==================================================================case2");
-            Log.requestStart("启动tid case2");
+            Log.start("启动tid case2");
             String tid = Log.getTid();
 
 
@@ -292,7 +292,7 @@ public class LogUtilTest {
             log.info(Log.getFullTid());
 
             log.info("==================================================================case5");
-            Log.requestStart("新的Tid哦", "case5");
+            Log.start("新的Tid哦", "case5");
             tid = Log.getTid();
 
             rr = Log.getTid();

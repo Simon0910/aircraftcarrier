@@ -8,7 +8,6 @@ import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.Log;
 import com.aircraftcarrier.marketing.store.client.TestService;
-import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -138,7 +137,7 @@ public class TestTraceIdController {
         TraceIdUtil.setFixedName("orderNo");
         TraceIdUtil.setModuleName("校验模块");
 
-        Log.requestStart("订单号", "main线程");
+        Log.start("订单号", "main线程");
 
         LoginUser loginUser = LoginUserUtil.getLoginUser();
         Log.info("start...");

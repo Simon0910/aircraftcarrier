@@ -42,7 +42,7 @@ public class TraceAvailableExecute {
             traceId = current = TraceIdUtil.uuid();
         }
         curMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
-        Log.requestStartByTid(current);
+        Log.startByTid(current);
 
         // new ContextMap
         MDC.setContextMap(curMdcMap);
@@ -52,7 +52,7 @@ public class TraceAvailableExecute {
         } finally {
             // 任务执行完, 清除本地变量, 以防对后续任务有影响
             MDC.clear();
-            Log.requestEnd();
+            Log.end();
         }
     }
 

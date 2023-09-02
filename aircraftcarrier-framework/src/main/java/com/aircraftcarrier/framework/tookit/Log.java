@@ -365,23 +365,23 @@ public class Log {
      *
      * @param fixed 请求标识
      */
-    public static void requestStart(String fixed) {
-        requestStartByTid(uuid(), fixed, EMPTY);
+    public static void start(String fixed) {
+        startByTid(uuid(), fixed, EMPTY);
     }
 
-    public static void requestStart(String fixed, String module) {
-        requestStartByTid(uuid(), fixed, module);
+    public static void start(String fixed, String module) {
+        startByTid(uuid(), fixed, module);
     }
 
-    public static void requestStartByTid(String tid) {
-        requestStartByTid(tid, EMPTY, EMPTY);
+    public static void startByTid(String tid) {
+        startByTid(tid, EMPTY, EMPTY);
     }
 
-    public static void requestStartByTid(String tid, String fixed) {
-        requestStartByTid(tid, fixed, EMPTY);
+    public static void startByTid(String tid, String fixed) {
+        startByTid(tid, fixed, EMPTY);
     }
 
-    public static void requestStartByTid(String tid, String fixed, String module) {
+    public static void startByTid(String tid, String fixed, String module) {
         // get
         Map<String, String> context = getContextIfPresent();
 
@@ -406,7 +406,7 @@ public class Log {
     /**
      * remove
      */
-    public static void requestEnd() {
+    public static void end() {
         Map<String, String> context = THREAD_LOCAL.get();
         if (context != null) {
             context.clear();

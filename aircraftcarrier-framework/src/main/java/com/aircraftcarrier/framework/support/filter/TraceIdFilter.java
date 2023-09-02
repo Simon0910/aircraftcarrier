@@ -45,7 +45,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
             String traceId = TraceIdUtil.getTraceId();
             if (traceId == null) {
                 String traceIdFromRequest = getTraceIdFromRequest(httpServletRequest);
-                Log.requestStartByTid(traceIdFromRequest);
+                Log.startByTid(traceIdFromRequest);
                 TraceIdUtil.setTraceId(traceIdFromRequest);
             }
             filterChain.doFilter(httpServletRequest, httpServletResponse);
@@ -54,7 +54,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
             throw throwable;
         } finally {
             TraceIdUtil.removeAll();
-            Log.requestEnd();
+            Log.end();
         }
     }
 

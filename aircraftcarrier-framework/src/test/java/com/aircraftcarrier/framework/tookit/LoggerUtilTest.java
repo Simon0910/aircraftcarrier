@@ -20,7 +20,7 @@ public class LoggerUtilTest {
     // private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static void main(String[] args) {
-        Log.requestStart("你好");
+        Log.start("你好");
 
         RuntimeException e = new RuntimeException("错误了！");
         RuntimeException e2 = new RuntimeException("最后一个错误了！");
