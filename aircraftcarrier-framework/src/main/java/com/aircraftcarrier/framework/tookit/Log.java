@@ -56,7 +56,6 @@ import java.util.regex.Pattern;
  *
  * }</pre>
  *
- *
  * @author zhipengliu
  * @date 2023/8/20
  * @since 1.0
@@ -87,7 +86,9 @@ public class Log {
     private Log() {
     }
 
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<LOG START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // *****************************************************************************************************************
+    //                                              LOG START
+    // *****************************************************************************************************************
 
     /**
      * <p>
@@ -297,8 +298,13 @@ public class Log {
                 message;
     }
 
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<LOG END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // *****************************************************************************************************************
+    //                                              LOG END
+    // *****************************************************************************************************************
 
+    // *****************************************************************************************************************
+    //                                              TRACE START
+    // *****************************************************************************************************************
 
     public static String uuid() {
         return String.valueOf(System.nanoTime());
@@ -306,14 +312,6 @@ public class Log {
 
     private static String fixString(String str) {
         return str == null ? EMPTY : str;
-    }
-
-    private static String getReplaceFirst(String inString, String oldPattern, String newPattern) {
-        return PLACEHOLDER_PATTERN.matcher(inString).replaceFirst(newPattern);
-    }
-
-    private static String getReplaceAll(String inString, String oldPattern, String newPattern) {
-        return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(newPattern);
     }
 
     /**
@@ -344,7 +342,7 @@ public class Log {
     }
 
     /**
-     * removeContext
+     * remove
      */
     private static void removeContext() {
         THREAD_LOCAL.remove();
@@ -480,7 +478,7 @@ public class Log {
      * 重置 fixed
      * 重置 module
      *
-     * @param fixed fixed
+     * @param fixed  fixed
      * @param module module
      */
     public static void resetFixAndModule(String fixed, String module) {
@@ -504,6 +502,94 @@ public class Log {
         context.put(FIXED, context.get(FIXED_0));
         context.put(MODULE, context.get(MODULE_0));
         concatContext(context);
+    }
+
+    /**
+     * 获取 tid
+     *
+     * @return tid
+     */
+    public static String getTid() {
+        return getContextIfPresent().get(TID);
+    }
+
+    /**
+     * 获取 tid
+     *
+     * @return tid
+     */
+    public static long getTidLong() {
+        try {
+            return Long.parseLong(getContextIfPresent().get(TID));
+        } catch (Exception e) {
+            long l = System.nanoTime();
+            log.info(getInfoLog("{} tidString==>tidLong {}"), getContextIfPresent().get(FULL_TID), l);
+            return l;
+        }
+    }
+
+    /**
+     * 获取 丰富的tid
+     *
+     * @return fullTid : {tid} {fixed} {module}
+     */
+    public static String getFullTid() {
+        return getContextIfPresent().get(FULL_TID);
+    }
+
+    /**
+     * remove
+     */
+    public static void requestEnd() {
+        Map<String, String> context = THREAD_LOCAL.get();
+        if (context != null) {
+            context.clear();
+        }
+        // removeContext
+        removeContext();
+    }
+
+    // *****************************************************************************************************************
+    //                                              TRACE END
+    // *****************************************************************************************************************
+
+    // *****************************************************************************************************************
+    //                                              获取日志 START
+    // *****************************************************************************************************************
+
+    /**
+     * @see JSON#toJSONString(Object)
+     */
+    public static String toJsonString(Object obj) {
+        return JSON.toJSONString(obj);
+    }
+
+    public static String toJsonStringError(Object obj) {
+        if (logger.isErrorEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    public static String toJsonStringWarn(Object obj) {
+        if (logger.isErrorEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    public static String toJsonStringInfo(Object obj) {
+        if (logger.isInfoEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
+    }
+
+    public static String toJsonStringDebug(Object obj) {
+        if (logger.isDebugEnabled()) {
+            return JSON.toJSONString(obj);
+        }
+        return EMPTY;
     }
 
     public static String getErrorLog(String log, String... args) {
@@ -555,6 +641,13 @@ public class Log {
         return EMPTY;
     }
 
+    public static String getDebugLogJson(String log, Object... args) {
+        if (logger.isDebugEnabled()) {
+            return getLogAutoJsonString(log, args);
+        }
+        return EMPTY;
+    }
+
 
     /**
      * 获取   tid 固定前缀 模块标识 - 用户日志
@@ -564,60 +657,9 @@ public class Log {
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
     private static String getLog(String log, String... args) {
-        Map<String, String> context = getContextIfPresent();
-
-        if (!StringUtils.hasText(log)) {
-            return context.get(FULL_TID) + log;
-        }
-        if (!log.contains(LOG_PLACEHOLDER)) {
-            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args);
-            if (formattingTuple.getThrowable() != null) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-                return formattingTuple.getMessage() + NEWLINE + bos;
-            }
-            return formattingTuple.getMessage();
-        }
-        if (args == null) {
-            return context.get(FULL_TID) + getReplaceFirst(log, LOG_PLACEHOLDER, NULL);
-        }
-        if (args.length < 1) {
-            return context.get(FULL_TID) + log;
-        }
-
-        // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
-        for (int i = 0; i < args.length; i++) {
-            String argString = args[i];
-            if (argString == null) {
-                args[i] = null;
-                continue;
-            }
-            if (LOG_PLACEHOLDER.equals(argString)) {
-                args[i] = EMPTY_JSON_OBJECT;
-            } else {
-                if (argString.contains(LOG_PLACEHOLDER)) {
-                    args[i] = getReplaceAll(argString, LOG_PLACEHOLDER, EMPTY_JSON_OBJECT);
-                }
-            }
-        }
-
-        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID) + log, args);
-
-        if (formattingTuple.getThrowable() != null) {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-            return formattingTuple.getMessage() + NEWLINE + bos;
-        }
-
-        return formattingTuple.getMessage();
+        return getLogAutoJsonString(log, args);
     }
 
-    public static String getDebugLogJson(String log, Object... args) {
-        if (logger.isDebugEnabled()) {
-            return getLogAutoJsonString(log, args);
-        }
-        return EMPTY;
-    }
 
     /**
      * 获取   tid 固定前缀 模块标识 - 用户日志
@@ -651,7 +693,7 @@ public class Log {
         // 空对象也是一个{}, 防止被外层log.info解析 {} 转换成 { }
         for (int i = 0; i < args.length; i++) {
             Object argObj = args[i];
-            if (argObj instanceof Throwable) {
+            if (argObj == null || argObj instanceof Throwable) {
                 continue;
             }
             if (argObj instanceof String) {
@@ -664,10 +706,6 @@ public class Log {
                     }
                 }
             } else {
-                if (argObj == null) {
-                    args[i] = null;
-                    continue;
-                }
                 String argJson = toJsonString(argObj);
                 if (LOG_PLACEHOLDER.equals(argJson)) {
                     args[i] = EMPTY_JSON_OBJECT;
@@ -689,86 +727,15 @@ public class Log {
     }
 
 
-    /**
-     * 获取 tid （作用于接口入参）
-     *
-     * @return tid
-     */
-    public static String getTid() {
-        return getContextIfPresent().get(TID);
+    private static String getReplaceFirst(String inString, String oldPattern, String newPattern) {
+        return PLACEHOLDER_PATTERN.matcher(inString).replaceFirst(newPattern);
     }
 
-    /**
-     * 获取 tid （作用于接口入参）
-     *
-     * @return tid
-     */
-    public static long getTidLong() {
-        try {
-            return Long.parseLong(getContextIfPresent().get(TID));
-        } catch (Exception e) {
-            long l = System.nanoTime();
-            log.info(getInfoLog("{} tidString==>tidLong {}"), getContextIfPresent().get(FULL_TID), l);
-            return l;
-        }
+    private static String getReplaceAll(String inString, String oldPattern, String newPattern) {
+        return PLACEHOLDER_PATTERN.matcher(inString).replaceAll(newPattern);
     }
 
-    /**
-     * 获取 丰富的tid
-     *
-     * @return fullTid : {tid} {fixed} {module}
-     */
-    public static String getFullTid() {
-        return getContextIfPresent().get(FULL_TID);
-    }
-
-
-    /**
-     * @see JSON#toJSONString(Object)
-     */
-    public static String toJsonString(Object obj) {
-        return JSON.toJSONString(obj);
-    }
-
-    public static String toJsonStringError(Object obj) {
-        if (logger.isErrorEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    public static String toJsonStringWarn(Object obj) {
-        if (logger.isErrorEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    public static String toJsonStringInfo(Object obj) {
-        if (logger.isInfoEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-    public static String toJsonStringDebug(Object obj) {
-        if (logger.isDebugEnabled()) {
-            return JSON.toJSONString(obj);
-        }
-        return EMPTY;
-    }
-
-
-    /**
-     * remove
-     */
-    public static void requestEnd() {
-        Map<String, String> context = THREAD_LOCAL.get();
-        if (context != null) {
-            context.clear();
-        }
-        // removeContext
-        removeContext();
-    }
-
+    // *****************************************************************************************************************
+    //                                              获取日志 END
+    // *****************************************************************************************************************
 }
