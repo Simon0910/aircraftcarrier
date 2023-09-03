@@ -16,31 +16,71 @@ import java.util.regex.Pattern;
 
 /**
  * Log
+ * 主要实现功能为
  * <p>
+ * <p>1. 根据日志级别水平打印日志
+ * <p>{@link #error(String, Throwable)}
+ * <p>{@link #error(String, Supplier[])}
+ * <p>{@link #info(String, Supplier[])}
+ * <p>{@link #getToJsonSupplier(Object)}
+ * <p>{@link #getSupplier(Object)}
+ * <p>{@link #getExceptionSupplier(Throwable)}
+ * <p>{@link #toErrorJsonString(Object)}
+ * <p>{@link #toInfoJsonString(Object)}
  * <p>
- * 使用方式
+ * <p>2. 自动携带追踪信息
+ * <p>{@link #start(String)}
+ * <p>{@link #setModule(String)}
+ * <p>{@link #end()}
+ * <p>
+ * <p>3. 自动toJsonString
+ * <p>{@link #infoToJson(String, Object...)}
+ * <p>{@link #errorToJson(String, Object...)}
+ * <p>
+ * <p>示例
  * <pre> {@code
- * Log.start("订单号", "模块1");
+ *  // 调整日志级别 观察是否打印
+ *  log.error("error...{} {}", 11, Log.toErrorJsonString(orderInfo));
+ *  log.warn("warn...{} {}", 11, Log.toWarnJsonString(orderInfo));
+ *  log.info("info...{} {}", 11, Log.toInfoJsonString(orderInfo));
+ *  log.debug("debug...{} {}", 11, Log.toDebugJsonString(orderInfo));
+ *
+ *  Log.error(log, "error2...{} {}", Log.getSupplier(22), Log.getToJsonSupplier(orderInfo));
+ *  Log.warn(log, "warn2...{} {}", Log.getSupplier(22), Log.getToJsonSupplier(orderInfo));
+ *  Log.info(log, "info2...{} {}", Log.getSupplier(22), Log.getToJsonSupplier(orderInfo));
+ *  Log.debug(log, "debug2...{} {}", Log.getSupplier(22), Log.getToJsonSupplier(orderInfo));
+ *
+ *  Log.errorToJson(log, "error3...{} {}", 33, orderInfo);
+ *  Log.warnToJson(log, "warn3...{} {}", 33, orderInfo);
+ *  Log.infoToJson(log, "info3...{} {}", 33, orderInfo);
+ *  Log.debugToJson(log, "debug3...{} {}",33, orderInfo);
+ *
+ * }</pre>
+ * <p>
+ * <p>使用方式
+ * <pre> {@code
+ *  Log.start("订单号", "模块1");
  *  try {
  *      // .....
- *      Log.info("入参：{}", Log.toJsonSupplier(orderInfo));
+ *      Log.info("入参：{}", Log.getToJsonSupplier(orderInfo));
+ *      Log.info("入参：{} {}", () -> 11, Log.getToJsonSupplier(orderInfo));
  *      // (TestController.java:89).method() 1273227570368791【订单号】【模块1】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块2
  *      Log.setModule("模块2");
  *      Log.infoToJson("入参：{}", orderInfo);
+ *      Log.infoToJson("入参：{} {}", 11, orderInfo);
  *      // (TestController.java:93).method() 1273227570368791【订单号】【模块2】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块n
  *      Log.setModule("模块n");
  *      Log.infoToJson("入参：{}", orderInfo);
+ *      Log.infoToJson("入参：{} {}", 11, orderInfo);
  *      // (TestController.java:97).method() 1273227570368791【订单号】【模块n】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
- *
  *      // .....
- *
  *  }  catch (Exception e) {
  *      Log.error("接口异常1", e);
- *      Log.error("接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
+ *      Log.error("接口异常2 {}, {}", Log.getToJsonSupplier(orderInfo), () -> 11, () -> e);
  *      Log.error("接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
  *      Log.errorToJson("接口异常4 {}, {}", orderInfo, 11, e);
  *
@@ -53,6 +93,7 @@ import java.util.regex.Pattern;
  *  }
  *
  * }</pre>
+ * <p>
  *
  * @author zhipengliu
  * @since 1.0
@@ -88,19 +129,23 @@ public class Log {
 
     /**
      * <p>
-     * 使用方式
+     * <p>使用方式
+     * <p>快捷方式输入：`gett`
      * <pre> {@code
      *
-     *  LogUtil.info("3入参数：{}", LogUtil.getJsonSupplier(orderInfo));
+     *  LogUtil.info("3入参数：{}", LogUtil.getToJsonSupplier(orderInfo));
      *  或
      *  LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo));
      *
      * }</pre>
      */
-    public static Supplier<String> toJsonSupplier(Object obj) {
+    public static Supplier<String> getToJsonSupplier(Object obj) {
         return () -> JSON.toJSONString(obj);
     }
 
+    /**
+     *  <p>快捷方式输入：`gets`
+     */
     public static Supplier<Object> getSupplier(Object obj) {
         return () -> obj;
     }
@@ -108,10 +153,11 @@ public class Log {
 
     /**
      * <p>
-     * 使用方式
+     * <p>使用方式
+     * <p>快捷方式输入：`gete`
      * <pre> {@code
      *
-     *  LogUtil.info("3入参数：{}", LogUtil.getJsonSupplier(orderInfo), LogUtil.getExceptionSupplier(e));
+     *  LogUtil.info("3入参数：{}", LogUtil.getToJsonSupplier(orderInfo), LogUtil.getExceptionSupplier(e));
      *  或
      *  LogUtil.info("33入参数：{}", () -> JSON.toJSONString(orderInfo), () -> e);
      *
@@ -128,7 +174,7 @@ public class Log {
      *
      *  Log.error("接口异常1", e);
      *
-     *  Log.error("接口异常2 {}, {}", Log.toJsonSupplier(orderInfo), () -> 11, () -> e);
+     *  Log.error("接口异常2 {}, {}", Log.getToJsonSupplier(orderInfo), () -> 11, () -> e);
      *
      *  Log.error("接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
      *
