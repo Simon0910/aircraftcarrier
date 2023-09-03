@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，
+     你会看到log4j2内部各种详细输出。可以设置成OFF(关闭) 或 Error(只输出错误信息)。
+     30s 刷新此配置
+-->
+<configuration status="warn" monitorInterval="30">
+
+    <!-- 日志文件目录、日志格式配置 -->
+    <properties>
+        <Property name="fileName">~/export/Logs/aircraftcarrier</Property>
+        <property name="LOG_PATTERN">
+            %d{MM-dd HH:mm:ss.SSS} %-5level %pid [%t] %X{traceId} %X{fixedName} %X{moduleName} %c{1.1}.%M(%F:%L) - %highlight{%msg}%n
+        </property>
+    </properties>
+
+    <Appenders>
+        <!-- 输出控制台日志的配置 -->
+        <Console name="console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!-- 输出日志的格式 -->
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- 打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按yyyy-MM-dd建立的文件夹下面，作为存档 -->
+        <RollingRandomAccessFile name="infoFile" fileName="${fileName}/info.log" immediateFlush="false"
+                                 filePattern="${fileName}/%d{yyyy-MM-dd}-%i.info.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+
+            <Policies>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+            </Policies>
+
+            <Filters>
+                <!-- 只记录debug级别以上 error级别以下 -->
+                <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+                <ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+
+            <!-- 指定每天的最大滚动日志文件个数，默认个数，超过了会覆盖之前的 -->
+            <DefaultRolloverStrategy max="50"/>
+        </RollingRandomAccessFile>
+
+        <!-- 存储所有error信息 -->
+        <RollingRandomAccessFile name="errorFile" fileName="${fileName}/error.log" immediateFlush="false"
+                                 filePattern="${fileName}/%d{yyyy-MM-dd}-%i.error.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+
+            <Policies>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+            </Policies>
+
+            <Filters>
+                <!-- 只记录error级别信息 -->
+                <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+
+            <!-- 指定每天的最大滚动日志文件个数，默认个数，超过了会覆盖之前的 -->
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <!-- Mixed sync/async -->
+    <Loggers>
+        <logger name="druid.sql" level="debug"/>
+        <logger name="druid.sql.DataSource" level="debug"/>
+        <logger name="druid.sql.Connection" level="debug"/>
+        <logger name="druid.sql.Statement" level="debug"/>
+        <logger name="druid.sql.ResultSet" level="debug"/>
+
+        <AsyncRoot level="debug" includeLocation="true">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="infoFile"/>
+            <AppenderRef ref="errorFile"/>
+        </AsyncRoot>
+    </Loggers>
+
+</configuration>
