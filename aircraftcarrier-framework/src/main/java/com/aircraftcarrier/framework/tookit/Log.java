@@ -528,7 +528,7 @@ public class Log {
             return Long.parseLong(getContextIfPresent().get(TID_KEY));
         } catch (Exception e) {
             long l = System.nanoTime();
-            logger.info(getInfoLog("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID_KEY), l);
+            logger.info(formatLogMessage("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID_KEY), l);
             return l;
         }
     }
