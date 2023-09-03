@@ -63,7 +63,7 @@ import java.util.regex.Pattern;
  *  try {
  *      // .....
  *      Log.info("入参：{}", Log.getToJsonSupplier(orderInfo));
- *      Log.info("入参：{} {}", () -> 11, Log.getToJsonSupplier(orderInfo));
+ *      Log.info("入参：{} {}", getSupplier(11), Log.getToJsonSupplier(orderInfo));
  *      // (TestController.java:89).method() 1273227570368791【订单号】【模块1】 - 入参：{"orderNo":"123","id":"1","orderInfoDetail":{}}
  *
  *      // 模块2
@@ -80,8 +80,7 @@ import java.util.regex.Pattern;
  *      // .....
  *  }  catch (Exception e) {
  *      Log.error("接口异常1", e);
- *      Log.error("接口异常2 {}, {}", Log.getToJsonSupplier(orderInfo), () -> 11, () -> e);
- *      Log.error("接口异常3 {}, {}", () -> Log.toJsonString(orderInfo), () -> 11, () -> e);
+ *      Log.error("接口异常2 {}, {}", Log.getToJsonSupplier(orderInfo), getSupplier(11), getExceptionSupplier(e));
  *      Log.errorToJson("接口异常4 {}, {}", orderInfo, 11, e);
  *
  *      // (TestController.java:107).method() 1273227570368791【订单号】【模块n】 - 接口异常4 {"orderNo":"123","id":"1","orderInfoDetail":{}}, 11
