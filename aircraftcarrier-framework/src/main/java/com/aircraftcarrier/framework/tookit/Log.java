@@ -129,7 +129,6 @@ public class Log {
     /**
      * <p>
      * <p>使用方式
-     * <p>快捷方式输入：`gett`
      * <pre> {@code
      *
      *  LogUtil.info("3入参数：{}", LogUtil.getToJsonSupplier(orderInfo));
@@ -143,7 +142,7 @@ public class Log {
     }
 
     /**
-     *  <p>快捷方式输入：`gets`
+     * getSupplier
      */
     public static Supplier<Object> getSupplier(Object obj) {
         return () -> obj;
@@ -153,7 +152,6 @@ public class Log {
     /**
      * <p>
      * <p>使用方式
-     * <p>快捷方式输入：`gete`
      * <pre> {@code
      *
      *  LogUtil.info("3入参数：{}", LogUtil.getToJsonSupplier(orderInfo), LogUtil.getExceptionSupplier(e));
@@ -183,127 +181,127 @@ public class Log {
      */
     public static void error(String message, Throwable t) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(message), t);
+            logger.error(wrapMessage(message), t);
         }
     }
 
     public static void error(String message, Supplier<?>... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(message), getLogArgs(args));
+            logger.error(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void error(Logger logger, String message, Supplier<?>... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(message), getLogArgs(args));
+            logger.error(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void errorToJson(String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(message), getLogArgsToJson(args));
+            logger.error(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void errorToJson(Logger logger, String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(formatLogMessage(message), getLogArgsToJson(args));
+            logger.error(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void warn(String message, Supplier<?>... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(message), getLogArgs(args));
+            logger.warn(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void warn(Logger logger, String message, Supplier<?>... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(message), getLogArgs(args));
+            logger.warn(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void warnToJson(String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(message), getLogArgsToJson(args));
+            logger.warn(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void warnToJson(Logger logger, String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(formatLogMessage(message), getLogArgsToJson(args));
+            logger.warn(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void info(String message, Supplier<?>... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(message), getLogArgs(args));
+            logger.info(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void info(Logger logger, String message, Supplier<?>... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(message), getLogArgs(args));
+            logger.info(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void infoToJson(String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(message), getLogArgsToJson(args));
+            logger.info(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void infoToJson(Logger logger, String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(formatLogMessage(message), getLogArgsToJson(args));
+            logger.info(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void debug(String message, Supplier<?>... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(message), getLogArgs(args));
+            logger.debug(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void debug(Logger logger, String message, Supplier<?>... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(message), getLogArgs(args));
+            logger.debug(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void debugToJson(String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(message), getLogArgsToJson(args));
+            logger.debug(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void debugToJson(Logger logger, String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(formatLogMessage(message), getLogArgsToJson(args));
+            logger.debug(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void trace(String message, Supplier<?>... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(message), getLogArgs(args));
+            logger.trace(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void trace(Logger logger, String message, Supplier<?>... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(message), getLogArgs(args));
+            logger.trace(wrapMessage(message), getLogArgs(args));
         }
     }
 
     public static void traceToJson(String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(message), getLogArgsToJson(args));
+            logger.trace(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
     public static void traceToJson(Logger logger, String message, Object... args) {
         if (logger.isTraceEnabled()) {
-            logger.trace(formatLogMessage(message), getLogArgsToJson(args));
+            logger.trace(wrapMessage(message), getLogArgsToJson(args));
         }
     }
 
@@ -329,7 +327,7 @@ public class Log {
         }
     }
 
-    private static String formatLogMessage(String message) {
+    private static String wrapMessage(String message) {
         StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
         return caller.getMethodName() + "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") - " +
                 Log.getFullTid() +
@@ -573,7 +571,7 @@ public class Log {
             return Long.parseLong(getContextIfPresent().get(TID_KEY));
         } catch (Exception e) {
             long l = System.nanoTime();
-            logger.info(formatLogMessage("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID_KEY), l);
+            logger.info(wrapMessage("{} tidString ==> tidLong {}"), getContextIfPresent().get(FULL_TID_KEY), l);
             return l;
         }
     }
@@ -596,58 +594,58 @@ public class Log {
     //                                              获取日志 START
     // *****************************************************************************************************************
 
-    public static String getErrorLog(String log, String... args) {
+    public static String getErrorLog(String message, String... args) {
         if (logger.isErrorEnabled()) {
-            return getLog(log, args);
+            return getLog(message, args);
         }
         return EMPTY;
     }
 
-    public static String getErrorLogJson(String log, Object... args) {
+    public static String getErrorLogJson(String message, Object... args) {
         if (logger.isErrorEnabled()) {
-            return getLogAutoJsonString(log, args);
+            return getLogAutoJsonString(message, args);
         }
         return EMPTY;
     }
 
-    public static String getWarnLog(String log, String... args) {
+    public static String getWarnLog(String message, String... args) {
         if (logger.isWarnEnabled()) {
-            return getLog(log, args);
+            return getLog(message, args);
         }
         return EMPTY;
     }
 
-    public static String getWarnLogJson(String log, Object... args) {
+    public static String getWarnLogJson(String message, Object... args) {
         if (logger.isWarnEnabled()) {
-            return getLogAutoJsonString(log, args);
+            return getLogAutoJsonString(message, args);
         }
         return EMPTY;
     }
 
-    public static String getInfoLog(String log, String... args) {
+    public static String getInfoLog(String message, String... args) {
         if (logger.isInfoEnabled()) {
-            return getLog(log, args);
+            return getLog(message, args);
         }
         return EMPTY;
     }
 
-    public static String getInfoLogJson(String log, Object... args) {
+    public static String getInfoLogJson(String message, Object... args) {
         if (logger.isInfoEnabled()) {
-            return getLogAutoJsonString(log, args);
+            return getLogAutoJsonString(message, args);
         }
         return EMPTY;
     }
 
-    public static String getDebugLog(String log, String... args) {
+    public static String getDebugLog(String message, String... args) {
         if (logger.isDebugEnabled()) {
-            return getLog(log, args);
+            return getLog(message, args);
         }
         return EMPTY;
     }
 
-    public static String getDebugLogJson(String log, Object... args) {
+    public static String getDebugLogJson(String message, Object... args) {
         if (logger.isDebugEnabled()) {
-            return getLogAutoJsonString(log, args);
+            return getLogAutoJsonString(message, args);
         }
         return EMPTY;
     }
@@ -656,42 +654,36 @@ public class Log {
     /**
      * 获取   tid 固定前缀 模块标识 - 用户日志
      *
-     * @param log  例如:  接单入参orderInfo：{} {}
-     * @param args 例如: LogUtil.toJsonString(orderInfo)
+     * @param message 例如:  接单入参orderInfo：{} {}
+     * @param args    例如: LogUtil.toJsonString(orderInfo)
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
-    private static String getLog(String log, String... args) {
-        return getLogAutoJsonString(log, (Object[]) args);
+    private static String getLog(String message, String... args) {
+        return getLogAutoJsonString(message, (Object[]) args);
     }
 
 
     /**
      * 获取   tid 固定前缀 模块标识 - 用户日志
      *
-     * @param log  例如:  接单入参orderInfo：{} {}
-     * @param args 例如: orderInfo
+     * @param message 例如:  接单入参orderInfo：{} {}
+     * @param args    例如: orderInfo
      * @return String 例如: 接单入参orderInfo：{"id":123,"name":"xx"}
      */
-    private static String getLogAutoJsonString(String log, Object... args) {
+    private static String getLogAutoJsonString(String message, Object... args) {
         Map<String, String> context = getContextIfPresent();
 
-        if (isBlank(log)) {
-            return context.get(FULL_TID_KEY) + log;
+        if (isBlank(message)) {
+            return context.get(FULL_TID_KEY) + message;
         }
-        if (!log.contains(LOG_PLACEHOLDER)) {
-            FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID_KEY) + log, args);
-            if (formattingTuple.getThrowable() != null) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
-                return formattingTuple.getMessage() + NEWLINE + bos;
-            }
-            return formattingTuple.getMessage();
+        if (!message.contains(LOG_PLACEHOLDER)) {
+            return arrayFormat(message, context, args);
         }
         if (args == null) {
-            return context.get(FULL_TID_KEY) + getReplaceFirst(log);
+            return context.get(FULL_TID_KEY) + getReplaceFirst(message);
         }
         if (args.length < 1) {
-            return context.get(FULL_TID_KEY) + log;
+            return context.get(FULL_TID_KEY) + message;
         }
 
         // 空对象也是一个 `{}`, 防止被外层log.info解析 `{}` 转换成 `{ }`
@@ -719,14 +711,16 @@ public class Log {
             }
         }
 
-        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID_KEY) + log, args);
+        return arrayFormat(message, context, args);
+    }
 
+    private static String arrayFormat(String message, Map<String, String> context, Object[] args) {
+        FormattingTuple formattingTuple = MessageFormatter.arrayFormat(context.get(FULL_TID_KEY) + message, args);
         if (formattingTuple.getThrowable() != null) {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             formattingTuple.getThrowable().printStackTrace(new PrintStream(bos));
             return formattingTuple.getMessage() + NEWLINE + bos;
         }
-
         return formattingTuple.getMessage();
     }
 
