@@ -429,7 +429,7 @@ public class Log {
         Map<String, String> context = getContextIfPresent();
 
         // tid
-        context.put(TID_KEY, tid);
+        context.put(TID_KEY, fixString(tid));
         // orderNo etc.
         context.put(FIXED_KEY, fixString(fixed));
         // 模块名称.
