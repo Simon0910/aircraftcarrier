@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 @RequestMapping(value = "/web/es")
 public class EsController {
 
-    @Resource
+    // @Resource
     private EsService esService;
 
 

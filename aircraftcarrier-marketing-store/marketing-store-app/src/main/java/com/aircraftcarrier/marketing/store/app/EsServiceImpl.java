@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author liuzhipeng
  */
-@Service
+// @Service
 public class EsServiceImpl implements EsService {
 
     private final EsDocumentMapper esDocumentMapper;
