@@ -20,6 +20,7 @@
         <module>aircraftcarrier-security</module>
         <module>aircraftcarrier-marketing-store</module>
         <module>aircraftcarrier-bpm</module>
+        <!-- <module>example</module> -->
     </modules>
     <repositories>
         <!--阿里云仓库-->

@@ -5,13 +5,17 @@
     <parent>
         <groupId>com.aircraftcarrier</groupId>
         <artifactId>aircraftcarrier-parent</artifactId>
-        <version>${revision}</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../aircraftcarrier-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>aircraftcarrier-${projectName}</artifactId>
+    <groupId>com.${projectName}</groupId>
+    <artifactId>${projectName}</artifactId>
     <packaging>pom</packaging>
-    <name>Aircraft Carrier ${projectName_U}</name>
+    <name>${projectName_U}</name>
+    <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
+    </properties>
     <modules>
         <module>${projectName}-common</module>
         <module>${projectName}-domain</module>

@@ -23,12 +23,12 @@ import java.util.Properties;
  */
 public class MainArchitect {
     private static final String outputDir = "/Users/zhipengliu/IdeaProjects/aircraftcarrier";
-    private static final String projectName = "bpm";
+    private static final String projectName = "example";
 
 
     public static void main(String[] args) {
 
-        final String mavenPath = "src/main/java/com/aircraftcarrier/" + projectName;
+        final String mavenPath = "src/main/java/com/" + projectName;
         final String commonProjectModule = "common";
         final String appProjectModule = "app";
         final String clientProjectModule = "client";
@@ -44,7 +44,7 @@ public class MainArchitect {
         p.setProperty(Velocity.INPUT_ENCODING, StandardCharsets.UTF_8.name());
         p.setProperty("file.resource.loader.unicode", "true");
 
-        String parentProjectName = "aircraftcarrier-" + projectName;
+        String parentProjectName = projectName;
         File file = new File(outputDir + "/" + parentProjectName);
         if (!file.exists()) {
             file.mkdirs();
@@ -78,11 +78,28 @@ public class MainArchitect {
             if (!file.exists()) {
                 file.mkdirs();
             }
-            try (FileOutputStream fos = new FileOutputStream(outputDir + "/" + parentProjectName + "/" + projectName + "-" + module + "/pom.xml"); OutputStreamWriter ow = new OutputStreamWriter(fos, StandardCharsets.UTF_8); BufferedWriter writer = new BufferedWriter(ow)) {
+            try (FileOutputStream fos = new FileOutputStream(outputDir + "/" + parentProjectName + "/" + projectName + "-" + module + "/pom.xml");
+                 OutputStreamWriter ow = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                 BufferedWriter writer = new BufferedWriter(ow)) {
                 template.merge(new VelocityContext(context), writer);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        Map<String, Object> context = new HashMap<>();
+        context.put("projectName", projectName);
+        context.put("projectModuleName", projectName + "-start");
+        context.put("projectModuleName_U", projectName.toUpperCase() + " START");
+        context.put("revision", "${revision}");
+        Template template = velocityEngine.getTemplate("/architect/Application.java.vm", StandardCharsets.UTF_8.name());
+
+        try (FileOutputStream fos = new FileOutputStream(outputDir + "/" + parentProjectName + "/" + projectName + "-start/src/main/java/com/" + projectName + "/Application.java");
+             OutputStreamWriter ow = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+             BufferedWriter writer = new BufferedWriter(ow)) {
+            template.merge(new VelocityContext(context), writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -33,8 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GeneratorStart {
 
-    private static String projectName = "marketing-store";
-    private static String parent = "com.aircraftcarrier.marketing.store";
+    private static String moduleNamePrefix = "marketing-store";
+    private static String parentPackage = "com.aircraftcarrier.marketing.store";
     private static final String entityPackage = "infrastructure.repository.dataobject";
     private static final String entitySupperClassName = "com.aircraftcarrier.framework.data.BaseDO";
     private static final String controllerSupperClassName = "";
@@ -64,18 +64,18 @@ public class GeneratorStart {
         GeneratorStart.outputDir = outputDir;
     }
 
-    public GeneratorStart projectName(String projectName) {
-        GeneratorStart.projectName = projectName;
+    public GeneratorStart moduleNamePrefix(String moduleNamePrefix) {
+        GeneratorStart.moduleNamePrefix = moduleNamePrefix;
         return this;
     }
 
-    public GeneratorStart parent(String parent) {
-        GeneratorStart.parent = parent;
+    public GeneratorStart parentPackage(String parentPackage) {
+        GeneratorStart.parentPackage = parentPackage;
         return this;
     }
     
     private static String getProjectModuleName(String moduleName) {
-        return projectName + "-" + moduleName;
+        return moduleNamePrefix + "-" + moduleName;
     }
 
     private static String getProjectCommonModuleName() {
@@ -156,7 +156,7 @@ public class GeneratorStart {
     private static InjectionConfig getInjectionConfig() {
         ConcurrentHashMap<String, Object> params = new ConcurrentHashMap<>();
         params.put("moduleName", moduleName);
-        params.put("parentPackage", parent);
+        params.put("parentPackage", parentPackage);
         InjectionConfig injectionConfig = new InjectionConfig.Builder()
                 .beforeOutputFile((tableInfo, objectMap) -> {
                     System.out.println("tableInfo: " + "%s objectMap: " + objectMap.size());
@@ -182,7 +182,7 @@ public class GeneratorStart {
 
     private static PackageConfig getPackageConfig() {
         PackageConfig packageConfig = new PackageConfig.Builder()
-                .parent(parent)
+                .parent(parentPackage)
                 .moduleName(moduleName)
                 .entity("entity")
                 .service("service")
@@ -221,7 +221,7 @@ public class GeneratorStart {
 
         String templatePath = "template/";
         String mavenPath = "/src/main/java/";
-        String parentPath = parent.replace(".", "/") + "/";
+        String parentPath = parentPackage.replace(".", "/") + "/";
 
         String clientGroup = "client/" + moduleName;
         String appGroup = "app/" + moduleName + "/executor";
