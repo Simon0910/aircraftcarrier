@@ -101,9 +101,9 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
      */
     private String maxSuccessSnapshotPosition;
     /**
-     * isNewRow
+     * continueToTheEnd
      */
-    private boolean isNewRow = false;
+    private boolean continueToTheEnd = false;
     private BufferedWriter errorBufferedWriter;
     // https://cloud.tencent.com/developer/news/783592
     private MappedByteBuffer byteBuffer;
@@ -307,7 +307,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             return true;
         }
 
-        if (isNewRow) {
+        if (continueToTheEnd) {
             return false;
         }
 
@@ -317,43 +317,44 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             if (comparePosition(position, fromSheetRowNo) < 0) {
                 return true;
             }
-            if (endSheetRowNo != null) {
-                // 结束行
-                if (comparePosition(position, endSheetRowNo) > 0) {
-                    // execute
-                    if (!batchContainer.isEmpty()) {
-                        executeBatch(batchContainer);
-                    }
-                    try {
-                        ThreadUtil.sleepSeconds(1);
-                    } catch (InterruptedException ignore) {
-                        Thread.currentThread().interrupt();
-                    }
-                    throw new ExcelAnalysisStopException();
-                }
+            if (endSheetRowNo == null) {
+                // 到达开始行
+                log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
+                continueToTheEnd = true;
                 return false;
             }
-            // 到达开始行
-            log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
-            isNewRow = true;
-            return false;
+            // 没有到结束行
+            if (comparePosition(position, endSheetRowNo) <= 0) {
+                return false;
+            }
+            // 到达结束行, 停止读取
+            if (!batchContainer.isEmpty()) {
+                executeBatch(batchContainer);
+            }
+            try {
+                ThreadUtil.sleepSeconds(1);
+            } catch (InterruptedException ignore) {
+                Thread.currentThread().interrupt();
+            }
+            throw new ExcelAnalysisStopException();
         }
 
         // maxSuccessSnapshotPosition 低优先级
         if (maxSuccessSnapshotPosition == null) {
-            // 没有成功记录，从头开始
-            isNewRow = true;
+            // 没有成功记录，从头开始直到结束
+            continueToTheEnd = true;
             return false;
-        } else {
-            if (!maxSuccessSnapshotPosition.equals(position)) {
-                // 没有到达成功记录，跳过
-                return true;
-            }
-            // 到达成功记录，下一行是新行
-            log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
-            isNewRow = true;
+        }
+
+        if (comparePosition(position, maxSuccessSnapshotPosition) <= 0) {
+            // 没有到达成功记录，跳过
             return true;
         }
+
+        // 到达成功记录，新行
+        log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
+        continueToTheEnd = true;
+        return false;
     }
 
     private void recordSuccessRowPosition(T row, int successSize) {
