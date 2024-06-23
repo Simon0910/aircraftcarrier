@@ -7,7 +7,7 @@ package com.aircraftcarrier.framework.exceltask;
  * @date 2023/4/20
  * @since 1.0
  */
-public abstract class AbstractTask<T extends AbstractUploadData> implements Task<T> {
+public abstract class AbstractTask<T extends AbstractExcelRow> implements Task<T> {
     private volatile TaskConfig config;
     private boolean started = false;
     private boolean stopped = false;

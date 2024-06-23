@@ -1,12 +1,12 @@
 package com.aircraftcarrier.marketing.store.adapter.exceltask.task01;
 
-import com.aircraftcarrier.framework.exceltask.AbstractUploadData;
+import com.aircraftcarrier.framework.exceltask.AbstractExcelRow;
 import com.alibaba.excel.annotation.ExcelProperty;
 
 /**
  * @author zhipengliu
  */
-public class MyExcelData extends AbstractUploadData {
+public class MyExcelRow extends AbstractExcelRow {
 
     @ExcelProperty(value = "款号")
     private String styleCode;

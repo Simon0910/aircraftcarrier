@@ -14,7 +14,7 @@ import java.util.LinkedList;
  */
 @Component
 @Slf4j
-public class MyExcelTask extends AbstractTaskWorker<MyExcelData> {
+public class MyExcelTask extends AbstractTaskWorker<MyExcelRow> {
     @Value("${myExcelTask.switch.excelFileClassPath:}")
     private String excelFileClassPath;
     @Value("${myExcelTask.threadNum:1}")
@@ -51,7 +51,7 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelData> {
     }
 
     @Override
-    public boolean check(MyExcelData myExcelData) {
+    public boolean check(MyExcelRow myExcelData) {
         // trim fix filter
         return true;
     }
@@ -62,8 +62,8 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelData> {
      * @param threadBatchList threadBatchList
      */
     @Override
-    public void doWorker(LinkedList<MyExcelData> threadBatchList) {
-        for (MyExcelData myExcelData : threadBatchList) {
+    public void doWork(LinkedList<MyExcelRow> threadBatchList) {
+        for (MyExcelRow myExcelData : threadBatchList) {
             try {
                 Thread.sleep(200);
                 log.info("MyExcelTask excelData: {}", JSON.toJSONString(myExcelData));

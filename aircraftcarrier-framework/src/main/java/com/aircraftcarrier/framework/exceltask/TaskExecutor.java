@@ -29,7 +29,7 @@ import java.util.List;
 @Slf4j
 public class TaskExecutor implements ApplicationContextClosedEvent {
 
-    private static final List<UploadDataListener<?>> listeners = new ArrayList<>();
+    private static final List<ExcelReadListener<?>> listeners = new ArrayList<>();
 
     private InputStream getExcelFileInputStream(TaskConfig taskConfig) throws IOException {
         // 获取流
@@ -39,40 +39,40 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String start(Task<T> task, Class<T> modelClass) {
-        if (task.isStarted()) {
+    public <T extends AbstractExcelRow> String start(AbstractTaskWorker<T> taskWorker, Class<T> modelClass) {
+        if (taskWorker.isStarted()) {
             return "task is started !";
         }
         synchronized (this) {
-            if (task.isStarted()) {
+            if (taskWorker.isStarted()) {
                 return "task is started !";
             }
 
-            task.setTaskThread(new Thread(() -> {
+            taskWorker.setTaskThread(new Thread(() -> {
                 try {
-                    doRead(task, modelClass);
+                    doRead(taskWorker, modelClass);
                 } catch (Exception e) {
                     log.error("doRead error: ", e);
                 } finally {
-                    task.setStarted(false);
+                    taskWorker.setStarted(false);
                 }
             }));
 
-            task.setStopped(false);
-            task.setStarted(true);
+            taskWorker.setStopped(false);
+            taskWorker.setStarted(true);
             // 保证先 started = true 然后 started = false
-            task.doStart();
+            taskWorker.doStart();
             return "start...";
         }
     }
 
-    private <T extends AbstractUploadData> void doRead(Task<T> task, Class<T> modelClass) throws IOException {
+    private <T extends AbstractExcelRow> void doRead(AbstractTaskWorker<T> taskWorker, Class<T> modelClass) throws IOException {
         long start = System.currentTimeMillis();
 
-        InputStream in = getExcelFileInputStream(task.config());
-        UploadDataListener<T> listener = null;
+        InputStream in = getExcelFileInputStream(taskWorker.config());
+        ExcelReadListener<T> listener = null;
         try {
-            listener = new UploadDataListener<>(task.config(), task);
+            listener = new ExcelReadListener<>(taskWorker);
             listeners.add(listener);
             ExcelReader excelReader = EasyExcelFactory.read(in, modelClass, listener).autoCloseStream(true).build();
             List<ReadSheet> readSheets = excelReader.excelExecutor().sheetList();
@@ -83,12 +83,10 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
                 throw e;
             }
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            try {
+                in.close();
+            } catch (Exception e) {
+                log.error("close input stream error: ", e);
             }
             if (listener != null) {
                 listener.shutdown();
@@ -100,7 +98,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String stop(Task<T> task) {
+    public <T extends AbstractExcelRow> String stop(Task<T> task) {
         if (task.isStopped()) {
             return "task already stopped";
         }
@@ -120,7 +118,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String reset(Task<T> task) {
+    public <T extends AbstractExcelRow> String reset(Task<T> task) {
         if (task.isStarted()) {
             return "already started";
         }
@@ -167,7 +165,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String resetSuccessSheetRow(Task<T> task, String maxSuccessSheetRow) throws IOException {
+    public <T extends AbstractExcelRow> String resetSuccessSheetRow(Task<T> task, String maxSuccessSheetRow) throws IOException {
         if (task.isStarted()) {
             return "already started";
         }
@@ -189,7 +187,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractUploadData> String settingFromWithEnd(Task<T> task, String fromSheetRow, String endSheetRow) {
+    public <T extends AbstractExcelRow> String settingFromWithEnd(Task<T> task, String fromSheetRow, String endSheetRow) {
         if (task.isStarted()) {
             return "already started";
         }
@@ -214,7 +212,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     public void contextClosed() {
         // https://blog.csdn.net/qq271859852/article/details/107442161
         log.info("shutdown hook, jvm runtime hook, listeners size {} ...", listeners.size());
-        for (UploadDataListener<?> listener : listeners) {
+        for (ExcelReadListener<?> listener : listeners) {
             log.info("listener shutdown...");
             listener.shutdown();
         }

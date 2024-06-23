@@ -12,7 +12,7 @@ import java.lang.reflect.ParameterizedType;
  * @date 2023/8/13
  * @since 1.0
  */
-public abstract class AbstractTaskWorker<T extends AbstractUploadData> extends AbstractTask<T> implements Worker<T> {
+public abstract class AbstractTaskWorker<T extends AbstractExcelRow> extends AbstractTask<T> implements Worker<T> {
 
     private TaskExecutor executor;
 

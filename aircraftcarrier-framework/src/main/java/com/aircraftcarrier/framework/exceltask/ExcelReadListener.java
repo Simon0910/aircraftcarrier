@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.LongAdder;
  * @author zhipengliu
  */
 @Slf4j
-public class UploadDataListener<T extends AbstractUploadData> implements ReadListener<T> {
+public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListener<T> {
 
     /**
      * config
@@ -75,7 +75,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
      */
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Object errorLock = new Object();
-    private final Task<T> task;
+    private final AbstractTaskWorker<T> taskWorker;
     private final int batchSize;
     private final LinkedList<T> batchContainer;
     private final HashMap<String, String> errorMapSnapshot = new HashMap<>();
@@ -108,16 +108,16 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
     // https://cloud.tencent.com/developer/news/783592
     private MappedByteBuffer byteBuffer;
 
-    UploadDataListener(TaskConfig config, Task<T> task) throws IOException {
-        this.config = config;
+    ExcelReadListener(AbstractTaskWorker<T> taskWorker) throws IOException {
+        this.config = taskWorker.config();
         this.batchSize = config.getBatchSize();
         this.batchContainer = new LinkedList<>();
         this.threadPoolExecutor = newFixedThreadPoolWithSyncBockedPolicy(config.getThreadNum(), config.getPoolName());
-        this.task = task;
+        this.taskWorker = taskWorker;
         this.successMap = Maps.newHashMapWithExpectedSize(config.getThreadNum());
         this.fromSheetRowNo = config.getFromSheetRowNo();
         this.endSheetRowNo = config.getEndSheetRowNo();
-        this.autoCheckTimer = new AutoCheckAbnormalScheduler(task);
+        this.autoCheckTimer = new AutoCheckAbnormalScheduler(taskWorker);
         loadSnapshot();
         startRefreshSnapshot();
         startAutoCheckTimer();
@@ -285,7 +285,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
             return;
         }
 
-        if (!task.check(uploadData)) {
+        if (!taskWorker.check(uploadData)) {
             return;
         }
 
@@ -387,10 +387,10 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
 
     private void execute(LinkedList<T> threadBatchList) {
         // 多线程执行
-        threadPoolExecutor.execute(() -> doWorker(threadBatchList));
+        threadPoolExecutor.execute(() -> executeBatch(threadBatchList));
     }
 
-    private void doWorker(LinkedList<T> threadBatchList) {
+    private void executeBatch(LinkedList<T> threadBatchList) {
         int size = threadBatchList.size();
         T first = threadBatchList.getFirst();
         T last = threadBatchList.getLast();
@@ -399,7 +399,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
         log.info("doWorker - threadBatchList [{}~{}]", firstKey, lastKey);
         String threadNo = ThreadUtil.getThreadNo();
         try {
-            task.doWorker(threadBatchList);
+            taskWorker.doWork(threadBatchList);
             // 记录最大行号
             successMap.put(threadNo, lastKey);
             successNum.add(size);
@@ -415,7 +415,7 @@ public class UploadDataListener<T extends AbstractUploadData> implements ReadLis
                 try {
                     LinkedList<T> singeList = new LinkedList<>();
                     singeList.add(singeData);
-                    task.doWorker(singeList);
+                    taskWorker.doWork(singeList);
                     successMap.put(threadNo, singeKey);
                     successNum.increment();
                 } catch (Exception ex) {

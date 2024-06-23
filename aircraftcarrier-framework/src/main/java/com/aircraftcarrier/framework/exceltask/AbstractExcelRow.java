@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * @author zhipengliu
  */
-public abstract class AbstractUploadData implements Serializable {
+public abstract class AbstractExcelRow implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ExcelIgnore
