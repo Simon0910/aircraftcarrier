@@ -38,4 +38,9 @@ interface Worker<T extends AbstractExcelRow> {
 
     String settingFromWithEnd(String fromSheetRow, String endSheetRow);
 
+    /**
+     * 获取已经处理的行号
+     * @return rowNo
+     */
+    Integer getRowNoByProgressProcessed();
 }

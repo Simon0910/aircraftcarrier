@@ -396,7 +396,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         T last = threadBatchList.getLast();
         String firstKey = getKey(first.getSheetNo(), first.getRowNo());
         String lastKey = getKey(last.getSheetNo(), last.getRowNo());
-        log.info("doWorker - threadBatchList [{}~{}]", firstKey, lastKey);
+        log.info("executeBatch - threadBatchList [{}~{}]", firstKey, lastKey);
         String threadNo = ThreadUtil.getThreadNo();
         try {
             taskWorker.doWork(threadBatchList);

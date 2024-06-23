@@ -16,6 +16,7 @@ public abstract class AbstractTaskWorker<T extends AbstractExcelRow> extends Abs
 
     private TaskExecutor executor;
 
+    private volatile Integer rowNoByProgressProcessed;
 
     @Override
     public String start() {
@@ -50,4 +51,12 @@ public abstract class AbstractTaskWorker<T extends AbstractExcelRow> extends Abs
         return executor;
     }
 
+    protected void setRowNoByProgressProcessed(Integer rowNoByProgressProcessed) {
+        this.rowNoByProgressProcessed = rowNoByProgressProcessed;
+    }
+
+    @Override
+    public Integer getRowNoByProgressProcessed() {
+        return rowNoByProgressProcessed;
+    }
 }
