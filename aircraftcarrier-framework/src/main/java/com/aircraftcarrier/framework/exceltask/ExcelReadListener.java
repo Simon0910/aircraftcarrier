@@ -55,13 +55,13 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     private final LongAdder successNum = new LongAdder();
     /**
      * 错误的记录
-     * key : 线程号 value : sheetNo.rowNo
+     * position : 线程号 value : sheetNo.rowNo
      * 每隔3秒记录一下
      */
     private final HashMap<String, String> errorMap = new HashMap<>();
     /**
      * 记录各个线程执行到第几行
-     * key : 线程号 value : sheetNo.rowNo
+     * position : 线程号 value : sheetNo.rowNo
      * 每隔3秒记录一下
      */
     private final HashMap<String, String> successMap;
@@ -99,7 +99,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     /**
      * 成功的最大行号
      */
-    private String maxSuccessSnapshotElement;
+    private String maxSuccessSnapshotPosition;
     /**
      * isNewRow
      */
@@ -134,16 +134,16 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         try {
             // check
             config.preCheckFile();
-            loadErrorMap();
-            loadSuccessMap();
+            loadErrorMapSnapshot();
+            loadSuccessMapSnapshot();
         } catch (Exception e) {
-            throw new ExcelTaskException("loadSnapshot io error", e);
+            throw new ExcelTaskException("loadSuccessMapSnapshot io error", e);
         }
 
-        log.info("init - maxSuccessSnapshotElement {}", maxSuccessSnapshotElement);
+        log.info("init - maxSuccessSnapshotPosition {}", maxSuccessSnapshotPosition);
     }
 
-    private void loadSuccessMap() throws IOException {
+    private void loadSuccessMapSnapshot() throws IOException {
         String successStr = readFromFilePath(config.getSuccessMapSnapshotFilePath());
         String max = "0_0";
         if (CharSequenceUtil.isNotBlank(successStr)) {
@@ -151,14 +151,14 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
             successStr = successStr.substring(0, successStr.indexOf(TaskConfig.END));
             for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr)) {
-                if (compareKey(max, next) < 0) {
-                    max = maxSuccessSnapshotElement = next;
+                if (comparePosition(max, next) < 0) {
+                    max = maxSuccessSnapshotPosition = next;
                 }
             }
         }
     }
 
-    private void loadErrorMap() throws IOException {
+    private void loadErrorMapSnapshot() throws IOException {
         String errorStr = readFromFilePath(config.getErrorMapSnapshotFilePath());
         if (CharSequenceUtil.isNotBlank(errorStr)) {
             for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(errorStr)) {
@@ -167,7 +167,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         }
     }
 
-    private int compareKey(String s1, String s2) {
+    private int comparePosition(String s1, String s2) {
         String[] split1 = s1.split(StrPool.UNDERLINE);
         String[] split2 = s2.split(StrPool.UNDERLINE);
         int result = Integer.parseInt(split1[0]) - Integer.parseInt(split2[0]);
@@ -206,7 +206,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
                 doRefreshSuccessMapSnapshot();
             } catch (Exception e) {
                 log.error("init - refreshMapSnapshot error: {}", e.getMessage(), e);
-                e.printStackTrace();
             }
         }, 0, config.getRefreshSnapshotPeriod(), TimeUnit.MILLISECONDS);
     }
@@ -281,7 +280,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         uploadData.setSheetNo(sheetNo);
         uploadData.setRowNo(rowNo);
 
-        if (skipRow(sheetNo, rowNo)) {
+        if (skipRowPosition(uploadData)) {
             return;
         }
 
@@ -296,15 +295,15 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             batchContainer.clear();
 
             // execute
-            execute(threadBatchList);
+            executeBatch(threadBatchList);
         }
     }
 
-    private boolean skipRow(Integer sheetNo, Integer rowNo) {
-        String key = getKey(sheetNo, rowNo);
+    private boolean skipRowPosition(T row) {
+        String position = getRowPosition(row);
         // 跳过错误记录
-        if (!errorMapSnapshot.isEmpty() && errorMapSnapshot.get(key) != null) {
-            errorMapSnapshot.remove(key);
+        if (!errorMapSnapshot.isEmpty() && errorMapSnapshot.get(position) != null) {
+            errorMapSnapshot.remove(position);
             return true;
         }
 
@@ -315,15 +314,15 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         // fromSheetRowNo 高优先级
         if (fromSheetRowNo != null) {
             // 开始行
-            if (compareKey(key, fromSheetRowNo) < 0) {
+            if (comparePosition(position, fromSheetRowNo) < 0) {
                 return true;
             }
             if (endSheetRowNo != null) {
                 // 结束行
-                if (compareKey(key, endSheetRowNo) > 0) {
+                if (comparePosition(position, endSheetRowNo) > 0) {
                     // execute
                     if (!batchContainer.isEmpty()) {
-                        execute(batchContainer);
+                        executeBatch(batchContainer);
                     }
                     try {
                         ThreadUtil.sleepSeconds(1);
@@ -335,41 +334,46 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
                 return false;
             }
             // 到达开始行
-            log.info("开始读取新行 sheet.row: {}.{}", sheetNo, rowNo);
+            log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
             isNewRow = true;
             return false;
         }
 
-        // maxSuccessSnapshotElement 低优先级
-        if (maxSuccessSnapshotElement == null) {
+        // maxSuccessSnapshotPosition 低优先级
+        if (maxSuccessSnapshotPosition == null) {
             // 没有成功记录，从头开始
             isNewRow = true;
             return false;
         } else {
-            if (!maxSuccessSnapshotElement.equals(key)) {
+            if (!maxSuccessSnapshotPosition.equals(position)) {
                 // 没有到达成功记录，跳过
                 return true;
             }
             // 到达成功记录，下一行是新行
-            log.info("开始读取新行 sheet.row: {}.{}", sheetNo, rowNo);
+            log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
             isNewRow = true;
             return true;
         }
     }
 
-    private void recordErrorMap(String sheetNoRowNo) {
+    private void recordSuccessRowPosition(T row, int successSize) {
+        successMap.put(ThreadUtil.getThreadNo(), getRowPosition(row));
+        successNum.add(successSize);
+    }
+
+    private void recordErrorRowPosition(T row) {
         synchronized (errorLock) {
             // 不存在增加
-            errorMap.computeIfAbsent(sheetNoRowNo, k -> {
+            errorMap.computeIfAbsent(getRowPosition(row), k -> {
                 failNum++;
-                autoCheckTimer.putAbnormal(sheetNoRowNo);
+                autoCheckTimer.putAbnormal(getRowPosition(row));
                 return CharSequenceUtil.EMPTY;
             });
         }
     }
 
-    private String getKey(Integer sheetNo, Integer rowNo) {
-        return sheetNo + StrPool.UNDERLINE + rowNo;
+    private String getRowPosition(T t) {
+        return t.getSheetNo() + StrPool.UNDERLINE + t.getRowNo();
     }
 
     @Override
@@ -381,45 +385,39 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         // 最后一个sheet
         if (sheetNo == readSheets.size() - 1 && (!batchContainer.isEmpty())) {
             // execute
-            execute(batchContainer);
+            executeBatch(batchContainer);
         }
     }
 
-    private void execute(LinkedList<T> threadBatchList) {
+    private void executeBatch(LinkedList<T> threadBatchList) {
         // 多线程执行
-        threadPoolExecutor.execute(() -> executeBatch(threadBatchList));
+        threadPoolExecutor.execute(() -> doExecuteBatch(threadBatchList));
     }
 
-    private void executeBatch(LinkedList<T> threadBatchList) {
+    private void doExecuteBatch(LinkedList<T> threadBatchList) {
         int size = threadBatchList.size();
         T first = threadBatchList.getFirst();
         T last = threadBatchList.getLast();
-        String firstKey = getKey(first.getSheetNo(), first.getRowNo());
-        String lastKey = getKey(last.getSheetNo(), last.getRowNo());
-        log.info("executeBatch - threadBatchList [{}~{}]", firstKey, lastKey);
-        String threadNo = ThreadUtil.getThreadNo();
+        log.info("doExecuteBatch - threadBatchList [{}~{}]", getRowPosition(first), getRowPosition(last));
         try {
             taskWorker.doWork(threadBatchList);
             // 记录最大行号
-            successMap.put(threadNo, lastKey);
-            successNum.add(size);
+            recordSuccessRowPosition(last, size);
         } catch (Exception e) {
-            log.error("doWork error - threadBatchList [{}~{}]", firstKey, lastKey);
+            log.error("doWork error - threadBatchList [{}~{}]", getRowPosition(first), getRowPosition(last));
             if (size == 1) {
-                recordErrorMap(firstKey);
+                recordErrorRowPosition(first);
                 log.error("doWork error - singeData: {}", JSON.toJSONString(first), e);
                 return;
             }
             for (T singeData : threadBatchList) {
-                String singeKey = getKey(singeData.getSheetNo(), singeData.getRowNo());
                 try {
                     LinkedList<T> singeList = new LinkedList<>();
                     singeList.add(singeData);
                     taskWorker.doWork(singeList);
-                    successMap.put(threadNo, singeKey);
-                    successNum.increment();
+                    recordSuccessRowPosition(singeData, 1);
                 } catch (Exception ex) {
-                    recordErrorMap(singeKey);
+                    recordErrorRowPosition(singeData);
                     log.error("doWork error - singeData: {}", JSON.toJSONString(singeData), ex);
                 }
             }
