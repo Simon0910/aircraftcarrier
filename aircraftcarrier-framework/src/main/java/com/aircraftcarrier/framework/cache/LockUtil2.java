@@ -3,7 +3,6 @@ package com.aircraftcarrier.framework.cache;
 import com.aircraftcarrier.framework.cache.suport.MyLockTemplate;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
-import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.StringPool;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.baomidou.lock.LockInfo;
@@ -64,7 +63,6 @@ public class LockUtil2 {
         return ResourceHolder.getEnv() + lockKey;
     }
 
-
     public static RedisLocker tryLock(String lockKey, long expire, TimeUnit unit) {
         return doTryLock(lockKey, expire, 0, unit);
     }
@@ -73,7 +71,7 @@ public class LockUtil2 {
         return doTryLock(lockKey, expire, timeout, unit);
     }
 
-    public static boolean lockReentrant(RedisLocker redisLocker) {
+    public static boolean reentrantLock(RedisLocker redisLocker) {
         if (redisLocker == null) {
             return false;
         }
@@ -90,7 +88,6 @@ public class LockUtil2 {
         }
         return false;
     }
-
 
     /**
      * tryLock
@@ -112,48 +109,12 @@ public class LockUtil2 {
             throw new LockNotAcquiredException("unit is null");
         }
 
-        long start = System.currentTimeMillis();
-        long acquireTimeout = unit.toMillis(timeout);
-        // 假设百分之90的场景的并发key, 过几十毫秒就可以成功获取！
-        int retryCount = 0;
-        int maxFastRetryNum = 2;
-        long retryInterval = 1000;
-        boolean lastTime = false;
-        long lastTimeRetryInterval;
-        try {
-            do {
-                // 1次尝试取锁，2次快速取锁，3次重试取锁 | 后面每3秒获取一次 | 超时前获取一次
-                if (retryCount < 6 || retryCount % 3 == 0 || lastTime) {
-                    log.info("tryLock [{}]...", lockKey);
-                    LockInfo lockInfo = ResourceHolder.getMyLockTemplate().lockPlus(getEnvKey(lockKey), expire, acquireTimeout, 0, null);
-                    if (lockInfo != null) {
-                        return new RedisLocker(lockKey, expire, timeout, unit, true, lockInfo.getLockValue(), lockInfo);
-                    } else if (lastTime) {
-                        log.info("tryLock timeout [{}]", lockKey);
-                        return buildNotLockedRedisLocker(lockKey, expire, timeout, unit);
-                    }
-                }
-
-                if (retryCount < maxFastRetryNum) {
-                    SleepUtil.sleepMilliseconds(30);
-                } else {
-                    lastTime = (lastTimeRetryInterval = acquireTimeout - (System.currentTimeMillis() - start)) <= retryInterval;
-                    if (lastTime) {
-                        SleepUtil.sleepMilliseconds(lastTimeRetryInterval - 10);
-                    } else {
-                        SleepUtil.sleepMilliseconds(retryInterval);
-                    }
-                }
-                retryCount++;
-
-            } while (System.currentTimeMillis() - start < acquireTimeout);
-
-            log.info("tryLock timeout [{}].", lockKey);
-            return buildNotLockedRedisLocker(lockKey, expire, timeout, unit);
-        } catch (Exception e) {
-            log.error("tryLock error key [{}] ", lockKey, e);
-            throw new LockNotAcquiredException(e);
+        log.info("doTryLock key [{}] ", lockKey);
+        LockInfo lockInfo = ResourceHolder.getMyLockTemplate().lock(getEnvKey(lockKey), unit.toMillis(expire), unit.toMillis(timeout), null);
+        if (lockInfo != null) {
+            return new RedisLocker(lockKey, expire, timeout, unit, true, lockInfo.getLockValue(), lockInfo);
         }
+        return buildNotLockedRedisLocker(lockKey, expire, timeout, unit);
     }
 
     @NotNull
@@ -218,9 +179,9 @@ public class LockUtil2 {
     }
 
     public static void forceDelLockKey(String lockKey) {
+        ResourceHolder.getMyLockTemplate().delCacheLockKey(getEnvKey(lockKey));
         ResourceHolder.getJedisCluster().del(getEnvKey(lockKey));
     }
-
 
     private static class ResourceHolder {
         private static MyLockTemplate myLockTemplate; // This will be lazily initialised

@@ -350,22 +350,23 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void reentrantLock(String key) {
-        LockUtil2.forceDelLockKey(key);
-
+        // LockUtil2.forceDelLockKey(key);
+        //
         once = true;
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
-        int num = 500;
+        int num = 3;
         List<CallableVoid> asyncBatchActions = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             String lockKey = String.valueOf(key);
             // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchActions.add(() -> {
-                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 100, TimeUnit.MILLISECONDS);
-                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 200, TimeUnit.MILLISECONDS);
+                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, TimeUnit.MILLISECONDS);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 500, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 3000, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 8000, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 20000, TimeUnit.MILLISECONDS);
                 if (!redisLocker.isLocked()) {
@@ -392,13 +393,13 @@ public class TestServiceImpl implements TestService {
                     log.info("抢到了redis锁, thread: {}", Thread.currentThread().getName());
                     // 执行业务逻辑
                     if (once) {
-                        // once = false;
-                        System.out.println("gg...");
+                        once = false;
+                        System.out.println("gg!");
                         // throw new RuntimeException("gg");
                         // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(1, 1));
                     }
                     // TimeUnit.MILLISECONDS.sleep(RandomUtil.nextInt(19000, 20000));
-                    TimeUnit.MILLISECONDS.sleep(50); // timeout = 20s 两个抢到redis锁，总耗时38s
+                    TimeUnit.MILLISECONDS.sleep(20); // timeout = 20s 两个抢到redis锁，总耗时38s
                     // TimeUnit.MILLISECONDS.sleep(20000); // timeout = 20s 两个抢到redis锁，总耗时40s
                     // TimeUnit.MILLISECONDS.sleep(21000); // timeout = 20s 1个抢到redis锁，总耗时20s
                     // TimeUnit.MILLISECONDS.sleep(1000);
@@ -431,7 +432,7 @@ public class TestServiceImpl implements TestService {
         }
 
 //        ThreadPoolUtil.invokeAllVoid(threadPool, asyncBatchTasks, true);
-        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPoolBlock(asyncBatchActions.size(), "测试redis锁"), asyncBatchActions);
+        ThreadPoolUtil.invokeAllVoid(ExecutorUtil.newCachedThreadPoolBlock(200, "测试redis锁"), asyncBatchActions);
         log.info("success: {}, 耗时：{}", success, System.currentTimeMillis() - start);
     }
 

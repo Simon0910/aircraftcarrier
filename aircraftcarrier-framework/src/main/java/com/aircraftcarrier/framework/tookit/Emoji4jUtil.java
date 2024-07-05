@@ -7,7 +7,7 @@ import com.sigpwned.emoji4j.core.util.Graphemes;
 /**
  * emoji
  *
- * @author ext.liuzhipeng12
+ * @author lzp
  * @since 2023/07/25 10:03
  */
 public class Emoji4jUtil {

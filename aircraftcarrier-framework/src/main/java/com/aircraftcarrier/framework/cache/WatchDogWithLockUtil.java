@@ -64,6 +64,7 @@ public class WatchDogWithLockUtil {
             Map<Serializable, Thread> lockRecordCopy = new HashMap<>(lockRecord);
 
             lockRecordCopy.forEach((key, thread) -> {
+                // todo 如果当前thread为线程池线程一直存活，岂不是一直续期？
                 if (thread.isAlive()) {
                     redisLockRenewal.renewalKey(key, 30);
                 }

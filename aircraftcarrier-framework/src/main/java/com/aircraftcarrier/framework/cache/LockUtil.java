@@ -125,7 +125,7 @@ public class LockUtil {
 
         // 新锁 锁竞争激励并发下多个线程到达这里
         MyLockTemplate myLockTemplate = getMyLockTemplate();
-        LockInfo newLock = myLockTemplate.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
+        LockInfo newLock = myLockTemplate.lock(lockKey, expire * 1000, acquireTimeout, null);
         if (null == newLock) {
             // 并发下的重试
             LockInfo retryNewLock = null;
@@ -134,7 +134,7 @@ public class LockUtil {
                 SleepUtil.sleepMilliseconds(20);
                 thread = LOCK_RECORD.get(lockKey);
                 if (thread == null) {
-                    retryNewLock = myLockTemplate.lockPlus(lockKey, expire * 1000, acquireTimeout, retryInterval, null);
+                    retryNewLock = myLockTemplate.lock(lockKey, expire * 1000, acquireTimeout, null);
                     if (retryNewLock != null) {
                         break;
                     }

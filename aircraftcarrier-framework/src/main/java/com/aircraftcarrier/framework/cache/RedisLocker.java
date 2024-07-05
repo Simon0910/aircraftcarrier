@@ -1,13 +1,14 @@
 package com.aircraftcarrier.framework.cache;
 
 import com.baomidou.lock.LockInfo;
+import lombok.Getter;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * 分布式锁
  *
- * @author ext.liuzhipeng12
+ * @author lzp
  * @since 2023/06/16 17:11
  */
 public class RedisLocker {
@@ -16,6 +17,7 @@ public class RedisLocker {
     private final long timeout;
     private final TimeUnit unit;
 
+    @Getter
     private boolean locked;
     private String lockValue;
     private LockInfo lockInfo;
@@ -59,7 +61,7 @@ public class RedisLocker {
     public boolean lock() {
         if (isLocked()) {
             // reentrant
-            return LockUtil2.lockReentrant(this);
+            return LockUtil2.reentrantLock(this);
         }
 
         RedisLocker locker = LockUtil2.tryLock(lockKey, expire, timeout, unit);
@@ -71,10 +73,6 @@ public class RedisLocker {
         this.lockValue = locker.getLockValue();
         this.lockInfo = locker.getLockInfo();
         return true;
-    }
-
-    public boolean isLocked() {
-        return locked;
     }
 
     public void unLock() {

@@ -7,7 +7,7 @@ package com.aircraftcarrier.framework.tookit;
  * maven: 15.0.1 刚起步还在完善中
  * coding: 15.0.2-SNAPSHOT
  *
- * @author ext.liuzhipeng12
+ * @author lzp
  * @since 2023/07/25 10:08
  */
 public class Emoji4jUtilTest {

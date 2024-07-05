@@ -135,7 +135,7 @@ public class LockUtils {
 
         try {
             // todo 为什么并发执行苞米豆lock方法，一个都没有获取到锁呢？改用lockPlus总能获取到至少一个
-            LockInfo lockInfo = getMyLockTemplate().lockPlus(request.getLockKey(), request.getUnit().toMillis(request.getExpire()), request.getUnit().toMillis(request.getTimeout()), -1, null);
+            LockInfo lockInfo = getMyLockTemplate().lock(request.getLockKey(), request.getUnit().toMillis(request.getExpire()), request.getUnit().toMillis(request.getTimeout()), null);
             if (lockInfo == null) {
                 request.setErrorMessage("not acquired");
                 return request;
