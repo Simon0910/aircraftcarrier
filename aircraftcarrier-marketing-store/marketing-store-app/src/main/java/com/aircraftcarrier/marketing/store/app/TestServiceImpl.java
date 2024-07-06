@@ -356,14 +356,15 @@ public class TestServiceImpl implements TestService {
         long start = System.currentTimeMillis();
         LongAdder success = new LongAdder();
         // 相当于 num * 8 = 4000 次请求LockUtil，预计 num * 4 = 2000 次请求redis，相同的key可重入
-        int num = 3;
+        int num = 200;
         List<CallableVoid> asyncBatchActions = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             String lockKey = String.valueOf(key);
             // String lockKey = String.valueOf(i);
             String lockKey2 = lockKey + "Two";
             asyncBatchActions.add(() -> {
-                RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, TimeUnit.MILLISECONDS);
+                RedisLocker redisLocker = LockUtil2.tryLock(lockKey);
+                // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 100, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 500, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 1000, TimeUnit.MILLISECONDS);
                 // RedisLocker redisLocker = LockUtil2.tryLock(lockKey, 60000, 3000, TimeUnit.MILLISECONDS);

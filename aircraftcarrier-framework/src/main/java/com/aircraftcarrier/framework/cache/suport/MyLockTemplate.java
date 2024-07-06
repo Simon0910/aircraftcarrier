@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.cache.suport;
 
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
+import com.aircraftcarrier.framework.tookit.LockKeyUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
@@ -88,19 +89,26 @@ public class MyLockTemplate extends LockTemplate {
                 // 1次尝试取锁，maxFastRetryNum 次快速取锁，(retryNum - maxFastRetryNum - 1)次间隔重试取锁 | 后面每3秒获取一次 | 超时前获取一次
                 acquireCount++;
                 if (acquireCount < retryNum || acquireCount % 3 == 0 || lastTime) {
-                    Object lockInstance;
+                    Object lockInstance = null;
                     // 防止某个线程执行时间长没有释放锁，很多抢锁的线程在超长超时前不必请求redis
                     LockRecord oldlockRecord = lock_record_cache.getIfPresent(key);
                     if (oldlockRecord != null && oldlockRecord.getCurrentThread() != Thread.currentThread()) {
-                        log.info("tryLock not locked [{}] from cache.", key);
-                        lockInstance = null;
+                        log.debug("tryLock not locked [{}] from cache.", key);
                     } else {
-                        log.info("tryLock [{}]...", key);
-                        lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
+                        if (LockKeyUtil.tryLock(key)) {
+                            try {
+                                log.info("tryLock [{}]...", key);
+                                lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
+                            } finally {
+                                LockKeyUtil.unlock(key);
+                            }
+                        } else {
+                            log.debug("tryLock not locked [{}] from JVM.", key);
+                        }
                     }
 
                     if (null != lockInstance) {
-                        log.info("tryLock locked key [{}]: Thread: {}", key, Thread.currentThread().getName());
+                        log.debug("tryLock locked key [{}]: Thread: {}", key, Thread.currentThread().getName());
                         LockRecord lockRecord = new LockRecord();
                         lockRecord.setKey(key);
                         lockRecord.setValue(value);
@@ -108,7 +116,7 @@ public class MyLockTemplate extends LockTemplate {
                         lock_record_cache.put(key, lockRecord);
                         return new LockInfo(key, value, expire, acquireTimeout, acquireCount, lockInstance, lockExecutor);
                     } else if (lastTime) {
-                        log.info("tryLock timeout [{}]", key);
+                        log.debug("tryLock timeout [{}]", key);
                         return null;
                     }
                 }
@@ -132,7 +140,7 @@ public class MyLockTemplate extends LockTemplate {
             log.error("tryLock error key [{}] ", key, e);
             throw new LockNotAcquiredException(e);
         }
-        log.info("tryLock not acquired [{}].", key);
+        log.debug("tryLock not acquired [{}].", key);
         return null;
     }
 

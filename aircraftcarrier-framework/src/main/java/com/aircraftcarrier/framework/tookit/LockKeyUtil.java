@@ -43,11 +43,11 @@ public class LockKeyUtil {
 
     public static boolean tryLock(String key) {
         LockWrapper lockWrapper = getLockWrapper(key);
-        boolean b = lockWrapper.lock.tryLock();
-        if (b) {
+        if (lockWrapper.lock.tryLock()) {
             lockWrapper.addThreadInQueue();
+            return true;
         }
-        return b;
+        return false;
     }
 
     public static boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
@@ -56,11 +56,11 @@ public class LockKeyUtil {
 
     public static boolean tryLock(String key, long timeout, TimeUnit unit) throws InterruptedException {
         LockWrapper lockWrapper = getLockWrapper(key);
-        boolean b = lockWrapper.lock.tryLock(timeout, unit);
-        if (b) {
+        if (lockWrapper.lock.tryLock(timeout, unit)) {
             lockWrapper.addThreadInQueue();
+            return true;
         }
-        return b;
+        return false;
     }
 
     public static void unlock() {

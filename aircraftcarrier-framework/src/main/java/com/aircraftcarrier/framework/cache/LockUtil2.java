@@ -49,6 +49,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class LockUtil2 {
+    // ms
+    private static final long EXPIRE = 30000;
 
     private LockUtil2() {
     }
@@ -63,8 +65,16 @@ public class LockUtil2 {
         return ResourceHolder.getEnv() + lockKey;
     }
 
-    public static RedisLocker tryLock(String lockKey, long expire, TimeUnit unit) {
-        return doTryLock(lockKey, expire, 0, unit);
+    public static RedisLocker tryLock(String lockKey) {
+        return doTryLock(lockKey, EXPIRE, 0, TimeUnit.MILLISECONDS);
+    }
+
+    public static RedisLocker tryLock(String lockKey, long expire) {
+        return doTryLock(lockKey, expire, 0, TimeUnit.MILLISECONDS);
+    }
+
+    public static RedisLocker tryLockTimeout(String lockKey, long timeout) {
+        return doTryLock(lockKey, EXPIRE, timeout, TimeUnit.MILLISECONDS);
     }
 
     public static RedisLocker tryLock(String lockKey, long expire, long timeout, TimeUnit unit) {
@@ -109,9 +119,10 @@ public class LockUtil2 {
             throw new LockNotAcquiredException("unit is null");
         }
 
-        log.info("doTryLock key [{}] ", lockKey);
+        log.info("lock [{}]", lockKey);
         LockInfo lockInfo = ResourceHolder.getMyLockTemplate().lock(getEnvKey(lockKey), unit.toMillis(expire), unit.toMillis(timeout), null);
         if (lockInfo != null) {
+            log.info("lock ok [{}]", lockKey);
             return new RedisLocker(lockKey, expire, timeout, unit, true, lockInfo.getLockValue(), lockInfo);
         }
         return buildNotLockedRedisLocker(lockKey, expire, timeout, unit);
@@ -144,11 +155,11 @@ public class LockUtil2 {
      * @param lockKey lockKey
      */
     private static void unLock(String lockKey, LockInfo lockInfo) {
+        log.info("unLock [{}] ", lockKey);
         try {
             if (lockInfo != null) {
-                log.info("unLock key [{}] ", lockKey);
                 boolean ok = doUnLock(lockInfo, 1);
-                log.info("unLock key [{}] {}.", lockKey, ok);
+                log.debug("unLock key [{}] {}.", lockKey, ok);
             }
         } catch (Exception e) {
             log.error("unLock error key [{}] ", lockKey, e);
