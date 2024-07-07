@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store.domain.redis.config;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.JedisPool;
@@ -14,7 +15,9 @@ import redis.clients.jedis.Protocol;
  * @since 1.0
  */
 @Configuration
-public class JedisConfig {
+public class JedisConfig implements DisposableBean {
+
+    private JedisPool jedisPool;
 
     @Bean
     public JedisPool getJedisPool() {
@@ -29,8 +32,15 @@ public class JedisConfig {
         // poolConfig.setJmxNameBase("myApp");
 
         // 创建 Jedis 连接池
-        return new JedisPool(poolConfig, "82.157.100.48", 6379, Protocol.DEFAULT_TIMEOUT, "123123");
+        jedisPool = new JedisPool(poolConfig, "82.157.100.48", 6379, Protocol.DEFAULT_TIMEOUT, "123123");
+        return jedisPool;
     }
 
 
+    @Override
+    public void destroy() throws Exception {
+        if (jedisPool != null) {
+            jedisPool.close();
+        }
+    }
 }

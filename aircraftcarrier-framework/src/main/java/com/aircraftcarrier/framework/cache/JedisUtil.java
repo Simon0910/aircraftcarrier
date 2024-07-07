@@ -1,9 +1,6 @@
 package com.aircraftcarrier.framework.cache;
 
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
@@ -11,14 +8,14 @@ import redis.clients.jedis.JedisPool;
 /**
  * @author lzp
  */
-@ConditionalOnClass({JedisCluster.class})
-@AutoConfigureAfter(JedisCluster.class)
-@Configuration
 public class JedisUtil {
 
     private static JedisCluster jedisCluster;
 
     private static JedisPool jedisPool;
+
+    private JedisUtil() {
+    }
 
     public static long expire(final String key, final long seconds) {
         return getJedisCluster().expire(key, seconds);
