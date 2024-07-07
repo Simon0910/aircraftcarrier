@@ -18,9 +18,9 @@ import java.util.Set;
 /**
  * @author lzp
  */
-@ConditionalOnClass({JedisCluster.class})
-@ConditionalOnMissingBean({JedisCluster.class})
-@Configuration
+// @ConditionalOnClass({JedisCluster.class})
+// @ConditionalOnMissingBean({JedisCluster.class})
+// @Configuration
 public class JedisClusterConfig {
 
     @Value("${redis.cluster.nodes}")

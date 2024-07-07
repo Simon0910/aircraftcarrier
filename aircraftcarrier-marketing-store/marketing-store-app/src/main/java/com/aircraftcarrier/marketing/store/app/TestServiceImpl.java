@@ -22,7 +22,7 @@ import com.aircraftcarrier.marketing.store.client.product.request.InventoryReque
 import com.aircraftcarrier.marketing.store.common.LoginUserInfo;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.aircraftcarrier.marketing.store.domain.event.AccountEvent;
-import com.aircraftcarrier.marketing.store.domain.redis.JedisUtil;
+import com.aircraftcarrier.framework.cache.JedisUtil;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.DemoMapper;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mybatisplus.DemoMybatisPlus;

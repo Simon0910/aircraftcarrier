@@ -30,13 +30,18 @@ spring:
         wall:
           config:
             multi-statement-allow: true
+  # 苞米豆依赖spring配置
   redis:
-    cluster:
-      nodes:
-        - 82.157.100.48:6381
-        - 82.157.100.48:6382
-        - 82.157.100.48:6383
+    # 云版本
+#    cluster:
+#      nodes:
+#        - 82.157.100.48:6381
+#        - 82.157.100.48:6382
+#        - 82.157.100.48:6383
     password: 123123
+    # 单机版
+    host: 82.157.100.48
+    port: 6379
 
 knife4j:
   production: false # 是否开启屏蔽文档资源

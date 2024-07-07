@@ -10,7 +10,6 @@ import com.baomidou.lock.LockTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import redis.clients.jedis.JedisCluster;
 
 import java.util.concurrent.TimeUnit;
 
@@ -57,7 +56,6 @@ public class LockUtil2 {
 
     public static void init() {
         ResourceHolder.getEnv();
-        ResourceHolder.getJedisCluster();
         ResourceHolder.getMyLockTemplate();
     }
 
@@ -91,7 +89,7 @@ public class LockUtil2 {
         if (redisLocker.getLockKey() == null || redisLocker.getLockValue() == null) {
             return false;
         }
-        String currentLockValue = ResourceHolder.getJedisCluster().get(getEnvKey(redisLocker.getLockKey()));
+        String currentLockValue = JedisUtil.get(getEnvKey(redisLocker.getLockKey()));
         if (redisLocker.getLockValue().equals(currentLockValue)) {
             redisLocker.incr();
             return true;
@@ -191,37 +189,29 @@ public class LockUtil2 {
 
     public static void forceDelLockKey(String lockKey) {
         ResourceHolder.getMyLockTemplate().delCacheLockKey(getEnvKey(lockKey));
-        ResourceHolder.getJedisCluster().del(getEnvKey(lockKey));
+        JedisUtil.del(getEnvKey(lockKey));
     }
 
     private static class ResourceHolder {
         private static MyLockTemplate myLockTemplate; // This will be lazily initialised
         private static String env;
-        private static JedisCluster jedisCluster;
 
         private static MyLockTemplate getMyLockTemplate() {
-            if (LockUtil2.ResourceHolder.myLockTemplate == null) {
-                LockUtil2.ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
+            if (ResourceHolder.myLockTemplate == null) {
+                ResourceHolder.myLockTemplate = (MyLockTemplate) ApplicationContextUtil.getBean(LockTemplate.class);
             }
-            return LockUtil2.ResourceHolder.myLockTemplate;
+            return ResourceHolder.myLockTemplate;
         }
 
         private static String getEnv() {
-            if (LockUtil2.ResourceHolder.env == null) {
+            if (ResourceHolder.env == null) {
                 String applicationName = ApplicationContextUtil.getApplicationContext().getApplicationName();
                 applicationName = StringUtil.isNotBlank(applicationName) ? applicationName : "default";
                 String profile = ApplicationContextUtil.getApplicationContext().getEnvironment().getActiveProfiles()[0];
                 profile = StringUtil.isNotBlank(profile) ? profile : "env";
-                LockUtil2.ResourceHolder.env = applicationName + StringPool.COLON + profile + StringPool.COLON;
+                ResourceHolder.env = applicationName + StringPool.COLON + profile + StringPool.COLON;
             }
-            return LockUtil2.ResourceHolder.env;
-        }
-
-        private static JedisCluster getJedisCluster() {
-            if (LockUtil2.ResourceHolder.jedisCluster == null) {
-                LockUtil2.ResourceHolder.jedisCluster = ApplicationContextUtil.getBean(JedisCluster.class);
-            }
-            return LockUtil2.ResourceHolder.jedisCluster;
+            return ResourceHolder.env;
         }
     }
 
