@@ -49,3 +49,17 @@ easy-es:
   address: 82.157.100.48:9200
 #  username: elastic #es用户名,若无则删去此行配置
 #  password: WG7WVmuNMtM4GwNYkyWH #es密码,若无则删去此行配置
+
+rocketmq:
+  topic: my_rocketmq_topic
+  name-server: 82.157.100.48:9876
+  producer:
+    group: my-group
+    send-message-timeout: 30000
+    compress-message-body-threshold: 4096
+    max-message-size: 4194304
+    retry-times-when-send-async-failed: 0
+    retry-next-server: true
+    retry-times-when-send-failed: 2
+
+

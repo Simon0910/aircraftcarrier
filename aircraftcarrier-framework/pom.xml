@@ -259,5 +259,11 @@
             <artifactId>emoji4j-core</artifactId>
             <version>15.0.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>${rocketmq.version}</version>
+        </dependency>
     </dependencies>
 </project>
