@@ -5,6 +5,7 @@ import com.aircraftcarrier.framework.message.Producer;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.marketing.store.domain.message.Topic;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +30,11 @@ public class RmqProducer implements Producer {
 
     @Override
     public String send(Message<?> message) throws Exception {
-        log.info("sync send: {}", JsonUtil.toJsonString(message));
+        log.info("sync send bizId: {}, {}", message.getBusinessId(), JsonUtil.toJsonString(message));
 
         String destination = topic.getMy_rocketmq_topic() + ":" + message.getTag();
 
-        rocketMQTemplate.syncSendOrderly(
+        SendResult sendResult = rocketMQTemplate.syncSendOrderly(
                 destination
                 , MessageBuilder.withPayload(message)
                         // keys：topic下的消息索引
@@ -42,7 +43,11 @@ public class RmqProducer implements Producer {
                 // 根据businessId有序
                 , message.getBusinessId()
         );
-        return "OK";
+
+        String msgId = sendResult.getMsgId();
+        message.setId(msgId);
+        log.info("sync send bizId: {}, msgId: {}", message.getBusinessId(), msgId);
+        return msgId;
     }
 
 

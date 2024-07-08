@@ -5,6 +5,7 @@ import com.aircraftcarrier.marketing.store.client.MessageService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2024/7/6
  * @since 1.0
  */
+@RequestMapping(value = "/web/message/")
 @RestController
 public class MessageController {
 
@@ -23,7 +25,6 @@ public class MessageController {
     @ApiOperation("send")
     @GetMapping("/send")
     public SingleResponse<String> send() throws Exception {
-        messageService.send();
-        return SingleResponse.ok("send ok");
+        return messageService.send();
     }
 }

@@ -25,7 +25,7 @@ import java.util.Map;
 @ApiSort(ApiSortConstant.ENUM_CONTROLLER)
 @Api(tags = "EnumController", produces = "application/json")
 @Slf4j
-@RequestMapping(value = "/enums/")
+@RequestMapping(value = "/web/enums/")
 @RestController
 public class EnumController {
 

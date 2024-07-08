@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store.app;
 
+import com.aircraftcarrier.framework.model.response.SingleResponse;
 import com.aircraftcarrier.marketing.store.app.message.producer.MessageProducer;
 import com.aircraftcarrier.marketing.store.client.MessageService;
 import com.aircraftcarrier.marketing.store.domain.message.event.CartItemEvent;
@@ -19,12 +20,9 @@ public class MessageServiceImpl implements MessageService {
     MessageProducer messageProducer;
 
     @Override
-    public void send() {
-        try {
-            messageProducer.sendCardItemAddEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
-            messageProducer.sendCardItemDelEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public SingleResponse<String> send() throws Exception {
+        String msgId = messageProducer.sendCardItemAddEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
+        String msgId2 = messageProducer.sendCardItemDelEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
+        return SingleResponse.ok(msgId);
     }
 }

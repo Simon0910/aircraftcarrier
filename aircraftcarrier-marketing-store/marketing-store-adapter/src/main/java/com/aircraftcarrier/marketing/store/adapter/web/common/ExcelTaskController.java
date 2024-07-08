@@ -15,7 +15,7 @@ import java.io.IOException;
  */
 @Slf4j
 @RestController
-@RequestMapping("/readTask")
+@RequestMapping("/web/readTask")
 public class ExcelTaskController {
 
     @Resource

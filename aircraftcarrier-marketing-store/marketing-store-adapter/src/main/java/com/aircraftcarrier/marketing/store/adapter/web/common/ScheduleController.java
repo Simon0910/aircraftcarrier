@@ -20,7 +20,7 @@ import java.time.Duration;
  */
 @Api(tags = "ScheduleController", produces = "application/json")
 @Slf4j
-@RequestMapping(value = "/schedule")
+@RequestMapping(value = "/web/schedule")
 @RestController
 public class ScheduleController {
 

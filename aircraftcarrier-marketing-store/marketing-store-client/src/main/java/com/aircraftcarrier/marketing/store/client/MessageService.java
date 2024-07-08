@@ -1,5 +1,7 @@
 package com.aircraftcarrier.marketing.store.client;
 
+import com.aircraftcarrier.framework.model.response.SingleResponse;
+
 /**
  * MessageService
  *
@@ -8,5 +10,5 @@ package com.aircraftcarrier.marketing.store.client;
  * @since 1.0
  */
 public interface MessageService {
-    void send();
+    SingleResponse<String> send() throws Exception;
 }

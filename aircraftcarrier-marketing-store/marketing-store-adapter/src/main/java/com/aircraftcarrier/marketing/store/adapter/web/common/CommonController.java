@@ -26,7 +26,7 @@ import java.util.Map;
 @ApiSort(ApiSortConstant.COMMON_CONTROLLER)
 @Api(tags = "CommonController", produces = "application/json")
 @Slf4j
-@RequestMapping(value = "/common/")
+@RequestMapping(value = "/web/common/")
 @RestController
 public class CommonController {
 
