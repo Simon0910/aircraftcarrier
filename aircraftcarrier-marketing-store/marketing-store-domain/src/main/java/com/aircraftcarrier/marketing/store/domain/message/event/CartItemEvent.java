@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.adapter.web.message.event;
+package com.aircraftcarrier.marketing.store.domain.message.event;
 
 import lombok.Getter;
 
@@ -13,8 +13,8 @@ public class CartItemEvent implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    // 业务主键
-    private String bizId;
+    // orderId
+    private String orderId;
 
     private String itemId;
     private int quantity;
@@ -23,7 +23,8 @@ public class CartItemEvent implements Serializable {
 
     }
 
-    public CartItemEvent(String itemId, int quantity) {
+    public CartItemEvent(String orderId, String itemId, int quantity) {
+        this.orderId = orderId;
         this.itemId = itemId;
         this.quantity = quantity;
     }

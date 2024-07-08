@@ -1,4 +1,4 @@
-package com.aircraftcarrier.marketing.store.adapter.web.message;
+package com.aircraftcarrier.marketing.store.domain.message;
 
 /**
  * Tag
@@ -9,4 +9,5 @@ package com.aircraftcarrier.marketing.store.adapter.web.message;
  */
 public class Tag {
     public static final String cart_item_add = "cart_item_add";
+    public static final String cart_item_del = "cart_item_del";
 }

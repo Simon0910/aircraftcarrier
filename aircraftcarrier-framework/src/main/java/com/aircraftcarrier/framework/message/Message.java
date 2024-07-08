@@ -23,21 +23,31 @@ public class Message<T extends Serializable> implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String destination;
-    private String topic;
+    /**
+     * 对应msg的handler处理类
+     */
     private String tag;
-    // 建议为业务主键
-    private String messageId = UUID.randomUUID().toString();
+    /**
+     * 用于查询topic下的消息， rocketmq根据此id索引
+     */
+    private String key = UUID.randomUUID().toString();
+    /**
+     * handler处理类接受的msg
+     */
     private T msg;
+    /**
+     * msg的业务id，例如：orderId
+     * 根据此id，消息有序
+     */
+    private String businessId;
 
     public Message() {
     }
 
-    public Message(String topic, String tag, T msg) {
-        this.topic = topic;
+    public Message(String tag, T msg, String businessId) {
         this.tag = tag;
-        this.destination = topic + ":" + tag;
         this.msg = msg;
+        this.businessId = businessId;
     }
 
 

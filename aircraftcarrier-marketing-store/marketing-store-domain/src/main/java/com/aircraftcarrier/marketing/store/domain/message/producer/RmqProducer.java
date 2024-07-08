@@ -1,14 +1,13 @@
-package com.aircraftcarrier.marketing.store.adapter.web.message.producer;
+package com.aircraftcarrier.marketing.store.domain.message.producer;
 
 import com.aircraftcarrier.framework.message.Message;
 import com.aircraftcarrier.framework.message.Producer;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
-import com.aircraftcarrier.marketing.store.adapter.web.message.Tag;
-import com.aircraftcarrier.marketing.store.adapter.web.message.event.CartItemEvent;
+import com.aircraftcarrier.marketing.store.domain.message.Topic;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +21,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class RmqProducer implements Producer {
-
-    @Value("${rocketmq.topic}")
-    private String my_rocketmq_topic;
+    @Autowired
+    private Topic topic;
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
@@ -32,11 +30,20 @@ public class RmqProducer implements Producer {
     @Override
     public String send(Message<?> message) throws Exception {
         log.info("sync send: {}", JsonUtil.toJsonString(message));
-        rocketMQTemplate.send(message.getDestination(), MessageBuilder.withPayload(message).build());
+
+        String destination = topic.getMy_rocketmq_topic() + ":" + message.getTag();
+
+        rocketMQTemplate.syncSendOrderly(
+                destination
+                , MessageBuilder.withPayload(message)
+                        // keys：topic下的消息索引
+                        .setHeader(RocketMQHeaders.KEYS, message.getKey())
+                        .build()
+                // 根据businessId有序
+                , message.getBusinessId()
+        );
         return "OK";
     }
 
-    public String sendCardItemAddEvent(CartItemEvent event) throws Exception {
-        return send(new Message<>(my_rocketmq_topic, Tag.cart_item_add, event));
-    }
+
 }
