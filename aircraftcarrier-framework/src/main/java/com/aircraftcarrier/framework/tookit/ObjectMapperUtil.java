@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * @author lzp
  */
-public class MapperUtil {
+public class ObjectMapperUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -36,7 +36,7 @@ public class MapperUtil {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private MapperUtil() {
+    private ObjectMapperUtil() {
     }
 
     public static ObjectMapper getInstance() {

@@ -22,7 +22,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public SingleResponse<String> send() throws Exception {
         String msgId = messageProducer.sendCardItemAddEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
-        String msgId2 = messageProducer.sendCardItemDelEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
+        // String msgId2 = messageProducer.sendCardItemDelEvent(new CartItemEvent("orderId_001", "itemId_1", 1));
         return SingleResponse.ok(msgId);
     }
 }

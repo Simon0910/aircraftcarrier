@@ -37,7 +37,7 @@ public class Message<T extends Serializable> implements Serializable {
      * 用于查询topic下的消息， rocketmq根据此id索引
      * 可以是数据库主键，方便后续追踪
      */
-    private String key = TraceIdUtil.getTraceIdOrUuid();
+    private String key;
 
     /**
      * handler处理类接受的msg
@@ -59,6 +59,7 @@ public class Message<T extends Serializable> implements Serializable {
         this.tag = tag;
         this.msg = msg;
         this.businessId = businessId;
+        this.key = TraceIdUtil.getTraceIdOrUuid();
     }
 
 

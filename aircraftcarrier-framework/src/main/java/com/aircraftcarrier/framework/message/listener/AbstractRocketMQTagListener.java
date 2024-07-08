@@ -3,12 +3,15 @@ package com.aircraftcarrier.framework.message.listener;
 import com.aircraftcarrier.framework.exception.NeedRetryException;
 import com.aircraftcarrier.framework.message.Message;
 import com.aircraftcarrier.framework.message.taghandler.AbstractRocketMQGroupTagHandler;
+import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
+import com.aircraftcarrier.framework.tookit.ObjectMapperUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 
 import javax.annotation.PostConstruct;
-import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,12 +23,12 @@ import java.util.Map;
  * @since 1.0
  */
 @Slf4j
-public abstract class AbstractRocketMQTagListener<T extends Serializable> implements RocketMQListener<Message<T>> {
-
+public abstract class AbstractRocketMQTagListener implements RocketMQListener<MessageExt> {
+    private final String charset = "UTF-8";
     private final String selectedHandlerGroup;
     private Map<String, AbstractRocketMQGroupTagHandler<?>> rmqMessageTagHandlerMap;
 
-    public AbstractRocketMQTagListener(String selectedHandlerGroup, Map<String, AbstractRocketMQGroupTagHandler<?>> rmqMessageTagHandlerMap) {
+    protected AbstractRocketMQTagListener(String selectedHandlerGroup, Map<String, AbstractRocketMQGroupTagHandler<?>> rmqMessageTagHandlerMap) {
         this.selectedHandlerGroup = selectedHandlerGroup;
         this.rmqMessageTagHandlerMap = rmqMessageTagHandlerMap;
     }
@@ -48,12 +51,20 @@ public abstract class AbstractRocketMQTagListener<T extends Serializable> implem
 
 
     @Override
-    public void onMessage(Message<T> message) {
+    public void onMessage(MessageExt messageExt) {
+        log.info("rocket message msgId: {}", messageExt.getMsgId());
+        Message<?> message = ObjectMapperUtil.json2Obj(
+                new String(messageExt.getBody(), Charset.forName(charset)),
+                Message.class);
+        message.setId(messageExt.getMsgId());
+
+
         log.info("rocket message: {}", JSON.toJSONString(message));
         // route
         AbstractRocketMQGroupTagHandler<?> abstractRmqMessageTagHandler = rmqMessageTagHandlerMap.get(message.getTag());
 
         try {
+            TraceIdUtil.setTraceId(message.getKey());
             if (abstractRmqMessageTagHandler != null) {
                 abstractRmqMessageTagHandler.handle(message);
             } else {
@@ -76,6 +87,8 @@ public abstract class AbstractRocketMQTagListener<T extends Serializable> implem
             } catch (Exception ex) {
                 log.error("onMessage ex: ", ex);
             }
+        } finally {
+            TraceIdUtil.removeAll();
         }
         log.info("rocket message end.");
     }
