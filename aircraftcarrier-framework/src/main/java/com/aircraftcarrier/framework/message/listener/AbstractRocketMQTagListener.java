@@ -5,13 +5,12 @@ import com.aircraftcarrier.framework.message.Message;
 import com.aircraftcarrier.framework.message.taghandler.AbstractRocketMQGroupTagHandler;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.ObjectMapperUtil;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 
 import javax.annotation.PostConstruct;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +23,6 @@ import java.util.Map;
  */
 @Slf4j
 public abstract class AbstractRocketMQTagListener implements RocketMQListener<MessageExt> {
-    private final String charset = "UTF-8";
     private final String selectedHandlerGroup;
     private Map<String, AbstractRocketMQGroupTagHandler<?>> rmqMessageTagHandlerMap;
 
@@ -52,24 +50,28 @@ public abstract class AbstractRocketMQTagListener implements RocketMQListener<Me
 
     @Override
     public void onMessage(MessageExt messageExt) {
-        log.info("rocket message msgId: {}", messageExt.getMsgId());
-        Message<?> message = ObjectMapperUtil.json2Obj(
-                new String(messageExt.getBody(), Charset.forName(charset)),
-                Message.class);
-        message.setId(messageExt.getMsgId());
+        TraceIdUtil.setTraceId(messageExt.getKeys());
+        String body = new String(messageExt.getBody(), StandardCharsets.UTF_8);
+        log.info("onMessage start msgId: {}, message: {}", messageExt.getMsgId(), body);
 
-
-        log.info("rocket message: {}", JSON.toJSONString(message));
         // route
-        AbstractRocketMQGroupTagHandler<?> abstractRmqMessageTagHandler = rmqMessageTagHandlerMap.get(message.getTag());
-
+        AbstractRocketMQGroupTagHandler<?> abstractRmqMessageTagHandler = null;
+        Message<?> message = null;
         try {
-            TraceIdUtil.setTraceId(message.getKey());
-            if (abstractRmqMessageTagHandler != null) {
-                abstractRmqMessageTagHandler.handle(message);
-            } else {
-                log.error("tag [{}] handler is not found", message.getTag());
+            abstractRmqMessageTagHandler = rmqMessageTagHandlerMap.get(messageExt.getTags());
+            if (abstractRmqMessageTagHandler == null) {
+                log.error("tag [{}] handler is not found", messageExt.getTags());
+                return;
             }
+            message = ObjectMapperUtil.json2Obj(body, Message.class);
+            if (message == null) {
+                log.error("message is null");
+                return;
+            }
+            message.setId(messageExt.getMsgId());
+
+            abstractRmqMessageTagHandler.handle(message);
+            log.info("onMessage end msgId:{}", messageExt.getMsgId());
         } catch (NeedRetryException e) {
             // 消费失败需要重试
             log.error("onMessage NeedRetryException: ", e);
@@ -83,6 +85,7 @@ public abstract class AbstractRocketMQTagListener implements RocketMQListener<Me
             // 记录数据库 或者 发送到异常队列 告警并统一处理，并且不重试
             log.error("onMessage error: ", e);
             try {
+                assert abstractRmqMessageTagHandler != null;
                 abstractRmqMessageTagHandler.exception(message, e);
             } catch (Exception ex) {
                 log.error("onMessage ex: ", ex);
@@ -90,7 +93,6 @@ public abstract class AbstractRocketMQTagListener implements RocketMQListener<Me
         } finally {
             TraceIdUtil.removeAll();
         }
-        log.info("rocket message end.");
     }
 
 

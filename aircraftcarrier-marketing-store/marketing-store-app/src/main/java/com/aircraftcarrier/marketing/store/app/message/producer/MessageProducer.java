@@ -21,10 +21,10 @@ public class MessageProducer {
     RmqProducer rmqProducer;
 
     public String sendCardItemAddEvent(CartItemEvent event) throws Exception {
-        return rmqProducer.send(new Message<>(Tag.cart_item_add, event, event.getOrderId()));
+        return rmqProducer.syncSendOrderly(new Message<>(Tag.cart_item_add, event, event.getOrderId()));
     }
 
     public String sendCardItemDelEvent(CartItemEvent event) throws Exception {
-        return rmqProducer.send(new Message<>(Tag.cart_item_del, event, event.getOrderId()));
+        return rmqProducer.syncSendOrderly(new Message<>(Tag.cart_item_del, event, event.getOrderId()));
     }
 }

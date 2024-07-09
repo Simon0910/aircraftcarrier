@@ -29,7 +29,7 @@ public class CardItemDelMessageHandler extends AbstractRocketMQGroupTagHandler<C
     @Override
     public void doHandle(CartItemEvent cartItemEvent) throws Exception {
         log.info("common group  cart_item_del " + JSON.toJSONString(cartItemEvent));
-        // Thread.sleep(1000);
+        Thread.sleep(3000);
         // throw new NeedRetryException("haha");
         log.info("common group  cart_item_del end");
     }

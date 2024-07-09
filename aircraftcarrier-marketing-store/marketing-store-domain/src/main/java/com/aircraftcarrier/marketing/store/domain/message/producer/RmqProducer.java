@@ -29,8 +29,8 @@ public class RmqProducer implements Producer {
     private RocketMQTemplate rocketMQTemplate;
 
     @Override
-    public String send(Message<?> message) throws Exception {
-        log.info("sync send bizId: {}, {}", message.getBusinessId(), JsonUtil.toJsonString(message));
+    public String syncSendOrderly(Message<?> message) throws Exception {
+        log.info("syncSendOrderly start businessId: {}, {}", message.getBusinessId(), JsonUtil.toJsonString(message));
 
         String destination = topic.getMy_rocketmq_topic() + ":" + message.getTag();
 
@@ -46,7 +46,7 @@ public class RmqProducer implements Producer {
 
         String msgId = sendResult.getMsgId();
         message.setId(msgId);
-        log.info("sync send bizId: {}, msgId: {}", message.getBusinessId(), msgId);
+        log.info("syncSendOrderly end businessId: {}, msgId: {}", message.getBusinessId(), msgId);
         return msgId;
     }
 

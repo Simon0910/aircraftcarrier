@@ -8,5 +8,5 @@ package com.aircraftcarrier.framework.message;
  * @since 1.0
  */
 public interface Producer {
-    String send(Message<?> message) throws Exception;
+    String syncSendOrderly(Message<?> message) throws Exception;
 }
