@@ -34,4 +34,11 @@ public class MessageServiceImpl implements MessageService {
         log.info("msgId4");
         return SingleResponse.ok(msgId);
     }
+
+    @Override
+    public SingleResponse<String> sendDelay() throws Exception {
+        String msgId5 = messageProducer.sendCardItemDelayDelEvent(new CartItemEvent("orderId_002", "itemId_4", 1));
+        log.info("msgId5");
+        return SingleResponse.ok(msgId5);
+    }
 }

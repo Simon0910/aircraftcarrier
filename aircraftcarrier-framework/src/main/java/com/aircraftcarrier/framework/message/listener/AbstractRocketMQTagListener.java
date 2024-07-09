@@ -68,7 +68,6 @@ public abstract class AbstractRocketMQTagListener implements RocketMQListener<Me
                 log.error("message is null");
                 return;
             }
-            message.setId(messageExt.getMsgId());
 
             abstractRmqMessageTagHandler.handle(message);
             log.info("onMessage end msgId:{}", messageExt.getMsgId());

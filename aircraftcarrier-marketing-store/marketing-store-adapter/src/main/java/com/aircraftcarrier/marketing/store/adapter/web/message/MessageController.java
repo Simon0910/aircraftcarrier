@@ -27,4 +27,10 @@ public class MessageController {
     public SingleResponse<String> send() throws Exception {
         return messageService.send();
     }
+
+    @ApiOperation("sendDelay")
+    @GetMapping("/sendDelay")
+    public SingleResponse<String> sendDelay() throws Exception {
+        return messageService.sendDelay();
+    }
 }

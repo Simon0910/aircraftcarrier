@@ -24,9 +24,9 @@ public class Message<T extends Serializable> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 由rocketMQ生成唯一ID
+     * 主题
      */
-    private String id;
+    private String topic;
 
     /**
      * 对应msg的handler处理类
@@ -44,21 +44,20 @@ public class Message<T extends Serializable> implements Serializable {
      */
     private T msg;
 
-    /**
-     * use this key to select queue. for example: orderId, productId ...
-     * 根据此id，消息有序
-     */
-    private String businessId;
-
 
     public Message() {
     }
 
-
-    public Message(String tag, T msg, String businessId) {
+    public Message(String tag, T msg) {
         this.tag = tag;
         this.msg = msg;
-        this.businessId = businessId;
+        this.key = TraceIdUtil.getTraceIdOrUuid();
+    }
+
+    public Message(String topic, String tag, T msg) {
+        this.topic = topic;
+        this.tag = tag;
+        this.msg = msg;
         this.key = TraceIdUtil.getTraceIdOrUuid();
     }
 

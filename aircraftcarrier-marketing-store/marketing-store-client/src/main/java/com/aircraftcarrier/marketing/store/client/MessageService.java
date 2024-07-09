@@ -11,4 +11,6 @@ import com.aircraftcarrier.framework.model.response.SingleResponse;
  */
 public interface MessageService {
     SingleResponse<String> send() throws Exception;
+
+    SingleResponse<String> sendDelay() throws Exception;
 }
