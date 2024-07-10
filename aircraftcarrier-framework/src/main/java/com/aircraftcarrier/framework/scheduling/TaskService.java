@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.scheduling;
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.TraceRunnable;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
+import com.aircraftcarrier.framework.tookit.lock.SynchronizedKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
@@ -90,7 +91,7 @@ public class TaskService {
      */
     public boolean register(AbstractTask task) {
         // synchronized 避免重复注册同一个任务
-        synchronized (task.getTaskName().intern()) {
+        return SynchronizedKey.synchronizeOn(task.getTaskName(), () -> {
             // 如果任务正在running
             AbstractTask manualAsyncTask = manualDynamicTaskMap.get(task.getTaskName());
             if (manualAsyncTask != null && manualAsyncTask.isRunning()) {
@@ -127,7 +128,7 @@ public class TaskService {
 
             log.info("register :: {}", schedule);
             return true;
-        }
+        });
     }
 
     /**
@@ -170,7 +171,7 @@ public class TaskService {
      */
     public boolean executeOnceManual(AbstractTask task) {
         // synchronized 避免重复注册同一个任务
-        synchronized (task.getTaskName().intern()) {
+        return SynchronizedKey.synchronizeOn(task.getTaskName(), () -> {
             // 如果任务正在running
             AbstractTask asyncTask = dynamicTaskMap.get(task.getTaskName());
             if (asyncTask != null && asyncTask.isRunning()) {
@@ -228,7 +229,7 @@ public class TaskService {
             });
             log.info("executeOnce :: {}", f);
             return true;
-        }
+        });
     }
 
     /**
@@ -256,7 +257,7 @@ public class TaskService {
      * removeManualScheduler
      */
     private void removeManualScheduler(Map<String, Future<?>> manualFutureMap, String taskName, Future<?> f, Consumer<Void> message) {
-        synchronized (taskName.intern()) {
+        SynchronizedKey.voidSynchronizeOn(taskName, () -> {
             if (f == manualFutureMap.get(taskName)) {
                 AbstractTask abstractTask = manualDynamicTaskMap.get(taskName);
                 if (abstractTask.isWaiting()) {
@@ -266,7 +267,7 @@ public class TaskService {
                 manualFutureMap.remove(taskName);
                 message.accept(null);
             }
-        }
+        });
     }
 
 }

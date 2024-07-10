@@ -4,7 +4,8 @@ import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.LockKeyUtil;
+import com.aircraftcarrier.framework.tookit.lock.LockKeyUtil;
+import com.aircraftcarrier.framework.tookit.lock.SynchronizedKey;
 import com.aircraftcarrier.marketing.store.domain.gateway.ProductGateway;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.ProductDo;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.mapper.ProductMapper;
@@ -296,7 +297,7 @@ public class ProductGatewayImpl implements ProductGateway {
             }
 
             // 防止无库存并发mysql的IO飙升
-            synchronized (id.toString().intern()) {
+            return SynchronizedKey.synchronizeOn(id.toString(), () -> {
                 if (appendInventory < 1) {
                     Integer stock = ZERO_STOCK_CACHE.getIfPresent(String.valueOf(productDo.getGoodsNo()));
                     if (stock != null) {
@@ -319,8 +320,8 @@ public class ProductGatewayImpl implements ProductGateway {
                     return buildErrorSingleResponse("库存不足...");
                 }
                 log.info("retry..." + id);
-                updateInventory(newProductDo, newProductDo.getInventory(), appendInventory);
-            }
+                return updateInventory(newProductDo, newProductDo.getInventory(), appendInventory);
+            });
         }
 
         updateProductCache(productDo);

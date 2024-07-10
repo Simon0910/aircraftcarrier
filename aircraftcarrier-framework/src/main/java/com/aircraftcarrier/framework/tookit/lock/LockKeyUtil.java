@@ -1,5 +1,6 @@
-package com.aircraftcarrier.framework.tookit;
+package com.aircraftcarrier.framework.tookit.lock;
 
+import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,11 +17,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LockKeyUtil {
 
     private static final String DEFAULT_KEY = "block";
+    private static final Map<String, LockWrapper> LOCKS = MapUtil.newConcurrentHashMap(1024);
 
     private LockKeyUtil() {
     }
-
-    private static final Map<String, LockWrapper> LOCKS = MapUtil.newConcurrentHashMap(1024);
 
     @NotNull
     private static LockWrapper getLockWrapper(String key) {

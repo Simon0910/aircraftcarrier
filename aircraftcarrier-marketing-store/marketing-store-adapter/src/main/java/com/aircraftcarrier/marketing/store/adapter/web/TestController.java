@@ -2,6 +2,7 @@ package com.aircraftcarrier.marketing.store.adapter.web;
 
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
+import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
 import com.aircraftcarrier.framework.concurrent.TraceRunnable;
 import com.aircraftcarrier.framework.concurrent.TraceThreadPoolExecutor;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
@@ -11,6 +12,7 @@ import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.ValueUtil;
+import com.aircraftcarrier.framework.tookit.lock.SynchronizedKey;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import com.aircraftcarrier.marketing.store.adapter.test.ConfigurationTestProperties;
 import com.aircraftcarrier.marketing.store.adapter.test.TestProperties;
@@ -42,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -59,17 +62,15 @@ public class TestController {
 
     private final TraceThreadPoolExecutor threadPoolExecutor = new TraceThreadPoolExecutor(3, 3, 3000, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     private final Map<String, AbstractTask> taskTask = new ConcurrentHashMap<>();
+    @Resource
+    TestProperties testProperties;
+    @Resource
+    ConfigurationTestProperties configurationTestProperties;
     private ThreadLocal<String> threadLocal = new ThreadLocal<>();
     @Value("classpath:demo.json")
     private org.springframework.core.io.Resource demoResource;
     @Resource
     private TestService testService;
-
-    @Resource
-    TestProperties testProperties;
-
-    @Resource
-    ConfigurationTestProperties configurationTestProperties;
 
     @ApiOperationSupport(order = -1)
     @ApiOperation("hello")
@@ -321,4 +322,47 @@ public class TestController {
         }
         return SingleResponse.ok("isolation");
     }
+
+    @ApiOperationSupport(order = 54)
+    @ApiOperation(value = "synchronizedKey")
+    @GetMapping("/synchronizedKey")
+    public SingleResponse<String> synchronizedKey(String param) {
+        List<Callable<SingleResponse<String>>> list = new ArrayList<>();
+        for (int i = 0; i < 1000; i++) {
+            list.add(() -> doWork(param, 10));
+        }
+
+        List<SingleResponse<String>> singleResponses = ThreadPoolUtil.invokeAll(list);
+        for (SingleResponse<String> r : singleResponses) {
+            log.info("r ==> {}", JSON.toJSONString(r));
+        }
+
+        return SingleResponse.ok("123");
+    }
+
+    private SingleResponse<String> doWork(String id, int num) {
+        if (num < 1) {
+            return SingleResponse.ok("hh");
+        }
+        num--;
+
+        int finalNum = num;
+        return SynchronizedKey.synchronizeOn(id, () -> {
+            System.out.println("11");
+            SynchronizedKey.voidSynchronizeOn(id, () -> {
+                System.out.println("22");
+                SynchronizedKey.synchronizeOn(id, () -> {
+                    System.out.println("33");
+                    System.out.println("44");
+                    SynchronizedKey.voidSynchronizeOn(id, () -> {
+                        System.out.println("55");
+                    });
+                    return null;
+                });
+            });
+            System.out.println("66");
+            return SingleResponse.ok("end");
+        });
+    }
+
 }
