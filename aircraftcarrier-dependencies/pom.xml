@@ -37,6 +37,8 @@
         <elasticsearch.version>7.14.0</elasticsearch.version>
         <slf4j.version>2.0.7</slf4j.version>
         <rocketmq.version>2.3.0</rocketmq.version>
+        <spock-core.version>2.0-groovy-3.0</spock-core.version>
+        <groovy-all.version>4.0.16</groovy-all.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -266,6 +268,13 @@
                 <version>${elasticsearch.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.spockframework</groupId>
+                <artifactId>spock-bom</artifactId>
+                <version>${spock-core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
