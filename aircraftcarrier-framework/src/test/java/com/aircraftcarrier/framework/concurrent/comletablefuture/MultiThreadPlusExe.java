@@ -83,8 +83,8 @@ public class MultiThreadPlusExe {
             e.printStackTrace();
         }
 
-        if (order.getI().contains("2")) {
-            throw new BizException("〒_〒");
+        if (order.getI().contains("1")) {
+//            throw new BizException("〒_〒");
         }
 
         return order;

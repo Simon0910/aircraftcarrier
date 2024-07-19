@@ -3,11 +3,9 @@ package com.aircraftcarrier.framework.concurrent.comletablefuture;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * https://www.youtube.com/watch?v=9ueIL0SwEWI
@@ -65,7 +63,59 @@ public class CompletableFuture_Test {
     }
 
     @Test
-    public void test01() {
+    public void test0101() throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<Void> setLocShopName = runAsync(() -> setFinalPrice(), "setLocShopName");
+        setLocShopName.thenAccept((o) -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            log.info("all done 1 {}", Thread.currentThread().getName()); });
+        CompletableFuture<Void> setLocShopName2 = runAsync(() -> setFinalPrice(), "setLocShopName");
+        setLocShopName2.thenAccept((o) -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            log.info("all done 2 {}", Thread.currentThread().getName()); });
+        CompletableFuture<Void> setLocShopName3 = runAsync(() -> setFinalPrice(), "setLocShopName");
+        setLocShopName3.thenAccept((o) -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            log.info("all done 3 {}", Thread.currentThread().getName()); });
+        CompletableFuture
+                .allOf(setLocShopName, setLocShopName2, setLocShopName3)
+//                .get(4000, TimeUnit.MILLISECONDS);
+                .get();
+        log.info("main end");
+    }
+
+    private void setFinalPrice() {
+        log.info("set price .... start... {}", Thread.currentThread().getName());
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("set price .... end {}", Thread.currentThread().getName());
+    }
+
+    public CompletableFuture<Void> runAsync(Runnable runnable, String method) {
+        return CompletableFuture.runAsync(runnable).exceptionally(e -> {
+            log.error("执行异步方法异常, method -> " + method, e);
+            return null;
+        });
+    }
+
+
+    @Test
+    public void test01() throws ExecutionException, InterruptedException {
+        List<CompletableFuture<Order>> list = new ArrayList<>();
         // example1
         for (int i = 0; i < 3; i++) {
             int finalI = i;
@@ -73,7 +123,7 @@ public class CompletableFuture_Test {
                     .thenApplyAsync(order -> multiThreadPlusExe.enrichOrder(order), cpuBound)
                     .thenApplyAsync(o -> multiThreadPlusExe.performPayment(o), ioBound)
                     .exceptionally(e -> {
-                        System.out.println("failedOrder: " + e.getMessage());
+                        log.error("failedOrder: " + e.getMessage());
                         // return new Order();
                         // return null;
                         throw new RuntimeException("###########");
@@ -82,22 +132,41 @@ public class CompletableFuture_Test {
 
             // wait for pool until run finish!
             // log.info("wait for pool until run finish!");
-            // MultiThreadPlusExe.sleep(8000);
+            // 等待以上都完成
+//             MultiThreadPlusExe.sleep(8000);
 
             // main thread run
             log.info("main thread run!");
 
+            // 如果以上都完成，那么一下thenApply thenAccept thenRun 会使用main线程执行, 否则继续使用ForkJoinPool.commonPool-worker
             cf.thenApply(order -> multiThreadPlusExe.sendEmail(order))
-                    .thenAccept(order -> log.info("当前订单{}总耗时：{}", order.getI(), System.currentTimeMillis() - order.getStart()))
+                    .thenAccept(order -> log.info("当前订单{}总耗时：{} {}", order.getI(), System.currentTimeMillis() - order.getStart(), Thread.currentThread().getName()))
                     // log
-                    .thenRun(() -> log.info("all done"))
-                    .thenRun(() -> log.info("not really"))
-                    .thenRun(() -> log.info("keep on going"));
+                    .thenRun(() -> log.info("all done {}", Thread.currentThread().getName()))
+                    .thenRun(() -> log.info("not really {}", Thread.currentThread().getName()))
+                    .thenRun(() -> log.info("keep on going {}", Thread.currentThread().getName()));
+
+            list.add(cf);
         }
 
+        // test wait 1
         // wait for pool until run finish!
         log.info("main running wait for pool until run finish!");
-        MultiThreadPlusExe.sleep(10000);
+//        MultiThreadPlusExe.sleep(10000);
+        // test wait 2 等待到thenApply（sendEmail）, 不等待thenAccept,thenRun
+        // todo why 不等待 thenAccept,thenRun ???
+//        for (CompletableFuture<Order> c : list) {
+//            Order order = c.get(); // c.join()
+//            log.info("order: {}", JSON.toJSONString(order));
+//        }
+        CompletableFuture
+                .allOf(list.toArray(new CompletableFuture[0]))
+//                .get();
+                .join();
+        // test wait 3 等待 thenAccept,thenRun完成
+        // wait for thenAccept，thenRun until run finish!
+        log.info("main running wait for thenAccept，thenRun  until run finish!");
+//        MultiThreadPlusExe.sleep(3000);
 
         log.info("main stop ！");
     }
