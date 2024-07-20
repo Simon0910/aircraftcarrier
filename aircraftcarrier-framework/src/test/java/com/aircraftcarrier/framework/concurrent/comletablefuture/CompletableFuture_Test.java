@@ -5,7 +5,13 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * https://www.youtube.com/watch?v=9ueIL0SwEWI
@@ -64,41 +70,50 @@ public class CompletableFuture_Test {
 
     @Test
     public void test0101() throws ExecutionException, InterruptedException, TimeoutException {
-        CompletableFuture<Void> setLocShopName = runAsync(() -> setFinalPrice(), "setLocShopName");
-        setLocShopName.thenAccept((o) -> {
+        CompletableFuture<Void> setLocShopName = runAsync(() -> setFinalPrice(), "setLocShopName").thenAccept((o) -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            log.info("all done 1 {}", Thread.currentThread().getName()); });
-        CompletableFuture<Void> setLocShopName2 = runAsync(() -> setFinalPrice(), "setLocShopName");
-        setLocShopName2.thenAccept((o) -> {
+            log.info("all done 1 {}", Thread.currentThread().getName());
+        });
+        CompletableFuture<Void> setLocShopName2 = runAsync(() -> setFinalPrice(), "setLocShopName").thenAccept((o) -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            log.info("all done 2 {}", Thread.currentThread().getName()); });
-        CompletableFuture<Void> setLocShopName3 = runAsync(() -> setFinalPrice(), "setLocShopName");
-        setLocShopName3.thenAccept((o) -> {
+            log.info("all done 2 {}", Thread.currentThread().getName());
+        });
+        CompletableFuture<Void> setLocShopName3 = runAsync(() -> setFinalPrice(), "setLocShopName").thenAccept((o) -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            log.info("all done 3 {}", Thread.currentThread().getName()); });
-        CompletableFuture
-                .allOf(setLocShopName, setLocShopName2, setLocShopName3)
-//                .get(4000, TimeUnit.MILLISECONDS);
-                .get();
+            log.info("all done 3 {}", Thread.currentThread().getName());
+        });
+
+        // 不会等待 thenAccept
+//         CompletableFuture
+//                 .allOf(setLocShopName, setLocShopName2, setLocShopName3)
+// //                .get(4000, TimeUnit.MILLISECONDS);
+//                 .get();
+
+        CompletableFuture<Void> allOf = CompletableFuture
+                .allOf(setLocShopName, setLocShopName2, setLocShopName3);
+        allOf.thenRun(() -> {
+            System.out.println("all finish");
+        });
+        allOf.get();
         log.info("main end");
     }
 
     private void setFinalPrice() {
         log.info("set price .... start... {}", Thread.currentThread().getName());
         try {
-            Thread.sleep(3000);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -116,6 +131,7 @@ public class CompletableFuture_Test {
     @Test
     public void test01() throws ExecutionException, InterruptedException {
         List<CompletableFuture<Order>> list = new ArrayList<>();
+        List<CompletableFuture<Void>> list2 = new ArrayList<>();
         // example1
         for (int i = 0; i < 3; i++) {
             int finalI = i;
@@ -139,7 +155,7 @@ public class CompletableFuture_Test {
             log.info("main thread run!");
 
             // 如果以上都完成，那么一下thenApply thenAccept thenRun 会使用main线程执行, 否则继续使用ForkJoinPool.commonPool-worker
-            cf.thenApply(order -> multiThreadPlusExe.sendEmail(order))
+            CompletableFuture<Void> cf2 = cf.thenApply(order -> multiThreadPlusExe.sendEmail(order))
                     .thenAccept(order -> log.info("当前订单{}总耗时：{} {}", order.getI(), System.currentTimeMillis() - order.getStart(), Thread.currentThread().getName()))
                     // log
                     .thenRun(() -> log.info("all done {}", Thread.currentThread().getName()))
@@ -147,6 +163,7 @@ public class CompletableFuture_Test {
                     .thenRun(() -> log.info("keep on going {}", Thread.currentThread().getName()));
 
             list.add(cf);
+            list2.add(cf2);
         }
 
         // test wait 1
@@ -160,7 +177,7 @@ public class CompletableFuture_Test {
 //            log.info("order: {}", JSON.toJSONString(order));
 //        }
         CompletableFuture
-                .allOf(list.toArray(new CompletableFuture[0]))
+                .allOf(list2.toArray(new CompletableFuture[0]))
 //                .get();
                 .join();
         // test wait 3 等待 thenAccept,thenRun完成
