@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.cache.suport;
 
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
-import com.aircraftcarrier.framework.tookit.lock.LockKeyUtil;
+import com.aircraftcarrier.framework.concurrent.locks.LockKeyUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
 import com.baomidou.lock.executor.LockExecutor;

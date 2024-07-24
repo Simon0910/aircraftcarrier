@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.scheduling;
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.TraceRunnable;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
-import com.aircraftcarrier.framework.tookit.lock.SynchronizedKey;
+import com.aircraftcarrier.framework.concurrent.locks.SynchronizedKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;

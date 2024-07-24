@@ -12,7 +12,7 @@ import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import com.aircraftcarrier.framework.tookit.JsonUtil;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
 import com.aircraftcarrier.framework.tookit.ValueUtil;
-import com.aircraftcarrier.framework.tookit.lock.SynchronizedKey;
+import com.aircraftcarrier.framework.concurrent.locks.SynchronizedKey;
 import com.aircraftcarrier.marketing.store.adapter.scheduler.PrintTimeTask;
 import com.aircraftcarrier.marketing.store.adapter.test.ConfigurationTestProperties;
 import com.aircraftcarrier.marketing.store.adapter.test.TestProperties;

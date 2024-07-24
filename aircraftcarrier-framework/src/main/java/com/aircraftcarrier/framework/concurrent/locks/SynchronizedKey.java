@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.tookit.lock;
+package com.aircraftcarrier.framework.concurrent.locks;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;

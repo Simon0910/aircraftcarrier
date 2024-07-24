@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.tookit;
 
-import com.aircraftcarrier.framework.tookit.lock.LockKeyUtil;
+import com.aircraftcarrier.framework.concurrent.locks.LockKeyUtil;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -95,18 +95,17 @@ public class CompletableFuture_Test {
             log.info("all done 3 {}", Thread.currentThread().getName());
         });
 
-        // 不会等待 thenAccept
-//         CompletableFuture
-//                 .allOf(setLocShopName, setLocShopName2, setLocShopName3)
-// //                .get(4000, TimeUnit.MILLISECONDS);
-//                 .get();
+        CompletableFuture
+                .allOf(setLocShopName, setLocShopName2, setLocShopName3)
+//                .get(4000, TimeUnit.MILLISECONDS);
+                .get();
 
-        CompletableFuture<Void> allOf = CompletableFuture
-                .allOf(setLocShopName, setLocShopName2, setLocShopName3);
-        allOf.thenRun(() -> {
-            System.out.println("all finish");
-        });
-        allOf.get();
+        // CompletableFuture<Void> allOf = CompletableFuture
+        //         .allOf(setLocShopName, setLocShopName2, setLocShopName3);
+        // allOf.thenRun(() -> {
+        //     System.out.println("all finish");
+        // });
+        // allOf.get();
         log.info("main end");
     }
 

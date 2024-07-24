@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.tookit.lock;
+package com.aircraftcarrier.framework.concurrent.locks;
 
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.extern.slf4j.Slf4j;
