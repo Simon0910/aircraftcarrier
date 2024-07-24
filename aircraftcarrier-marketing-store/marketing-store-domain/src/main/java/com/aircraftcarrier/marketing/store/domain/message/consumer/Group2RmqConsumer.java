@@ -1,6 +1,6 @@
 package com.aircraftcarrier.marketing.store.domain.message.consumer;
 
-import com.aircraftcarrier.framework.message.listener.AbstractRocketMQTagListener;
+import com.aircraftcarrier.framework.message.listener.AbstractRocketMQGroupTagListener;
 import com.aircraftcarrier.framework.message.taghandler.AbstractRocketMQGroupTagHandler;
 import com.aircraftcarrier.marketing.store.domain.message.ConsumerGroup;
 import com.aircraftcarrier.marketing.store.domain.message.Tag;
@@ -25,7 +25,7 @@ import java.util.Map;
         , maxReconsumeTimes = 16 // 最大重试次数
         , selectorExpression = Tag.cart_item_add + "||" + Tag.cart_item_del
 )
-public class Group2RmqConsumer extends AbstractRocketMQTagListener {
+public class Group2RmqConsumer extends AbstractRocketMQGroupTagListener {
 
     public Group2RmqConsumer(Map<String, AbstractRocketMQGroupTagHandler<?>> rmqMessageTagHandlerMap) {
         super(ConsumerGroup.my_group_2, rmqMessageTagHandlerMap);
