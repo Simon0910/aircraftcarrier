@@ -99,7 +99,7 @@ public class MyLockTemplate extends LockTemplate {
                     if (oldlockRecord != null && oldlockRecord.getCurrentThread() != Thread.currentThread()) {
                         log.debug("tryLock not locked [{}] from cache.", key);
                     } else {
-                        if (LockKeyUtil.tryLock(key)) {
+                        if (LockKeyUtil.tryLock(key, 30, TimeUnit.MILLISECONDS)) {
                             try {
                                 log.info("tryLock [{}]...", key);
                                 lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
@@ -133,7 +133,7 @@ public class MyLockTemplate extends LockTemplate {
                 } else if (cycleCount < retryNum) {
                     // (retryNum - maxFastRetryNum - 1) 次 retryInterval间隔
                     SleepUtil.sleepMilliseconds(retryInterval);
-                } else if (acquireTimeout - (System.currentTimeMillis() - start) <= 3000) {
+                } else if (acquireTimeout - (System.currentTimeMillis() - start) <= 1000) {
                     // 如果超时前剩余时间小于一个间隔，则超时前最后获取一次
                     SleepUtil.sleepMilliseconds(fastRetryInterval);
                     lastTime = true;
