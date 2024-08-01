@@ -1,8 +1,8 @@
 package com.aircraftcarrier.framework.cache.suport;
 
+import com.aircraftcarrier.framework.concurrent.locks.LockKeyUtil;
 import com.aircraftcarrier.framework.exception.LockNotAcquiredException;
 import com.aircraftcarrier.framework.tookit.SleepUtil;
-import com.aircraftcarrier.framework.concurrent.locks.LockKeyUtil;
 import com.baomidou.lock.LockInfo;
 import com.baomidou.lock.LockTemplate;
 import com.baomidou.lock.executor.LockExecutor;
@@ -83,15 +83,19 @@ public class MyLockTemplate extends LockTemplate {
 
         int retryNum = 3;
         int maxFastRetryNum = 1;
-        boolean lastTime = false;
+        retryInterval = Math.min(retryInterval, acquireTimeout);
+        long fastRetryInterval = Math.min(30, retryInterval);
         try {
+            LockRecord oldlockRecord;
+            Object lockInstance = null;
+            boolean lastTime = false;
+            int cycleCount = 0;
             do {
                 // 1次尝试取锁，maxFastRetryNum 次快速取锁，(retryNum - maxFastRetryNum - 1)次间隔重试取锁 | 后面每3秒获取一次 | 超时前获取一次
-                acquireCount++;
-                if (acquireCount < retryNum || acquireCount % 3 == 0 || lastTime) {
-                    Object lockInstance = null;
+                cycleCount++;
+                if (cycleCount < retryNum || cycleCount % 3 == 0 || lastTime) {
                     // 防止某个线程执行时间长没有释放锁，很多抢锁的线程在超长超时前不必请求redis
-                    LockRecord oldlockRecord = lock_record_cache.getIfPresent(key);
+                    oldlockRecord = lock_record_cache.getIfPresent(key);
                     if (oldlockRecord != null && oldlockRecord.getCurrentThread() != Thread.currentThread()) {
                         log.debug("tryLock not locked [{}] from cache.", key);
                     } else {
@@ -99,6 +103,7 @@ public class MyLockTemplate extends LockTemplate {
                             try {
                                 log.info("tryLock [{}]...", key);
                                 lockInstance = lockExecutor.acquire(key, value, expire, acquireTimeout);
+                                acquireCount++;
                             } finally {
                                 LockKeyUtil.unlock(key);
                             }
@@ -106,7 +111,6 @@ public class MyLockTemplate extends LockTemplate {
                             log.debug("tryLock not locked [{}] from JVM.", key);
                         }
                     }
-
                     if (null != lockInstance) {
                         log.debug("tryLock locked key [{}]: Thread: {}", key, Thread.currentThread().getName());
                         LockRecord lockRecord = new LockRecord();
@@ -115,22 +119,24 @@ public class MyLockTemplate extends LockTemplate {
                         lockRecord.setExpire(expire);
                         lock_record_cache.put(key, lockRecord);
                         return new LockInfo(key, value, expire, acquireTimeout, acquireCount, lockInstance, lockExecutor);
-                    } else if (lastTime) {
-                        log.debug("tryLock timeout [{}]", key);
+                    }
+                    if (acquireTimeout <= 0 || lastTime) {
+                        log.debug("tryLock acquireTimeout [{}] timeout [{}]", acquireTimeout, key);
                         return null;
                     }
                 }
 
-                if (acquireCount <= maxFastRetryNum) {
+                if (cycleCount <= maxFastRetryNum) {
                     // 假设百分之90的场景的并发key, 过几十毫秒就可以成功获取！
                     // maxFastRetryNum次 30ms间隔
-                    SleepUtil.sleepMilliseconds(30);
-                } else if ((acquireTimeout - (System.currentTimeMillis() - start)) <= retryInterval) {
-                    // 如果超时前剩余一个间隔时间，则超时前最后获取一次
-                    lastTime = true;
-                } else if (acquireCount < retryNum) {
+                    SleepUtil.sleepMilliseconds(fastRetryInterval);
+                } else if (cycleCount < retryNum) {
                     // (retryNum - maxFastRetryNum - 1) 次 retryInterval间隔
                     SleepUtil.sleepMilliseconds(retryInterval);
+                } else if (acquireTimeout - (System.currentTimeMillis() - start) <= 3000) {
+                    // 如果超时前剩余时间小于一个间隔，则超时前最后获取一次
+                    SleepUtil.sleepMilliseconds(fastRetryInterval);
+                    lastTime = true;
                 } else {
                     // retryNum次之后，间隔一秒，每3次间隔获取一次
                     SleepUtil.sleepMilliseconds(1000);
