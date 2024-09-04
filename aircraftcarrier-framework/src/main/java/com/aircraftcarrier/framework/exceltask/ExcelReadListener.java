@@ -217,7 +217,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
             successStr = successStr.substring(0, successStr.indexOf(TaskConfig.END));
             for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr)) {
-                if (CompareUtil.comparePosition(max, next) < 0) {
+                if (ExcelUtil.comparePosition(max, next) < 0) {
                     max = maxSuccessSnapshotPosition = next;
                 }
             }
@@ -342,13 +342,13 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         int size = threadBatchList.size();
         T first = threadBatchList.getFirst();
         T last = threadBatchList.getLast();
-        log.info("doExecuteBatch - threadBatchList [{}~{}]", getRowPosition(first), getRowPosition(last));
+        log.info("doExecuteBatch - threadBatchList [{}~{}]", ExcelUtil.getRowPosition(first), ExcelUtil.getRowPosition(last));
         try {
             taskWorker.doWork(threadBatchList);
             // 记录最大行号
             recordSuccessRowPosition(last, size);
         } catch (Exception e) {
-            log.error("doWork error - threadBatchList [{}~{}]", getRowPosition(first), getRowPosition(last));
+            log.error("doWork error - threadBatchList [{}~{}]", ExcelUtil.getRowPosition(first), ExcelUtil.getRowPosition(last));
             if (size == 1) {
                 recordErrorRowPosition(first);
                 log.error("doWork error - singeData: {}", JSON.toJSONString(first), e);
@@ -373,21 +373,21 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     private void recordErrorRowPosition(T row) {
         synchronized (errorLock) {
             // 不存在增加
-            errorMap.computeIfAbsent(getRowPosition(row), k -> {
+            errorMap.computeIfAbsent(ExcelUtil.getRowPosition(row), k -> {
                 failNum++;
-                autoCheckTimer.putAbnormal(getRowPosition(row));
+                autoCheckTimer.putAbnormal(ExcelUtil.getRowPosition(row));
                 return CharSequenceUtil.EMPTY;
             });
         }
     }
 
     private void recordSuccessRowPosition(T row, int successSize) {
-        successMap.put(ThreadUtil.getThreadNo(), getRowPosition(row));
+        successMap.put(ThreadUtil.getThreadNo(), ExcelUtil.getRowPosition(row));
         successNum.add(successSize);
     }
 
     private boolean skipRowPosition(T row) {
-        String position = getRowPosition(row);
+        String position = ExcelUtil.getRowPosition(row);
         // 跳过错误记录
         if (!errorMapSnapshot.isEmpty() && errorMapSnapshot.get(position) != null) {
             errorMapSnapshot.remove(position);
@@ -401,7 +401,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         // fromSheetRowNo 高优先级
         if (fromSheetRowNo != null) {
             // 开始行
-            if (CompareUtil.comparePosition(position, fromSheetRowNo) < 0) {
+            if (ExcelUtil.comparePosition(position, fromSheetRowNo) < 0) {
                 return true;
             }
             if (endSheetRowNo == null) {
@@ -411,7 +411,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
                 return false;
             }
             // 没有到结束行
-            if (CompareUtil.comparePosition(position, endSheetRowNo) <= 0) {
+            if (ExcelUtil.comparePosition(position, endSheetRowNo) <= 0) {
                 return false;
             }
             // 到达结束行, 停止读取
@@ -433,7 +433,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             return false;
         }
 
-        if (CompareUtil.comparePosition(position, maxSuccessSnapshotPosition) <= 0) {
+        if (ExcelUtil.comparePosition(position, maxSuccessSnapshotPosition) <= 0) {
             // 没有到达成功记录，跳过
             return true;
         }
@@ -443,10 +443,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         continueToTheEnd = true;
         return false;
     }
-
-    private String getRowPosition(T t) {
-        return t.getSheetNo() + StrPool.UNDERLINE + t.getRowNo();
-    }
+    
 
     private Integer getRowNo(ReadSheetHolder readSheetHolder) {
         return readSheetHolder.getRowIndex() + 1;
