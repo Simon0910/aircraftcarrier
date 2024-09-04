@@ -16,7 +16,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -541,7 +540,7 @@ public class ThreadPoolUtil {
 
             if (r instanceof Future) {
                 // 丢弃Future
-                log.info("DiscardPolicyNew ...");
+                log.warn("DiscardPolicyNew ...");
                 ((Future<?>) r).cancel(true);
             }
         }
@@ -553,16 +552,16 @@ public class ThreadPoolUtil {
     private static class BlockPolicy implements RejectedExecutionHandler {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            if (executor.isShutdown()) {
+            if (executor.isShutdown() || Thread.currentThread().isInterrupted()) {
                 return;
             }
 
             try {
                 // 核心改造点，将blockingqueue的offer改成put阻塞提交
                 executor.getQueue().put(r);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignore) {
+                log.warn("Block Task " + r + " rejected from Interrupted");
                 Thread.currentThread().interrupt();
-                throw new RejectedExecutionException("Block Task " + r + " rejected from " + e);
             }
         }
     }

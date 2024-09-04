@@ -37,7 +37,7 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelRow> {
         return new TaskConfig.TaskConfigBuilder()
                 .excelFileClassPath(excelFileClassPath)
                 // 注意：单线程顺序执行，多线程无序执行
-                // .threadNum(threadNum)
+                .threadNum(threadNum)
                 .poolName(poolName)
                 .refreshSnapshotPeriod(refreshSnapshotPeriod)
                 .snapshotPathPath(snapshotPath)

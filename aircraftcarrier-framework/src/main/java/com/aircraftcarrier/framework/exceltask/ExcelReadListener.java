@@ -130,6 +130,72 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         }
     }
 
+    private void startRefreshSnapshot() throws IOException {
+        errorBufferedWriter = new BufferedWriter(new FileWriter(config.getErrorMapSnapshotFilePath(), true));
+        // 单个sheet 行数最大1048576（7个占位符） 列数最大16384
+        // 7位 + 一个逗号 = 8位空
+        int placeholderNum = 8;
+        try (RandomAccessFile successRandomAccessFile = new RandomAccessFile(config.getSuccessMapSnapshotFilePath(), "rw")) {
+            FileChannel fileChannel = successRandomAccessFile.getChannel();
+            byteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, (long) config.getThreadNum() * placeholderNum + TaskConfig.END.length());
+        }
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                // 刷新错误记录
+                doRefreshErrorMapSnapshot();
+                // 刷新最新快照
+                doRefreshSuccessMapSnapshot();
+            } catch (Exception e) {
+                log.error("init - refreshMapSnapshot error: {}", e.getMessage(), e);
+            }
+        }, 0, config.getRefreshSnapshotPeriod(), TimeUnit.MILLISECONDS);
+    }
+
+    private void doRefreshSuccessMapSnapshot() {
+        if (successMap.isEmpty()) {
+            log.debug("doRefresh successMap is Empty");
+            return;
+        }
+        try {
+            byteBuffer.position(0);
+            StringBuilder builder = new StringBuilder();
+            for (String sheetRow : successMap.values()) {
+                builder.append(sheetRow).append(StrPool.COMMA);
+            }
+            builder.append(TaskConfig.END);
+            byteBuffer.put(builder.toString().getBytes());
+        } catch (Exception e) {
+            throw new ExcelTaskException("doRefreshSuccessMapSnapshot error", e);
+        } finally {
+            log.info("doRefresh successNum {}", successNum);
+        }
+    }
+
+    private void doRefreshErrorMapSnapshot() {
+        if (errorMap.isEmpty()) {
+            return;
+        }
+        synchronized (errorLock) {
+            if (errorMap.isEmpty()) {
+                return;
+            }
+            try {
+                StringBuilder builder = new StringBuilder();
+                for (String sheetRow : errorMap.keySet()) {
+                    builder.append(sheetRow).append(StrPool.COMMA);
+                }
+                builder.append(StrPool.CRLF);
+                errorBufferedWriter.write(builder.toString());
+                errorBufferedWriter.flush();
+            } catch (IOException e) {
+                throw new ExcelTaskException("doRefreshErrorMapSnapshot error", e);
+            } finally {
+                log.info("doRefresh errorMap size {}", errorMap.size());
+                errorMap.clear();
+            }
+        }
+    }
+
     private void loadSnapshot() {
         try {
             // check
@@ -151,7 +217,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
             successStr = successStr.substring(0, successStr.indexOf(TaskConfig.END));
             for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr)) {
-                if (comparePosition(max, next) < 0) {
+                if (CompareUtil.comparePosition(max, next) < 0) {
                     max = maxSuccessSnapshotPosition = next;
                 }
             }
@@ -167,16 +233,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         }
     }
 
-    private int comparePosition(String s1, String s2) {
-        String[] split1 = s1.split(StrPool.UNDERLINE);
-        String[] split2 = s2.split(StrPool.UNDERLINE);
-        int result = Integer.parseInt(split1[0]) - Integer.parseInt(split2[0]);
-        if (result == 0) {
-            result = Integer.parseInt(split1[1]) - Integer.parseInt(split2[1]);
-        }
-        return result;
-    }
-
     private String readFromFilePath(String filePath) throws IOException {
         // read
         StringBuilder builder = new StringBuilder();
@@ -189,26 +245,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         return builder.toString();
     }
 
-    private void startRefreshSnapshot() throws IOException {
-        errorBufferedWriter = new BufferedWriter(new FileWriter(config.getErrorMapSnapshotFilePath(), true));
-        // 单个sheet 行数最大1048576（7个占位符） 列数最大16384
-        // 7位 + 一个逗号 = 8位空
-        int placeholderNum = 8;
-        try (RandomAccessFile successRandomAccessFile = new RandomAccessFile(config.getSuccessMapSnapshotFilePath(), "rw")) {
-            FileChannel fileChannel = successRandomAccessFile.getChannel();
-            byteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, (long) config.getThreadNum() * placeholderNum + TaskConfig.END.length());
-        }
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                // 刷新错误记录
-                doRefreshErrorMapSnapshot();
-                // 刷新最新快照
-                doRefreshSuccessMapSnapshot();
-            } catch (Exception e) {
-                log.error("init - refreshMapSnapshot error: {}", e.getMessage(), e);
-            }
-        }, 0, config.getRefreshSnapshotPeriod(), TimeUnit.MILLISECONDS);
-    }
 
     /**
      * newFixedThreadPoolWithSyncBockedHandler
@@ -232,9 +268,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
                 ThreadPoolUtil.newBlockPolicy());
     }
 
-    private Integer getRowNo(ReadSheetHolder readSheetHolder) {
-        return readSheetHolder.getRowIndex() + 1;
-    }
 
     @Override
     public void onException(Exception e, AnalysisContext context) throws Exception {
@@ -256,8 +289,9 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     }
 
     private boolean isStopInvoke(Exception e) {
-        return e.getClass() == RejectedExecutionException.class || e.getClass() == ExcelAnalysisStopException.class;
+        return Thread.currentThread().isInterrupted() || e.getClass() == RejectedExecutionException.class || e.getClass() == ExcelAnalysisStopException.class;
     }
+
 
     @Override
     public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
@@ -267,11 +301,11 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
 
     @Override
     public void invoke(T uploadData, AnalysisContext context) {
-        totalReadNum++;
         if (Thread.currentThread().isInterrupted()) {
             // 停止invoke
             throw new ExcelAnalysisStopException();
         }
+        totalReadNum++;
 
         // sheetNo rowNo
         ReadSheetHolder readSheetHolder = context.readSheetHolder();
@@ -296,97 +330,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
 
             // execute
             executeBatch(threadBatchList);
-        }
-    }
-
-    private boolean skipRowPosition(T row) {
-        String position = getRowPosition(row);
-        // 跳过错误记录
-        if (!errorMapSnapshot.isEmpty() && errorMapSnapshot.get(position) != null) {
-            errorMapSnapshot.remove(position);
-            return true;
-        }
-
-        if (continueToTheEnd) {
-            return false;
-        }
-
-        // fromSheetRowNo 高优先级
-        if (fromSheetRowNo != null) {
-            // 开始行
-            if (comparePosition(position, fromSheetRowNo) < 0) {
-                return true;
-            }
-            if (endSheetRowNo == null) {
-                // 到达开始行
-                log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
-                continueToTheEnd = true;
-                return false;
-            }
-            // 没有到结束行
-            if (comparePosition(position, endSheetRowNo) <= 0) {
-                return false;
-            }
-            // 到达结束行, 停止读取
-            if (!batchContainer.isEmpty()) {
-                executeBatch(batchContainer);
-            }
-            try {
-                ThreadUtil.sleepSeconds(1);
-            } catch (InterruptedException ignore) {
-                Thread.currentThread().interrupt();
-            }
-            throw new ExcelAnalysisStopException();
-        }
-
-        // maxSuccessSnapshotPosition 低优先级
-        if (maxSuccessSnapshotPosition == null) {
-            // 没有成功记录，从头开始直到结束
-            continueToTheEnd = true;
-            return false;
-        }
-
-        if (comparePosition(position, maxSuccessSnapshotPosition) <= 0) {
-            // 没有到达成功记录，跳过
-            return true;
-        }
-
-        // 到达成功记录，新行
-        log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
-        continueToTheEnd = true;
-        return false;
-    }
-
-    private void recordSuccessRowPosition(T row, int successSize) {
-        successMap.put(ThreadUtil.getThreadNo(), getRowPosition(row));
-        successNum.add(successSize);
-    }
-
-    private void recordErrorRowPosition(T row) {
-        synchronized (errorLock) {
-            // 不存在增加
-            errorMap.computeIfAbsent(getRowPosition(row), k -> {
-                failNum++;
-                autoCheckTimer.putAbnormal(getRowPosition(row));
-                return CharSequenceUtil.EMPTY;
-            });
-        }
-    }
-
-    private String getRowPosition(T t) {
-        return t.getSheetNo() + StrPool.UNDERLINE + t.getRowNo();
-    }
-
-    @Override
-    public void doAfterAllAnalysed(AnalysisContext context) {
-        log.info("start - doAfterAllAnalysed sheetNo: {}", context.readSheetHolder().getSheetNo());
-        Integer sheetNo = context.readSheetHolder().getSheetNo();
-        List<ReadSheet> readSheets = context.readWorkbookHolder().getParameterSheetDataList();
-
-        // 最后一个sheet
-        if (sheetNo == readSheets.size() - 1 && (!batchContainer.isEmpty())) {
-            // execute
-            executeBatch(batchContainer);
         }
     }
 
@@ -427,13 +370,110 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         }
     }
 
+    private void recordErrorRowPosition(T row) {
+        synchronized (errorLock) {
+            // 不存在增加
+            errorMap.computeIfAbsent(getRowPosition(row), k -> {
+                failNum++;
+                autoCheckTimer.putAbnormal(getRowPosition(row));
+                return CharSequenceUtil.EMPTY;
+            });
+        }
+    }
+
+    private void recordSuccessRowPosition(T row, int successSize) {
+        successMap.put(ThreadUtil.getThreadNo(), getRowPosition(row));
+        successNum.add(successSize);
+    }
+
+    private boolean skipRowPosition(T row) {
+        String position = getRowPosition(row);
+        // 跳过错误记录
+        if (!errorMapSnapshot.isEmpty() && errorMapSnapshot.get(position) != null) {
+            errorMapSnapshot.remove(position);
+            return true;
+        }
+
+        if (continueToTheEnd) {
+            return false;
+        }
+
+        // fromSheetRowNo 高优先级
+        if (fromSheetRowNo != null) {
+            // 开始行
+            if (CompareUtil.comparePosition(position, fromSheetRowNo) < 0) {
+                return true;
+            }
+            if (endSheetRowNo == null) {
+                // 到达开始行
+                log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
+                continueToTheEnd = true;
+                return false;
+            }
+            // 没有到结束行
+            if (CompareUtil.comparePosition(position, endSheetRowNo) <= 0) {
+                return false;
+            }
+            // 到达结束行, 停止读取
+            if (!batchContainer.isEmpty()) {
+                executeBatch(batchContainer);
+            }
+            try {
+                ThreadUtil.sleepSeconds(1);
+            } catch (InterruptedException ignore) {
+                Thread.currentThread().interrupt();
+            }
+            throw new ExcelAnalysisStopException();
+        }
+
+        // maxSuccessSnapshotPosition 低优先级
+        if (maxSuccessSnapshotPosition == null) {
+            // 没有成功记录，从头开始直到结束
+            continueToTheEnd = true;
+            return false;
+        }
+
+        if (CompareUtil.comparePosition(position, maxSuccessSnapshotPosition) <= 0) {
+            // 没有到达成功记录，跳过
+            return true;
+        }
+
+        // 到达成功记录，新行
+        log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
+        continueToTheEnd = true;
+        return false;
+    }
+
+    private String getRowPosition(T t) {
+        return t.getSheetNo() + StrPool.UNDERLINE + t.getRowNo();
+    }
+
+    private Integer getRowNo(ReadSheetHolder readSheetHolder) {
+        return readSheetHolder.getRowIndex() + 1;
+    }
+
+
+    @Override
+    public void doAfterAllAnalysed(AnalysisContext context) {
+        log.info("start - doAfterAllAnalysed sheetNo: {}", context.readSheetHolder().getSheetNo());
+        Integer sheetNo = context.readSheetHolder().getSheetNo();
+        List<ReadSheet> readSheets = context.readWorkbookHolder().getParameterSheetDataList();
+
+        // 最后一个sheet
+        if (sheetNo == readSheets.size() - 1 && (!batchContainer.isEmpty())) {
+            // execute
+            executeBatch(batchContainer);
+        }
+    }
+
+
     void shutdown() {
         log.info("finish shutdown...");
         try {
             // 停止线程池
             shutdownAwait(threadPoolExecutor);
             // 停止刷新快照任务
-            scheduler.shutdownNow();
+            scheduler.shutdown();
             // 停止前刷新错误记录
             doRefreshErrorMapSnapshot();
             // 停止前刷新最新快照
@@ -457,50 +497,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         }
     }
 
-    private void doRefreshErrorMapSnapshot() {
-        if (errorMap.isEmpty()) {
-            return;
-        }
-        synchronized (errorLock) {
-            if (errorMap.isEmpty()) {
-                return;
-            }
-            try {
-                StringBuilder builder = new StringBuilder();
-                for (String sheetRow : errorMap.keySet()) {
-                    builder.append(sheetRow).append(StrPool.COMMA);
-                }
-                builder.append(StrPool.CRLF);
-                errorBufferedWriter.write(builder.toString());
-                errorBufferedWriter.flush();
-            } catch (IOException e) {
-                throw new ExcelTaskException("doRefreshErrorMapSnapshot error", e);
-            } finally {
-                log.info("doRefresh errorMap size {}", errorMap.size());
-                errorMap.clear();
-            }
-        }
-    }
-
-    private void doRefreshSuccessMapSnapshot() {
-        if (successMap.isEmpty()) {
-            log.debug("doRefresh successMap is Empty");
-            return;
-        }
-        try {
-            byteBuffer.position(0);
-            StringBuilder builder = new StringBuilder();
-            for (String sheetRow : successMap.values()) {
-                builder.append(sheetRow).append(StrPool.COMMA);
-            }
-            builder.append(TaskConfig.END);
-            byteBuffer.put(builder.toString().getBytes());
-        } catch (Exception e) {
-            throw new ExcelTaskException("doRefreshSuccessMapSnapshot error", e);
-        } finally {
-            log.info("doRefresh successNum {}", successNum);
-        }
-    }
 
     /**
      * 关闭线程池 并 等待执行完成
@@ -511,25 +507,18 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         if (executor == null) {
             return;
         }
+        // 停止接受新的任务
+        executor.shutdown();
+        if (Thread.currentThread().isInterrupted()) {
+            // 防止awaitTermination被中断
+            Thread.interrupted();
+        }
         try {
-            // 停止接受新的任务
-            executor.shutdown();
             // 等待所有任务执行完成
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (InterruptedException ignore) {
-            // 清除中断标识，使线程池任务执行完毕
-            Thread.interrupted();
-            try {
-                // 停止接受新的任务
-                executor.shutdown();
-                // 等待所有任务执行完成
-                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                executor.shutdownNow();
-                log.error("shutdownAwait msg: {}", ex.getMessage(), ex);
-            } finally {
-                Thread.currentThread().interrupt();
-            }
+        } catch (InterruptedException e) {
+            log.error("shutdownAwait Interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -79,6 +79,8 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
             excelReader.read(readSheets);
             excelReader.finish();
         } catch (Exception e) {
+            // ExcelAnalysisStopException 会被忽略，所以不会被捕获
+            // com.alibaba.excel.analysis.ExcelAnalyserImpl#analysis
             if (e.getClass() != ExcelAnalysisStopException.class) {
                 throw e;
             }
