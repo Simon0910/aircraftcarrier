@@ -44,7 +44,8 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelRow> {
                 .batchSize(batchSize)
                 .fromSheetRowNo(fromSheetRowNo)
                 .endSheetRowNo(endSheetRowNo)
-                .enableAbnormalAutoCheck(true)
+                .enableRefresh(false)
+                .enableAbnormalAutoCheck(false)
                 .abnormalSampleSize(200)
                 .consecutiveAbnormalNum(100)
                 .build(this);

@@ -1,8 +1,9 @@
-package com.aircraftcarrier.framework.exceltask;
+package com.aircraftcarrier.framework.exceltask.abnoraml;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
 import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
+import com.aircraftcarrier.framework.exceltask.Task;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,23 +30,29 @@ public class AutoCheckAbnormalScheduler {
      * Task
      */
     private final Task<?> task;
+
     /**
      * 检测是否连续报错，则停止任务
      */
-    private final Map<String, String> abnormalMap;
+    private Map<String, String> abnormalMap;
+
     /**
-     * pool
+     * 统计错误记录
      */
-    private final ThreadPoolExecutor threadPoolExecutor = newCachedThreadPoolWithDiscardOldestPolicy();
+    private ThreadPoolExecutor statisticsAbnormalExecutor;
+
     /**
      * timer
      */
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
+    private ScheduledExecutorService checkAbnormalScheduler;
 
     public AutoCheckAbnormalScheduler(Task<?> task) {
         this.task = task;
-        this.abnormalMap = Maps.newHashMapWithExpectedSize(task.config().getAbnormalSampleSize());
+        if (task.config().isEnableAbnormalAutoCheck()) {
+            this.abnormalMap = Maps.newHashMapWithExpectedSize(task.config().getAbnormalSampleSize());
+            this.statisticsAbnormalExecutor = newCachedThreadPoolWithDiscardOldestPolicy();
+            this.checkAbnormalScheduler = Executors.newSingleThreadScheduledExecutor();
+        }
     }
 
     /**
@@ -66,20 +73,28 @@ public class AutoCheckAbnormalScheduler {
                 new ThreadPoolExecutor.DiscardOldestPolicy());
     }
 
-    public void putAbnormal(String sheetNoRowNo) {
-        threadPoolExecutor.execute(() -> {
-            if (task.config().isEnableAbnormalAutoCheck()) {
-                synchronized (this) {
-                    abnormalMap.put(sheetNoRowNo, CharSequenceUtil.EMPTY);
-                }
+    public void startAutoCheckTimer() {
+        // 是否启用 config
+        if (!task.config().isEnableAbnormalAutoCheck()) {
+            return;
+        }
+
+        checkAbnormalScheduler.scheduleAtFixedRate(() -> {
+            try {
+                log.debug("scheduler auto check...");
+                doCheckForAbnormal();
+            } catch (Exception e) {
+                log.error("AutoCheckTimer scheduler error: {}", e.getMessage(), e);
+                e.printStackTrace();
             }
-        });
+        }, 0, task.config().getAutoCheckForAbnormalPeriod(), TimeUnit.MILLISECONDS);
     }
+
 
     /**
      * 检测任务是否异常
      */
-    private void autoCheckForAbnormal() {
+    private void doCheckForAbnormal() {
         // 异常采样数
         int size = abnormalMap.size();
         if (size < task.config().getAbnormalSampleSize()) {
@@ -133,22 +148,24 @@ public class AutoCheckAbnormalScheduler {
         return false;
     }
 
-    public void start() {
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                log.debug("scheduler auto check...");
-                autoCheckForAbnormal();
-            } catch (Exception e) {
-                log.error("AutoCheckTimer scheduler error: {}", e.getMessage(), e);
-                e.printStackTrace();
-            }
-        }, 0, task.config().getAutoCheckForAbnormalPeriod(), TimeUnit.MILLISECONDS);
+    public void shutdown() {
+        if (!task.config().isEnableAbnormalAutoCheck()) {
+            return;
+        }
+        log.info("AutoCheckTimer scheduler finish shutdown...");
+        checkAbnormalScheduler.shutdown();
+        statisticsAbnormalExecutor.shutdown();
+        abnormalMap.clear();
     }
 
-    public void stop() {
-        log.info("AutoCheckTimer scheduler finish shutdown...");
-        scheduler.shutdown();
-        threadPoolExecutor.shutdownNow();
-        abnormalMap.clear();
+    public void putAbnormal(String sheetNoRowNo) {
+        if (!task.config().isEnableAbnormalAutoCheck()) {
+            return;
+        }
+        statisticsAbnormalExecutor.execute(() -> {
+            synchronized (this) {
+                abnormalMap.put(sheetNoRowNo, CharSequenceUtil.EMPTY);
+            }
+        });
     }
 }

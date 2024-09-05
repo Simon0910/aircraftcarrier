@@ -66,7 +66,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
         }
     }
 
-    private <T extends AbstractExcelRow> void doRead(AbstractTaskWorker<T> taskWorker, Class<T> modelClass) throws IOException {
+    private <T extends AbstractExcelRow> void doRead(AbstractTaskWorker<T> taskWorker, Class<T> modelClass) throws Exception {
         long start = System.currentTimeMillis();
 
         InputStream in = getExcelFileInputStream(taskWorker.config());

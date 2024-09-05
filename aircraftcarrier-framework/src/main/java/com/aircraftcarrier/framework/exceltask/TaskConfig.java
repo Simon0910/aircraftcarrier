@@ -35,6 +35,7 @@ public class TaskConfig {
     @Getter
     private String errorMapSnapshotFilePath;
 
+    private boolean enableRefresh;
 
     private boolean enableAbnormalAutoCheck;
     private int consecutiveAbnormalNum;
@@ -119,6 +120,8 @@ public class TaskConfig {
         private String fromSheetRowNo;
         private String endSheetRowNo;
 
+        private boolean enableRefresh;
+
         private boolean enableAbnormalAutoCheck;
         private int consecutiveAbnormalNum = 100;
         private int abnormalSampleSize = 200;
@@ -164,6 +167,11 @@ public class TaskConfig {
             return this;
         }
 
+        public TaskConfigBuilder enableRefresh(boolean enableRefresh) {
+            this.enableRefresh = enableRefresh;
+            return this;
+        }
+
         public TaskConfigBuilder enableAbnormalAutoCheck(boolean enableAbnormalAutoCheck) {
             this.enableAbnormalAutoCheck = enableAbnormalAutoCheck;
             return this;
@@ -196,6 +204,7 @@ public class TaskConfig {
             config.setBatchSize(batchSize);
             config.setFromSheetRowNo(fromSheetRowNo);
             config.setEndSheetRowNo(endSheetRowNo);
+            config.setEnableRefresh(enableRefresh);
             config.setEnableAbnormalAutoCheck(enableAbnormalAutoCheck);
             config.setConsecutiveAbnormalNum(consecutiveAbnormalNum);
             config.setAbnormalSampleSize(abnormalSampleSize);
