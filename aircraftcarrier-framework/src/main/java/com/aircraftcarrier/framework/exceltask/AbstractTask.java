@@ -8,7 +8,7 @@ package com.aircraftcarrier.framework.exceltask;
  * @since 1.0
  */
 public abstract class AbstractTask<T extends AbstractExcelRow> implements Task<T> {
-    private volatile TaskConfig config;
+    private TaskConfig config;
     private boolean started = false;
     private boolean stopped = false;
 

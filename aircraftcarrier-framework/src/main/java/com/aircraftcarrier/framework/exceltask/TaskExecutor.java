@@ -39,40 +39,40 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
     }
 
 
-    public <T extends AbstractExcelRow> String start(AbstractTaskWorker<T> taskWorker, Class<T> modelClass) {
-        if (taskWorker.isStarted()) {
+    public <T extends AbstractExcelRow> String start(Task<T> task, Class<T> modelClass) {
+        if (task.isStarted()) {
             return "task is started !";
         }
         synchronized (this) {
-            if (taskWorker.isStarted()) {
+            if (task.isStarted()) {
                 return "task is started !";
             }
 
-            taskWorker.setTaskThread(new Thread(() -> {
+            task.setTaskThread(new Thread(() -> {
                 try {
-                    doRead(taskWorker, modelClass);
+                    doRead(task, modelClass);
                 } catch (Exception e) {
                     log.error("doRead error: ", e);
                 } finally {
-                    taskWorker.setStarted(false);
+                    task.setStarted(false);
                 }
             }));
 
-            taskWorker.setStopped(false);
-            taskWorker.setStarted(true);
+            task.setStopped(false);
+            task.setStarted(true);
             // 保证先 started = true 然后 started = false
-            taskWorker.doStart();
+            task.doStart();
             return "start...";
         }
     }
 
-    private <T extends AbstractExcelRow> void doRead(AbstractTaskWorker<T> taskWorker, Class<T> modelClass) throws Exception {
+    private <T extends AbstractExcelRow> void doRead(Task<T> task, Class<T> modelClass) throws Exception {
         long start = System.currentTimeMillis();
 
-        InputStream in = getExcelFileInputStream(taskWorker.config());
+        InputStream in = getExcelFileInputStream(task.config());
         ExcelReadListener<T> listener = null;
         try {
-            listener = new ExcelReadListener<>(taskWorker);
+            listener = new ExcelReadListener<>(task, task.config());
             listeners.add(listener);
             ExcelReader excelReader = EasyExcelFactory.read(in, modelClass, listener).autoCloseStream(true).build();
             List<ReadSheet> readSheets = excelReader.excelExecutor().sheetList();

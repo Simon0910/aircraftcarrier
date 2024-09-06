@@ -12,7 +12,7 @@ import java.lang.reflect.ParameterizedType;
  * @date 2023/8/13
  * @since 1.0
  */
-public abstract class AbstractTaskWorker<T extends AbstractExcelRow> extends AbstractTask<T> implements Worker<T> {
+public abstract class AbstractTaskWorker<T extends AbstractExcelRow> extends AbstractTask<T> {
 
     private TaskExecutor executor;
 
@@ -51,12 +51,17 @@ public abstract class AbstractTaskWorker<T extends AbstractExcelRow> extends Abs
         return executor;
     }
 
-    protected void setRowNoByProgressProcessed(Integer rowNoByProgressProcessed) {
+    protected void settingRowNoByProgressProcessed(Integer rowNoByProgressProcessed) {
         this.rowNoByProgressProcessed = rowNoByProgressProcessed;
     }
 
     @Override
-    public Integer getRowNoByProgressProcessed() {
-        return rowNoByProgressProcessed;
+    public Integer obtainRowNoByProgressProcessed() {
+        return this.rowNoByProgressProcessed;
+    }
+
+    @Override
+    public Task<T> getTask() {
+        return this;
     }
 }

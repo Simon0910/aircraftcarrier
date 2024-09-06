@@ -40,7 +40,10 @@ interface Worker<T extends AbstractExcelRow> {
 
     /**
      * 获取已经处理的行号
+     *
      * @return rowNo
      */
-    Integer getRowNoByProgressProcessed();
+    Integer obtainRowNoByProgressProcessed();
+
+    Task<T> getTask();
 }

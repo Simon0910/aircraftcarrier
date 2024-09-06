@@ -6,7 +6,7 @@ package com.aircraftcarrier.framework.exceltask;
  *
  * @author zhipengliu
  */
-public interface Task<T extends AbstractExcelRow> {
+public interface Task<T extends AbstractExcelRow> extends Worker<T> {
 
     TaskConfig config();
 

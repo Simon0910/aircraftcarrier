@@ -36,7 +36,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
 
     private final TaskConfig config;
     private final ThreadPoolExecutor threadPoolExecutor;
-    private final AbstractTaskWorker<T> taskWorker;
+    private final Worker<T> worker;
 
     /**
      * 批次处理，可重复使用容器
@@ -69,21 +69,23 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     private boolean continueToTheEnd;
 
 
-    ExcelReadListener(AbstractTaskWorker<T> taskWorker) throws Exception {
-        this.config = taskWorker.config();
+    ExcelReadListener(Worker<T> worker, TaskConfig config) throws Exception {
+        this.config = config;
         this.batchContainer = new LinkedList<>();
         this.threadPoolExecutor = newFixedThreadPoolWithSyncBockedPolicy(config.getThreadNum(), config.getPoolName());
-        this.taskWorker = taskWorker;
-        this.autoCheckAbnormalScheduler = new AutoCheckAbnormalScheduler(taskWorker);
+        this.worker = worker;
+
         if (this.config.isEnableRefresh()) {
-            this.refreshStrategy = new LocalFileRefreshStrategy(taskWorker.config());
+            this.refreshStrategy = new LocalFileRefreshStrategy(config);
         } else {
-            this.refreshStrategy = new NonRefreshStrategy(taskWorker.config());
+            this.refreshStrategy = new NonRefreshStrategy(config);
         }
         this.refreshStrategy.preHandle();
+        this.refreshStrategy.startRefreshSnapshot();
         this.maxSuccessSnapshotPosition = refreshStrategy.loadSuccessMapSnapshot();
         this.errorMapSnapshot = refreshStrategy.loadErrorMapSnapshot();
-        this.refreshStrategy.startRefreshSnapshot();
+
+        this.autoCheckAbnormalScheduler = new AutoCheckAbnormalScheduler(worker.getTask());
         this.autoCheckAbnormalScheduler.startAutoCheckTimer();
     }
 
@@ -160,7 +162,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             return;
         }
 
-        if (!taskWorker.check(uploadData)) {
+        if (!worker.check(uploadData)) {
             return;
         }
 
@@ -186,7 +188,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         T last = threadBatchList.getLast();
         log.info("doExecuteBatch - threadBatchList [{}~{}]", ExcelUtil.getRowPosition(first), ExcelUtil.getRowPosition(last));
         try {
-            taskWorker.doWork(threadBatchList);
+            worker.doWork(threadBatchList);
             // 记录最大行号
             refreshStrategy.recordSuccessRowPosition(last, size);
         } catch (Exception e) {
@@ -201,7 +203,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
                 try {
                     LinkedList<T> singeList = new LinkedList<>();
                     singeList.add(singeData);
-                    taskWorker.doWork(singeList);
+                    worker.doWork(singeList);
                     refreshStrategy.recordSuccessRowPosition(singeData, 1);
                 } catch (Exception ex) {
                     refreshStrategy.recordErrorRowPosition(singeData);
