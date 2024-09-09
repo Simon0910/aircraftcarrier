@@ -2,6 +2,7 @@ package com.aircraftcarrier.framework.exceltask.refresh;
 
 import com.aircraftcarrier.framework.exceltask.TaskConfig;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -32,5 +33,15 @@ public class NonRefreshStrategy extends AbstractRefreshStrategy {
     @Override
     public void preHandle() throws Exception {
 
+    }
+
+    @Override
+    public String loadSuccessMapSnapshot() throws Exception {
+        return "0_0";
+    }
+
+    @Override
+    public Map<String, String> loadErrorMapSnapshot() throws Exception {
+        return Collections.emptyMap();
     }
 }

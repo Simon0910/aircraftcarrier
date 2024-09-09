@@ -19,12 +19,10 @@ public interface RefreshStrategy {
     /**
      * 返回上一次处理成功的最大的位置
      *
-     * @return maxSuccessSnapshotPosition
+     * @return maxSuccessSnapshotPosition:
      * @throws Exception 执行任务之前抛出异常
      */
-    default String loadSuccessMapSnapshot() throws Exception {
-        return "0_0";
-    }
+    String loadSuccessMapSnapshot() throws Exception;
 
     /**
      * 返回上一次处理失败的所有记录
@@ -32,9 +30,7 @@ public interface RefreshStrategy {
      * @return Map<String, String>: key:position, value:null
      * @throws Exception 执行任务之前抛出异常
      */
-    default Map<String, String> loadErrorMapSnapshot() throws Exception {
-        return Collections.emptyMap();
-    }
+    Map<String, String> loadErrorMapSnapshot() throws Exception;
 
     /**
      * 定时持久化结果快照

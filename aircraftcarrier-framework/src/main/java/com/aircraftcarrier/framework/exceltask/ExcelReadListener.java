@@ -50,6 +50,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
 
     /**
      * 上一次成功的最大行号
+     * sheetNo_rowNo
      */
     private final String maxSuccessSnapshotPosition;
 
