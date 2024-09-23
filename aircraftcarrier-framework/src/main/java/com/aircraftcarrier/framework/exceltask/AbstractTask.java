@@ -14,10 +14,12 @@ public abstract class AbstractTask<T extends AbstractExcelRow> implements Task<T
 
     private Thread taskThread;
 
-    protected abstract TaskConfig taskConfig();
+    protected TaskConfig taskConfig() {
+        return null;
+    }
 
     @Override
-    public TaskConfig config() {
+    public final TaskConfig config() {
         // https://rules.sonarsource.com/java/RSPEC-2168
         TaskConfig localConfig = config;
         if (localConfig == null) {
