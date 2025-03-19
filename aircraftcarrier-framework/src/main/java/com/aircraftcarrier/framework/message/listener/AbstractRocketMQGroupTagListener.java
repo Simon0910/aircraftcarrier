@@ -69,7 +69,7 @@ public abstract class AbstractRocketMQGroupTagListener implements RocketMQListen
         }
 
         // traceId
-        TraceIdUtil.setTraceId(StringUtil.hasText(messageExt.getKeys()) ? messageExt.getKeys() : messageExt.getMsgId());
+        TraceIdUtil.setTraceId(StringUtil.isNotBlank(messageExt.getKeys()) ? messageExt.getKeys() : messageExt.getMsgId());
         try {
             abstractRmqMessageTagHandler.handle(message);
             log.info("onMessage end msgId:{}", messageExt.getMsgId());

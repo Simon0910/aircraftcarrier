@@ -1,22 +1,28 @@
 package com.aircraftcarrier.framework.tookit;
 
-import org.springframework.util.CollectionUtils;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author lzp
  */
+@Slf4j
 public class StringUtil {
+    /**
+     * EMPTY
+     */
     private static final String EMPTY = "";
 
+    /**
+     * StringUtil
+     */
     private StringUtil() {
-
     }
 
     /**
@@ -31,11 +37,11 @@ public class StringUtil {
      * @see org.apache.commons.lang3.StringUtils#isBlank(CharSequence)
      */
     public static boolean isBlank(CharSequence str) {
-        return !isNotBlank(str);
+        return !StringUtils.hasText(str);
     }
 
     public static boolean isNotBlank(CharSequence str) {
-        return hasText(str);
+        return StringUtils.hasText(str);
     }
 
     /**
@@ -48,37 +54,15 @@ public class StringUtil {
      * </pre>
      */
     public static boolean isEmpty(CharSequence str) {
-        return !isNotEmpty(str);
+        return !StringUtils.hasLength(str);
     }
 
     public static boolean isNotEmpty(CharSequence str) {
-        return hasLength(str);
-    }
-
-    /**
-     * StringUtils.hasText(null) = false
-     * StringUtils.hasText("") = false
-     * StringUtils.hasText(" ") = false
-     * StringUtils.hasText("12345") = true
-     * StringUtils.hasText(" 12345 ") = true
-     * </pre>
-     *
-     * @see org.apache.commons.lang3.StringUtils#isNotBlank(CharSequence)
-     */
-    public static boolean hasText(CharSequence str) {
-        return StringUtils.hasText(str);
-    }
-
-    /**
-     * <pre class="code">
-     * StringUtils.hasLength(null) = false
-     * StringUtils.hasLength("") = false
-     * StringUtils.hasLength(" ") = true
-     * StringUtils.hasLength("Hello") = true
-     * </pre>
-     */
-    public static boolean hasLength(CharSequence str) {
         return StringUtils.hasLength(str);
+    }
+
+    public static boolean contains(String str, String element) {
+        return org.apache.commons.lang3.StringUtils.contains(str, element);
     }
 
     public static String trim(String str) {
@@ -89,33 +73,44 @@ public class StringUtil {
         return StringUtils.trimAllWhitespace(str);
     }
 
-    public static String join(Collection<? extends CharSequence> collection, String separator) {
-        if (CollectionUtils.isEmpty(collection)) {
-            return EMPTY;
+    public static boolean endsWith(String str, String suffix) {
+        if (EMPTY.equals(suffix)) {
+            log.error("endsWith suffix is ''");
         }
-        if (isEmpty(separator)) {
-            separator = EMPTY;
-        }
-        return collection.stream().distinct().filter(StringUtil::isNotBlank).collect(Collectors.joining(separator));
-    }
-
-    public static List<String> split(String str, String separator) {
-        if (str == null) {
-            return new ArrayList<>();
-        }
-        if (isEmpty(separator)) {
-            separator = EMPTY;
-        }
-        return Arrays.stream(str.split(separator)).distinct().filter(StringUtil::isNotBlank).toList();
+        return org.apache.commons.lang3.StringUtils.endsWith(str, suffix);
     }
 
     public static boolean endsWithIgnoreCase(String str, String suffix) {
-        return StringUtils.endsWithIgnoreCase(str, suffix);
+        if (EMPTY.equals(suffix)) {
+            log.error("endsWithIgnoreCase suffix is ''");
+        }
+        return org.apache.commons.lang3.StringUtils.endsWithIgnoreCase(str, suffix);
     }
 
-    public static String append(String separator, String... string) {
-        if (isBlank(separator)) {
-            separator = EMPTY;
+    public static List<String> split(String str, String separator) {
+        String[] split = org.apache.commons.lang3.StringUtils.split(str, separator);
+        if (split == null || split.length == 0) {
+            return new ArrayList<>();
+        }
+        // 去前后空格，去重复，去空字符
+        return Arrays.stream(split)
+                .map(org.apache.commons.lang3.StringUtils::trim)
+                .distinct()
+                .filter(StringUtil::isNotBlank)
+                .toList();
+    }
+
+    public static String distinct(String str, String separator) {
+        return org.apache.commons.lang3.StringUtils.join(split(str, separator), separator);
+    }
+
+    public static String join(Collection<? extends CharSequence> collection, String separator) {
+        return org.apache.commons.lang3.StringUtils.join(collection, separator);
+    }
+
+    public static String join(String separator, String... string) {
+        if (string == null) {
+            return EMPTY;
         }
         StringBuilder builder = new StringBuilder();
         for (int i = 0, len = string.length - 1; i <= len; i++) {
@@ -127,11 +122,17 @@ public class StringUtil {
         return builder.toString();
     }
 
+    public static void main(String[] args) {
+        System.out.println("-------join----------");
+        System.out.println(join(",", "123", null));
+        System.out.println(join(Lists.newArrayList("a", "b"), null));
+        String str = "    123, 123 , ,a,,a ,    a";
+        System.out.println("-------distinct----------");
+        System.out.println(distinct(str, ","));
+        System.out.println(distinct(null, null));
+        System.out.println("-------split----------");
+        System.out.println(split(str, ","));
+        System.out.println(split(null, null));
 
-    public static boolean contains(String str, String element) {
-        if (hasText(str) && hasText(element)) {
-            return str.contains(element);
-        }
-        return false;
     }
 }

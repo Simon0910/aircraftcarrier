@@ -29,14 +29,14 @@ public class TraceIdUtil {
         return traceId.split(SEPARATOR);
     }
 
-    public static String append(String root, String current) {
+    public static String join(String root, String current) {
         // traceId: root-current
-        return StringUtil.append(SEPARATOR, root, current);
+        return StringUtil.join(SEPARATOR, root, current);
     }
 
-    public static String append(String root, String current, String parent) {
+    public static String join(String root, String current, String parent) {
         // traceId: root-current-parent
-        return StringUtil.append(SEPARATOR, root, current, parent);
+        return StringUtil.join(SEPARATOR, root, current, parent);
     }
 
     public static String getTraceId() {

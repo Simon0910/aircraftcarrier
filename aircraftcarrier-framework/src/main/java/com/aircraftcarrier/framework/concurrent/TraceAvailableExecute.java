@@ -34,9 +34,9 @@ public class TraceAvailableExecute {
             current = TraceIdUtil.uuid();
             if (traceIdArr.length > 1) {
                 String parent = traceIdArr[1];
-                traceId = TraceIdUtil.append(root, parent, current);
+                traceId = TraceIdUtil.join(root, parent, current);
             } else {
-                traceId = TraceIdUtil.append(root, current);
+                traceId = TraceIdUtil.join(root, current);
             }
         } else {
             traceId = current = TraceIdUtil.uuid();
