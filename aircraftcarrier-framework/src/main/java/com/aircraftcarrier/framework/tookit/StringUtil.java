@@ -51,6 +51,8 @@ public class StringUtil {
      * StringUtil.isEmpty(" ")       = false
      * StringUtil.isEmpty("bob")     = false
      * StringUtil.isEmpty("  bob  ") = false
+     *
+     * @see org.apache.commons.lang3.StringUtils#isEmpty(CharSequence)
      * </pre>
      */
     public static boolean isEmpty(CharSequence str) {
@@ -66,7 +68,7 @@ public class StringUtil {
     }
 
     public static String trim(String str) {
-        return StringUtils.trimWhitespace(str);
+        return org.apache.commons.lang3.StringUtils.trim(str);
     }
 
     public static String trimAllWhitespace(String str) {
@@ -92,6 +94,14 @@ public class StringUtil {
         if (split == null || split.length == 0) {
             return new ArrayList<>();
         }
+        return Lists.newArrayList(split);
+    }
+
+    public static List<String> splitDistinct(String str, String separator) {
+        String[] split = org.apache.commons.lang3.StringUtils.split(str, separator);
+        if (split == null || split.length == 0) {
+            return new ArrayList<>();
+        }
         // 去前后空格，去重复，去空字符
         return Arrays.stream(split)
                 .map(org.apache.commons.lang3.StringUtils::trim)
@@ -101,7 +111,7 @@ public class StringUtil {
     }
 
     public static String distinct(String str, String separator) {
-        return org.apache.commons.lang3.StringUtils.join(split(str, separator), separator);
+        return org.apache.commons.lang3.StringUtils.join(splitDistinct(str, separator), separator);
     }
 
     public static String join(Collection<? extends CharSequence> collection, String separator) {
@@ -120,19 +130,5 @@ public class StringUtil {
             }
         }
         return builder.toString();
-    }
-
-    public static void main(String[] args) {
-        System.out.println("-------join----------");
-        System.out.println(join(",", "123", null));
-        System.out.println(join(Lists.newArrayList("a", "b"), null));
-        String str = "    123, 123 , ,a,,a ,    a";
-        System.out.println("-------distinct----------");
-        System.out.println(distinct(str, ","));
-        System.out.println(distinct(null, null));
-        System.out.println("-------split----------");
-        System.out.println(split(str, ","));
-        System.out.println(split(null, null));
-
     }
 }
