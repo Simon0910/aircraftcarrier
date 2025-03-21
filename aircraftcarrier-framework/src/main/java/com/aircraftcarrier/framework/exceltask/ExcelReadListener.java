@@ -1,8 +1,8 @@
 package com.aircraftcarrier.framework.exceltask;
 
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
-import com.aircraftcarrier.framework.concurrent.ThreadUtil;
 import com.aircraftcarrier.framework.exceltask.abnoraml.AutoCheckAbnormalScheduler;
+import com.aircraftcarrier.framework.exceltask.refresh.InMemoryRefreshStrategy;
 import com.aircraftcarrier.framework.exceltask.refresh.LocalFileRefreshStrategy;
 import com.aircraftcarrier.framework.exceltask.refresh.NonRefreshStrategy;
 import com.aircraftcarrier.framework.exceltask.refresh.RefreshStrategy;
@@ -61,11 +61,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
      */
     private final AutoCheckAbnormalScheduler autoCheckAbnormalScheduler;
 
-    /**
-     * if continueToTheEnd == true 时不跳过处理
-     */
-    private boolean continueToTheEnd;
-
 
     ExcelReadListener(Worker<T> worker, TaskConfig config) throws Exception {
         this.config = config;
@@ -74,7 +69,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         this.worker = worker;
 
         if (this.config.isEnableRefresh()) {
-            this.refreshStrategy = new LocalFileRefreshStrategy(config);
+            this.refreshStrategy = new InMemoryRefreshStrategy(config);
         } else {
             this.refreshStrategy = new NonRefreshStrategy(config);
         }
@@ -191,70 +186,45 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         }
     }
 
-
     private boolean skipRowPosition(T row) {
         String position = ExcelUtil.getRowPosition(row);
-        // 跳过错误记录
-        if (!errorMapSnapshot.isEmpty() && errorMapSnapshot.get(position) != null) {
-            errorMapSnapshot.remove(position);
+        if (skipError(position) || skipIfNotFromToEnd(position) || skipMaxSuccess(position)) {
             return true;
         }
-
-        if (continueToTheEnd) {
-            return false;
-        }
-
-        // fromSheetRowNo 高优先级
-        if (config.getFromSheetRowNo() != null) {
-            // 开始行
-            if (ExcelUtil.comparePosition(position, config.getFromSheetRowNo()) < 0) {
-                return true;
-            }
-            if (config.getEndSheetRowNo() == null) {
-                // 到达开始行
-                log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
-                continueToTheEnd = true;
-                return false;
-            }
-            // 没有到结束行
-            if (ExcelUtil.comparePosition(position, config.getEndSheetRowNo()) <= 0) {
-                return false;
-            }
-            // 到达结束行, 停止读取
-            if (!batchContainer.isEmpty()) {
-                executeBatch(batchContainer);
-            }
-            try {
-                ThreadUtil.sleepSeconds(1);
-            } catch (InterruptedException ignore) {
-                Thread.currentThread().interrupt();
-            }
-            throw new ExcelAnalysisStopException();
-        }
-
-        // maxSuccessSnapshotPosition 低优先级
-        if (maxSuccessSnapshotPosition == null) {
-            // 没有成功记录，从头开始直到结束
-            continueToTheEnd = true;
-            return false;
-        }
-
-        if (ExcelUtil.comparePosition(position, maxSuccessSnapshotPosition) <= 0) {
-            // 没有到达成功记录，跳过
-            return true;
-        }
-
         // 到达成功记录，新行
         log.info("开始读取新行 sheet.row: {}.{}", row.getSheetNo(), row.getRowNo());
-        continueToTheEnd = true;
         return false;
     }
 
+    private boolean skipMaxSuccess(String position) {
+        if (maxSuccessSnapshotPosition == null) {
+            // 没有成功记录，从头开始直到结束
+            return false;
+        }
+        // 没有到达成功记录，跳过
+        return ExcelUtil.comparePosition(position, maxSuccessSnapshotPosition) <= 0;
+    }
+
+    private boolean skipIfNotFromToEnd(String position) {
+        return config.getFromSheetRowNo() != null && ExcelUtil.comparePosition(position, config.getFromSheetRowNo()) < 0
+                || config.getEndSheetRowNo() != null && ExcelUtil.comparePosition(position, config.getEndSheetRowNo()) > 0;
+    }
+
+    private boolean skipError(String position) {
+        if (errorMapSnapshot == null || errorMapSnapshot.isEmpty()) {
+            return false;
+        }
+        // 跳过错误记录
+        if (errorMapSnapshot.get(position) != null) {
+            errorMapSnapshot.remove(position);
+            return true;
+        }
+        return false;
+    }
 
     private Integer getRowNo(ReadSheetHolder readSheetHolder) {
         return readSheetHolder.getRowIndex() + 1;
     }
-
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {

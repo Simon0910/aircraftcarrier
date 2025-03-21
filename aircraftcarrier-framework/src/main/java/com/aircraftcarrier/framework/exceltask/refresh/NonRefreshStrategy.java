@@ -37,11 +37,11 @@ public class NonRefreshStrategy extends AbstractRefreshStrategy {
 
     @Override
     public String loadSuccessMapSnapshot() throws Exception {
-        return "0_0";
+        return null;
     }
 
     @Override
     public Map<String, String> loadErrorMapSnapshot() throws Exception {
-        return Collections.emptyMap();
+        return null;
     }
 }

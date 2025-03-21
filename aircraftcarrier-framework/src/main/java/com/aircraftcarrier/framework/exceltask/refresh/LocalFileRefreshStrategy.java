@@ -16,6 +16,7 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -52,16 +53,23 @@ public class LocalFileRefreshStrategy extends AbstractRefreshStrategy {
     @Override
     public String loadSuccessMapSnapshot() throws IOException {
         String successStr = readFromFilePath(config.getSuccessMapSnapshotFilePath());
-        String max = "0_0";
-        String maxSuccessSnapshotPosition = null;
-        if (CharSequenceUtil.isNotBlank(successStr)) {
-            successStr = successStr.trim();
-            // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
-            successStr = successStr.substring(0, successStr.indexOf(TaskConfig.END));
-            for (String next : Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr)) {
-                if (ExcelUtil.comparePosition(max, next) < 0) {
-                    max = maxSuccessSnapshotPosition = next;
-                }
+        if (CharSequenceUtil.isBlank(successStr)) {
+            log.info("init - maxSuccessSnapshotPosition null");
+            return null;
+        }
+        // 2_10,2_11,$ 写入 1_1000,1_1001,$ ===> 2_10,2_11,$01,$
+        successStr = successStr.trim().substring(0, successStr.indexOf(TaskConfig.END));
+        Iterator<String> iterator = Splitter.on(StrPool.COMMA).omitEmptyStrings().trimResults().split(successStr).iterator();
+        if (!iterator.hasNext()) {
+            log.info("init - maxSuccessSnapshotPosition null");
+            return null;
+        }
+
+        String maxSuccessSnapshotPosition = "0_0";
+        while (iterator.hasNext()) {
+            String next = iterator.next();
+            if (ExcelUtil.comparePosition(maxSuccessSnapshotPosition, next) < 0) {
+                maxSuccessSnapshotPosition = next;
             }
         }
         log.info("init - maxSuccessSnapshotPosition {}", maxSuccessSnapshotPosition);
