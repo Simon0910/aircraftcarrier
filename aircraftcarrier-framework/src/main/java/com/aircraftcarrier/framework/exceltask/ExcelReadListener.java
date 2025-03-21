@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.exceltask;
 
-import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.concurrent.ThreadUtil;
 import com.aircraftcarrier.framework.exceltask.abnoraml.AutoCheckAbnormalScheduler;
 import com.aircraftcarrier.framework.exceltask.refresh.LocalFileRefreshStrategy;
@@ -18,11 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListener<T> {
 
     private final TaskConfig config;
-    private final ThreadPoolExecutor threadPoolExecutor;
+    private final ExecutorService executorService;
     private final Worker<T> worker;
 
     /**
@@ -73,7 +70,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     ExcelReadListener(Worker<T> worker, TaskConfig config) throws Exception {
         this.config = config;
         this.batchContainer = new LinkedList<>();
-        this.threadPoolExecutor = newFixedThreadPoolWithSyncBockedPolicy(config.getThreadNum(), config.getPoolName());
+        this.executorService = ExecutorUtil.newCachedThreadPoolBlock(config.getThreadNum(), config.getPoolName());
         this.worker = worker;
 
         if (this.config.isEnableRefresh()) {
@@ -88,29 +85,6 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
 
         this.autoCheckAbnormalScheduler = new AutoCheckAbnormalScheduler(worker.getTask());
         this.autoCheckAbnormalScheduler.startAutoCheckTimer();
-    }
-
-
-    /**
-     * newFixedThreadPoolWithSyncBockedHandler
-     *
-     * @param nThreads nThreads
-     * @param poolName poolName
-     * @return ThreadPoolExecutor
-     * @see Executors#newCachedThreadPool(ThreadFactory)
-     */
-    private ThreadPoolExecutor newFixedThreadPoolWithSyncBockedPolicy(int nThreads, String poolName) {
-        return new ThreadPoolExecutor(
-                // 指定大小
-                nThreads, nThreads,
-                // keepAliveTime
-                30, TimeUnit.SECONDS,
-                // SynchronousQueue
-                new SynchronousQueue<>(),
-                // factory
-                ThreadPoolUtil.newThreadFactory(poolName),
-                //  Block Policy
-                ThreadPoolUtil.newBlockPolicy());
     }
 
 
@@ -180,7 +154,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
 
     private void executeBatch(LinkedList<T> threadBatchList) {
         // 多线程执行
-        threadPoolExecutor.execute(() -> doExecuteBatch(threadBatchList));
+        executorService.execute(() -> doExecuteBatch(threadBatchList));
     }
 
     private void doExecuteBatch(LinkedList<T> threadBatchList) {
@@ -309,18 +283,18 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
      * 关闭线程池 并 等待执行完成
      */
     private void shutdownAwait() {
-        if (this.threadPoolExecutor == null) {
+        if (this.executorService == null) {
             return;
         }
         // 停止接受新的任务
-        this.threadPoolExecutor.shutdown();
+        this.executorService.shutdown();
         if (Thread.currentThread().isInterrupted()) {
             // 防止awaitTermination被中断
             Thread.interrupted();
         }
         try {
             // 等待所有任务执行完成
-            this.threadPoolExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+            this.executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.error("shutdownAwait Interrupted", e);
             Thread.currentThread().interrupt();

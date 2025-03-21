@@ -2,7 +2,7 @@ package com.aircraftcarrier.framework.exceltask.abnoraml;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
-import com.aircraftcarrier.framework.concurrent.ThreadPoolUtil;
+import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.exceltask.Task;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +68,7 @@ public class AutoCheckAbnormalScheduler {
                 // 10000
                 new LinkedBlockingQueue<>(10000),
                 // factory
-                ThreadPoolUtil.newThreadFactory("abnormal-monitor"),
+                ExecutorUtil.newNamedThreadFactory("abnormal-monitor"),
                 //  Discard
                 new ThreadPoolExecutor.DiscardOldestPolicy());
     }

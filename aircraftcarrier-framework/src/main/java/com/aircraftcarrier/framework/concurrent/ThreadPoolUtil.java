@@ -17,11 +17,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -51,18 +49,6 @@ public class ThreadPoolUtil {
     private static ExecutorService newDefaultExecutorService() {
         return ExecutorUtil.newCachedThreadPoolBlock(100, "default");
     }
-
-
-    /**
-     * newThreadFactory
-     *
-     * @param poolName poolName
-     * @return NamedThreadFactory
-     */
-    public static NamedThreadFactory newThreadFactory(String poolName) {
-        return new NamedThreadFactory(poolName);
-    }
-
 
     public static ThreadPoolExecutor.AbortPolicy newAbortPolicy() {
         return new ThreadPoolExecutor.AbortPolicy();
@@ -499,34 +485,6 @@ public class ThreadPoolUtil {
         }
     }
 
-    /**
-     * NamedThreadFactory
-     */
-    private static class NamedThreadFactory implements ThreadFactory {
-        private static final AtomicInteger poolNumber = new AtomicInteger(1);
-        private final ThreadGroup group;
-        private final AtomicInteger threadNumber = new AtomicInteger(1);
-        private final String namePrefix;
-
-        public NamedThreadFactory(String poolName) {
-            @SuppressWarnings("removal")
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = "pool-" + poolNumber.getAndIncrement() + "-" + poolName + "-thread-";
-        }
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
-            if (t.isDaemon()) {
-                t.setDaemon(false);
-            }
-            if (t.getPriority() != Thread.NORM_PRIORITY) {
-                t.setPriority(Thread.NORM_PRIORITY);
-            }
-            return t;
-        }
-    }
 
     /**
      * DiscardPolicyPlus

@@ -1,7 +1,6 @@
 package com.aircraftcarrier.framework.concurrent;
 
 import cn.hutool.core.thread.ExecutorBuilder;
-import cn.hutool.core.thread.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.BlockingQueue;
@@ -14,6 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * ExecutorUtil
@@ -31,29 +32,20 @@ public class ExecutorUtil {
     private ExecutorUtil() {
     }
 
-
     /**
-     * buildThreadFactory
-     * <p>
-     * {@link ThreadFactoryBuilder#create()
-     * .setDaemon(false)
-     * .setNamePrefix(pooName + suffix)
-     * .build();}
+     * newThreadFactory
+     * 参考：{@link Executors#defaultThreadFactory() }
      *
-     * @param pooName pooName
-     * @return ThreadFactory
+     * @param poolName poolName
+     * @return NamedThreadFactory
      */
-    private static ThreadFactory buildThreadFactory(String pooName, String suffix) {
-        return ThreadPoolUtil.newThreadFactory(pooName + suffix);
+    public static NamedThreadFactory newNamedThreadFactory(String poolName) {
+        return new  NamedThreadFactory(poolName);
     }
 
-
     /**
-     * 固定线程池 (队列容量 + block) // 防止队列容量OOM，防止丢弃任务
-     *
-     * <p>
-     * 参考：
-     * {@link java.util.concurrent.Executors#newFixedThreadPool(int)} }
+     * 固定线程池
+     * 同时最多n个线程并发执行，多余请求阻塞等待，固定缓存1024个任务
      * <p>
      * 使用场景：
      * 1. newFixedThreadPoolBlock(10,"xxxWork"); // 多个线程执行，不丢弃任务
@@ -66,12 +58,9 @@ public class ExecutorUtil {
                 ThreadPoolUtil.newBlockPolicy());
     }
 
-
     /**
-     * 固定线程池 (同步队列 + discard) // 防止重复执行任务
-     * <p>
-     * 参考：
-     * {@link java.util.concurrent.Executors#newFixedThreadPool(int)} }
+     * 固定线程池
+     * 同时最多n个线程并发执行，多余请求丢弃
      * <p>
      * 使用场景：
      * 1. newFixedThreadPoolDiscard(1,"xxxTask"); // 开启一个后台监控任务
@@ -84,7 +73,16 @@ public class ExecutorUtil {
                 ThreadPoolUtil.newDiscardPolicyPlus());
     }
 
-
+    /**
+     * 固定线程池
+     * 相比 {@link Executors#newFixedThreadPool(int)} 可以指定线程池名称和日志追踪，可以防止队列容量OOM
+     *
+     * @param nThreads
+     * @param pooName
+     * @param blockingQueue
+     * @param reject
+     * @return
+     */
     private static ExecutorService newFixedThreadPool(int nThreads,
                                                       String pooName,
                                                       BlockingQueue<Runnable> blockingQueue,
@@ -94,13 +92,13 @@ public class ExecutorUtil {
                 nThreads, nThreads,
                 0L, TimeUnit.SECONDS,
                 blockingQueue,
-                buildThreadFactory("fix-", pooName),
+                newNamedThreadFactory("fix-" + pooName),
                 reject);
     }
 
-
     /**
-     * 缓存线程池 （同步队列 + Block）// 防止无限创建线程，防止丢弃任务
+     * 缓存线程池
+     * 同时最多n个线程并发执行，多余请求阻塞等待，执行结束释放线程
      */
     public static ExecutorService newCachedThreadPoolBlock(int maxThreads, String pooName) {
         return newCachedThreadPool(
@@ -111,19 +109,28 @@ public class ExecutorUtil {
 
 
     /**
-     * 缓存线程池 // 防止无限创建线程，防止丢弃任务
+     * 缓存线程池
+     * 同时最多n个线程并发执行，多余请求丢弃，执行结束释放线程
      * <p>
      * 使用场景：
      * 1. newCachedThreadPool(1, "refresh-token"); // 提前1小时，派一个线程取刷新token
      */
     public static ExecutorService newCachedThreadPoolDiscard(int maxThreads, String pooName) {
         return newCachedThreadPool(
-                "block-" + pooName,
+                "discard-" + pooName,
                 maxThreads,
                 ThreadPoolUtil.newDiscardPolicyPlus());
     }
 
-
+    /**
+     * 缓存线程池
+     * 相比 {@link Executors#newCachedThreadPool() } 可以指定线程池名称和日志追踪，可以防止无限创建线程
+     *
+     * @param pooName    pooName
+     * @param maxThreads maxThreads
+     * @param reject     reject
+     * @return ExecutorService
+     */
     private static ExecutorService newCachedThreadPool(String pooName,
                                                        int maxThreads,
                                                        RejectedExecutionHandler reject) {
@@ -132,51 +139,42 @@ public class ExecutorUtil {
                 0, maxThreads,
                 10, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
-                buildThreadFactory("cached-", pooName),
+                newNamedThreadFactory("cached-" + pooName),
                 reject);
     }
 
-
     /**
-     * 单线程执行器 1个线程串行执行所有任务 默认上限50000缓冲任务（防止无限创建队列任务oom）多余的请求同步阻塞 （不丢弃任务）
-     * 参考：
-     * {@link java.util.concurrent.Executors#newSingleThreadExecutor() }
+     * 单线程执行器
+     * 相比 {@link Executors#newSingleThreadExecutor() } 可以指定线程池名称和日志追踪，可以防止队列容量OOM，多余的请求同步阻塞（不丢弃任务）
+     *
+     * @param pooName pooName
+     * @return ExecutorService
      */
     public static ExecutorService newSingleThreadExecutorBlock(String pooName) {
         return ExecutorBuilder.create()
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new LinkedBlockingQueue<>(1024))
-                .setThreadFactory(buildThreadFactory(pooName, "-single-block"))
+                .setThreadFactory(newNamedThreadFactory("single-block-" + pooName))
                 .setHandler(ThreadPoolUtil.newBlockPolicy())
                 .buildFinalizable();
     }
 
     /**
-     * 单线程执行器 1个线程串行执行所有任务 默认上限50000缓冲任务（防止无限创建队列任务oom）多余的请求同步阻塞 （不丢弃任务）
-     * 参考：
-     * {@link java.util.concurrent.Executors#newSingleThreadExecutor() }
-     */
-    public static ExecutorService newSingleThreadExecutorCaller(String pooName) {
-        return ExecutorBuilder.create()
-                .setCorePoolSize(1).setMaxPoolSize(1)
-                .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
-                .setWorkQueue(new LinkedBlockingQueue<>(1024))
-                .setThreadFactory(buildThreadFactory(pooName, "-single-caller"))
-                .setHandler(ThreadPoolUtil.newCallerRunsPolicy())
-                .buildFinalizable();
-    }
-
-    /**
-     * 单线程执行器 1个线程串行执行所有任务 同步队列 多余的请求直接丢弃
+     * 单线程执行器
+     * 相比 {@link Executors#newSingleThreadExecutor() } 可以指定线程池名称和日志追踪，可以防止队列容量OOM，多余的请求丢弃
+     * <p>
      * 使用场景：限流
+     *
+     * @param pooName pooName
+     * @return ExecutorService
      */
     public static ExecutorService newSingleThreadExecutorDiscard(String pooName) {
         return ExecutorBuilder.create()
                 .setCorePoolSize(1).setMaxPoolSize(1)
                 .setKeepAliveTime(0L, TimeUnit.MILLISECONDS)
                 .setWorkQueue(new SynchronousQueue<>())
-                .setThreadFactory(buildThreadFactory(pooName, "-single-discard"))
+                .setThreadFactory(newNamedThreadFactory("single-discard-" + pooName))
                 .setHandler(ThreadPoolUtil.newDiscardPolicyPlus())
                 .buildFinalizable();
     }
@@ -209,6 +207,35 @@ public class ExecutorUtil {
      */
     public static ScheduledExecutorService newSingleThreadScheduledExecutor(String pooName) {
         return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    /**
+     * NamedThreadFactory
+     */
+    private static class NamedThreadFactory implements ThreadFactory {
+        private static final AtomicInteger poolNumber = new AtomicInteger(1);
+        private final ThreadGroup group;
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final String namePrefix;
+
+        public NamedThreadFactory(String poolName) {
+            @SuppressWarnings("removal")
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            namePrefix = "pool-" + poolNumber.getAndIncrement() + "-" + poolName + "-thread-";
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+            if (t.isDaemon()) {
+                t.setDaemon(false);
+            }
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
     }
 
     /**
