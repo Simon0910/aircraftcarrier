@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.exceltask;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
 
 /**
@@ -7,6 +8,20 @@ import cn.hutool.core.text.StrPool;
  * @since 2024/9/4
  */
 public class ExcelUtil {
+    public static void checkSheetRow(String sheetRow) {
+        if (CharSequenceUtil.isBlank(sheetRow)) {
+            throw new ExcelTaskException("sheetRow is empty");
+        }
+        if (!sheetRow.contains(StrPool.UNDERLINE)) {
+            throw new ExcelTaskException("sheetRow is not contains _");
+        }
+
+        String[] s = sheetRow.split(StrPool.UNDERLINE);
+        if (s.length > 2) {
+            throw new ExcelTaskException("sheetRow 格式错误");
+        }
+    }
+
     public static String getRowPosition(AbstractExcelRow row) {
         return row.getSheetNo() + StrPool.UNDERLINE + row.getRowNo();
     }

@@ -1,8 +1,9 @@
 package com.aircraftcarrier.framework.exceltask.refresh;
 
+import com.aircraftcarrier.framework.exceltask.Task;
 import com.aircraftcarrier.framework.exceltask.TaskConfig;
 
-import java.util.Collections;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -31,17 +32,27 @@ public class NonRefreshStrategy extends AbstractRefreshStrategy {
     }
 
     @Override
-    public void preHandle() throws Exception {
+    public void preHandle(Task<?> task) {
 
     }
 
     @Override
-    public String loadSuccessMapSnapshot() throws Exception {
+    public String loadSuccessMapSnapshot() {
         return null;
     }
 
     @Override
-    public Map<String, String> loadErrorMapSnapshot() throws Exception {
+    public Map<String, String> loadErrorMapSnapshot() {
         return null;
+    }
+
+    @Override
+    public void reset() {
+
+    }
+
+    @Override
+    public void resetSuccessSheetRow(String maxSuccessSheetRow) throws IOException {
+
     }
 }

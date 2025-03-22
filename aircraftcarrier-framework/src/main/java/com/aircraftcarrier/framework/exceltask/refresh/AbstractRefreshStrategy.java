@@ -69,6 +69,7 @@ public abstract class AbstractRefreshStrategy implements RefreshStrategy {
 
     AbstractRefreshStrategy(TaskConfig config) {
         this.config = config;
+        this.config.setRefreshStrategy(this);
         this.successMap = Maps.newHashMapWithExpectedSize(config.getThreadNum());
     }
 

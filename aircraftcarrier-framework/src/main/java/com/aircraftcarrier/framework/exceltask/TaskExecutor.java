@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.exceltask;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.support.ApplicationContextClosedEvent;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
@@ -8,15 +9,10 @@ import com.alibaba.excel.read.metadata.ReadSheet;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ResourceUtils;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,40 +124,7 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
             if (task.isStarted()) {
                 return "already started";
             }
-
-            DateTimeFormatterBuilder dateTimeFormatterBuilder = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd_HH-mm-ss");
-            DateTimeFormatter dateTimeFormatter = dateTimeFormatterBuilder.toFormatter();
-            String nowDatetime = LocalDateTime.now().format(dateTimeFormatter) + "_";
-
-            String successMapSnapshotFilePath = task.config().getSuccessMapSnapshotFilePath();
-            String newFilePath = successMapSnapshotFilePath.substring(0, successMapSnapshotFilePath.indexOf(TaskConfig.SUCCESS_MAP_FILENAME)) + nowDatetime + TaskConfig.SUCCESS_MAP_FILENAME;
-            File file = new File(task.config().getSuccessMapSnapshotFilePath());
-            file.setReadable(true);
-            file.setWritable(true);
-            File newFile = new File(newFilePath);
-            newFile.setReadable(true);
-            // 新文件不存在，永远返回false
-            // newFile.setWritable(true);
-            if (file.renameTo(newFile)) {
-                log.info("SuccessMap file renamed successfully.");
-            } else {
-                log.error("Failed to rename SuccessMap file.");
-            }
-
-            String errorMapSnapshotFilePath = task.config().getErrorMapSnapshotFilePath();
-            newFilePath = errorMapSnapshotFilePath.substring(0, errorMapSnapshotFilePath.indexOf(TaskConfig.ERROR_MAP_FILENAME)) + nowDatetime + TaskConfig.ERROR_MAP_FILENAME;
-            file = new File(task.config().getErrorMapSnapshotFilePath());
-            file.setReadable(true);
-            file.setWritable(true);
-            newFile = new File(newFilePath);
-            newFile.setReadable(true);
-            // 新文件不存在，永远返回false
-            // newFile.setWritable(true);
-            if (file.renameTo(newFile)) {
-                log.info("ErrorMap file renamed successfully.");
-            } else {
-                log.error("Failed to rename ErrorMap file.");
-            }
+            task.config().getRefreshStrategy().reset();
             return "reset";
         }
     }
@@ -175,15 +138,8 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
             if (task.isStarted()) {
                 return "already started";
             }
-
-            TaskConfig.checkSheetRow(maxSuccessSheetRow);
-
-            task.config().preCheckFile();
-
-            try (BufferedWriter br = new BufferedWriter(new FileWriter(task.config().getSuccessMapSnapshotFilePath()))) {
-                br.write(maxSuccessSheetRow + TaskConfig.END);
-                br.flush();
-            }
+            ExcelUtil.checkSheetRow(maxSuccessSheetRow);
+            task.config().getRefreshStrategy().resetSuccessSheetRow(maxSuccessSheetRow);
             return "resetSuccessSheetRow ok";
         }
     }
@@ -197,11 +153,19 @@ public class TaskExecutor implements ApplicationContextClosedEvent {
             if (task.isStarted()) {
                 return "already started";
             }
-
             // set from
-            task.config().setFromSheetRowNo(fromSheetRow);
-            task.config().setEndSheetRowNo(endSheetRow);
-            task.config().doCheckConfig();
+            if (CharSequenceUtil.isNotBlank(fromSheetRow)) {
+                ExcelUtil.checkSheetRow(fromSheetRow);
+                task.config().setFromSheetRowNo(fromSheetRow);
+            } else {
+                task.config().setFromSheetRowNo(null);
+            }
+            if (CharSequenceUtil.isNotBlank(endSheetRow)) {
+                ExcelUtil.checkSheetRow(endSheetRow);
+                task.config().setEndSheetRowNo(endSheetRow);
+            } else {
+                task.config().setEndSheetRowNo(null);
+            }
             return "settingFromAndEnd ok";
         }
     }

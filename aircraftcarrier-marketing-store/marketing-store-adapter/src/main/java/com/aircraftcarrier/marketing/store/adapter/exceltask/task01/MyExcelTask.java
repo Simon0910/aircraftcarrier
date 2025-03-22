@@ -44,7 +44,7 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelRow> {
                 .batchSize(batchSize)
                 .fromSheetRowNo(fromSheetRowNo)
                 .endSheetRowNo(endSheetRowNo)
-                .enableRefresh(false)
+                .enableRefresh(true)
                 .enableAbnormalAutoCheck(false)
                 .abnormalSampleSize(200)
                 .consecutiveAbnormalNum(100)
@@ -64,14 +64,14 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelRow> {
      */
     @Override
     public void doWork(LinkedList<MyExcelRow> threadBatchList) {
-        for (MyExcelRow myExcelData : threadBatchList) {
-            try {
-                Thread.sleep(200);
-                log.info("MyExcelTask excelData: {}", JSON.toJSONString(myExcelData));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        // for (MyExcelRow myExcelData : threadBatchList) {
+        //     // try {
+        //     //     Thread.sleep(0);
+        //     //     log.info("MyExcelTask excelData: {}", JSON.toJSONString(myExcelData));
+        //     // } catch (InterruptedException e) {
+        //     //     throw new RuntimeException(e);
+        //     // }
+        // }
     }
 
 }

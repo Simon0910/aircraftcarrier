@@ -1,8 +1,9 @@
 package com.aircraftcarrier.framework.exceltask.refresh;
 
 import com.aircraftcarrier.framework.exceltask.AbstractExcelRow;
+import com.aircraftcarrier.framework.exceltask.Task;
 
-import java.util.Collections;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -14,7 +15,7 @@ public interface RefreshStrategy {
     /**
      * 初始化
      */
-    void preHandle() throws Exception;
+    void preHandle(Task<?> task) throws IOException;
 
     /**
      * 返回上一次处理成功的最大的位置
@@ -58,4 +59,7 @@ public interface RefreshStrategy {
     void shutdown();
 
 
+    void reset();
+
+    void resetSuccessSheetRow(String maxSuccessSheetRow) throws IOException;
 }

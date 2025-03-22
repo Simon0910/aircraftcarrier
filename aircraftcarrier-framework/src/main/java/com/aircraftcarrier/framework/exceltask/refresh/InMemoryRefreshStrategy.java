@@ -1,10 +1,16 @@
 package com.aircraftcarrier.framework.exceltask.refresh;
 
+import com.aircraftcarrier.framework.concurrent.ThreadUtil;
 import com.aircraftcarrier.framework.exceltask.ExcelUtil;
+import com.aircraftcarrier.framework.exceltask.Task;
 import com.aircraftcarrier.framework.exceltask.TaskConfig;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * InMemoryRefreshStrategy
@@ -16,8 +22,11 @@ import java.util.Map;
 @Slf4j
 public class InMemoryRefreshStrategy extends AbstractRefreshStrategy {
 
-    private static Map<String, String> successMap;
-    private static Map<String, String> errorMap;
+    private static Map<String, Map<String, String>> successContainer = new ConcurrentHashMap<>();
+    private static Map<String, Map<String, String>> errorContainer = new ConcurrentHashMap<>();
+
+    private Map<String, String> successMap;
+    private Map<String, String> errorMap;
 
     public InMemoryRefreshStrategy(TaskConfig config) {
         super(config);
@@ -25,28 +34,28 @@ public class InMemoryRefreshStrategy extends AbstractRefreshStrategy {
 
     @Override
     void doRefreshSuccessMapSnapshot(Map<String, String> successMap) throws Exception {
-        InMemoryRefreshStrategy.successMap = successMap;
+        this.successMap.putAll(successMap);
     }
 
     @Override
     void doRefreshErrorMapSnapshot(Map<String, String> errorMap) throws Exception {
-        InMemoryRefreshStrategy.errorMap = errorMap;
+        this.errorMap.putAll(errorMap);
     }
 
     @Override
     void close() throws Exception {
-        InMemoryRefreshStrategy.successMap = null;
-        InMemoryRefreshStrategy.errorMap = null;
     }
 
     @Override
-    public void preHandle() throws Exception {
-
+    public void preHandle(Task<?> task) {
+        String simpleName = task.getClass().getSimpleName();
+        this.successMap = successContainer.computeIfAbsent(simpleName, k -> new HashMap<>());
+        this.errorMap = errorContainer.computeIfAbsent(simpleName, k -> new HashMap<>());
     }
 
     @Override
     public String loadSuccessMapSnapshot() throws Exception {
-        if (successMap == null && successMap.isEmpty()) {
+        if (successMap == null || successMap.isEmpty()) {
             return null;
         }
         String maxSuccessSnapshotPosition = "0_0";
@@ -61,6 +70,24 @@ public class InMemoryRefreshStrategy extends AbstractRefreshStrategy {
 
     @Override
     public Map<String, String> loadErrorMapSnapshot() throws Exception {
-        return errorMap;
+        if (this.errorMap == null || this.errorMap.isEmpty()) {
+            return HashMap.newHashMap(16);
+        }
+
+        Map<String, String> map = Maps.newHashMapWithExpectedSize(this.errorMap.size());
+        map.putAll(this.errorMap);
+        return map;
+    }
+
+    @Override
+    public void reset() {
+        this.successMap.clear();
+        this.errorMap.clear();
+    }
+
+    @Override
+    public void resetSuccessSheetRow(String maxSuccessSheetRow) throws IOException {
+        this.successMap.clear();
+        this.successMap.put(ThreadUtil.getThreadNo(), maxSuccessSheetRow);
     }
 }
