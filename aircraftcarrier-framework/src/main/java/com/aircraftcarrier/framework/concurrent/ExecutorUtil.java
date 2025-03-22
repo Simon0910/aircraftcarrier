@@ -40,7 +40,7 @@ public class ExecutorUtil {
      * @return NamedThreadFactory
      */
     public static NamedThreadFactory newNamedThreadFactory(String poolName) {
-        return new  NamedThreadFactory(poolName);
+        return new NamedThreadFactory(poolName);
     }
 
     /**
@@ -77,11 +77,11 @@ public class ExecutorUtil {
      * 固定线程池
      * 相比 {@link Executors#newFixedThreadPool(int)} 可以指定线程池名称和日志追踪，可以防止队列容量OOM
      *
-     * @param nThreads
-     * @param pooName
-     * @param blockingQueue
-     * @param reject
-     * @return
+     * @param nThreads      nThreads
+     * @param pooName       pooName
+     * @param blockingQueue blockingQueue
+     * @param reject        reject
+     * @return ExecutorService
      */
     private static ExecutorService newFixedThreadPool(int nThreads,
                                                       String pooName,
@@ -137,7 +137,7 @@ public class ExecutorUtil {
         return new TraceThreadPoolExecutor(
                 // 指定大小
                 0, maxThreads,
-                10, TimeUnit.SECONDS,
+                60L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
                 newNamedThreadFactory("cached-" + pooName),
                 reject);
