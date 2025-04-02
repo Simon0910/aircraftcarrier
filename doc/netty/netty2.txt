@@ -1,0 +1,154 @@
+netty：4.1.119
+===========================================================
+
+第一步：初始化NioEventLoopGroup
+NioEventLoopGroup中的多个NioEventLoop // 每个NioEventLoop绑定一个selector
+#177 io.netty.channel.nio.NioEventLoop#openSelector
+
+继续以下步骤：
+doBind -> initAndRegister -> 创建NioServerSocketChannel -> init -> register -> doBind0
+
+第二步：initAndRegister
+###反射创建的NioServerSocketChannel
+#323 io.netty.bootstrap.AbstractBootstrap.initAndRegister
+反射工厂new NioServerSocketChannel
+通过构造函数执行 #63 io.netty.channel.socket.nio.NioServerSocketChannel#newChannel 创建一个 ServerSocketChannel
+
+第三步：
+#84 io.netty.channel.nio.AbstractNioChannel#AbstractNioChannel
+在NioServerSocketChannel中保存以下属性
+id = newId();
+unsafe = newUnsafe();
+pipeline = newChannelPipeline();
+ch = ServerSocketChannel;
+ch.configureBlocking(false); // 设置非阻塞
+readInterestOp = SelectionKey.OP_ACCEPT = 16
+
+
+第四步： init
+#144 io.netty.bootstrap.ServerBootstrap.init
+向pipeline添加第1个handler
+p.addLast(new ChannelInitializer)
+
+第五步：register
+#323 io.netty.bootstrap.AbstractBootstrap.initAndRegister
+#339 ChannelFuture regFuture = config().group().register(channel);
+
+通过调用parentGroup的register方法获得一个ChannelFuture，
+如何过的：通过父类 MultithreadEventLoopGroup.register方法获取下一个###轮训得到NioEventLoop
+NioEventLoop.register方法把之前 ###反射创建的NioServerSocketChannel 和 ###轮训得到NioEventLoop 保存在DefaultChannelPromise中
+通过###轮训得到NioEventLoop的父类 SingleThreadEventLoop.register 方法把DefaultChannelPromise返回
+SingleThreadEventLoop.register 返回DefaultChannelPromise前，
+让###反射创建的NioServerSocketChannel自己的AbstractUnsafe.register去注册：if (eventLoop.inEventLoop()) register0(promise)；
+同时AbstractUnsafe也拿到当前的eventLoop用于后续channel.eventLoop()去doBind0： 通过AbstractChannel.this.eventLoop = eventLoop;拿到当前的eventLoop
+如果不在inEventLoop中AbstractUnsafe.register又去让###轮训得到NioEventLoop eventLoop.execute()去创建第一个任务（异步： () -> register0(promise)）
+最终返回ChannelFuture后添加一个ChannelFutureListener，作用是调用doBind0
+（顺便说一句register0中大概做了什么：
+doRegister(); ：执行第一个register0
+pipeline.invokeHandlerAddedIfNeeded();： 执行第1个handler
+safeSetSuccess(promise);
+pipeline.fireChannelRegistered();
+pipeline.fireChannelActive();
+beginRead();
+等等...
+
+
+第六步： start启动异步：
+#834 io.netty.util.concurrent.SingleThreadEventExecutor.execute(java.lang.Runnable, boolean)
+#344 io.netty.util.concurrent.SingleThreadEventExecutor.addTask
+#351 io.netty.util.concurrent.SingleThreadEventExecutor.offerTask
+return taskQueue.offer(task);
+
+if (!inEventLoop) -> startThread(); -> doStartThread() ->
+#32 io.netty.util.concurrent.ThreadPerTaskExecutor#execute(Runnable command) {threadFactory.newThread(command).start();}
+
+startThread()中通过CAS保证安全执行
+doStartThread()保存当前线程到NioEventLoop中，用于判断 inEventLoop()
+command是执行一个死循环 () -> io.netty.channel.nio.NioEventLoop.run
+
+start()执行后此时有main线程 和 子线程
+main线程到达==》startThread()的结尾 -》 eventLoop.execute -》#341 io.netty.bootstrap.AbstractBootstrap#initAndRegister 方法结尾 得到一个regFuture
+子线程到达==》 java.lang.Thread#run
+
+
+第七步并行开始（netty异步调试的难点所在）：
+	子线程：
+		死循环：#504 io.netty.channel.nio.NioEventLoop#run
+			子死循环：#569 io.netty.util.concurrent.SingleThreadEventExecutor#runAllTasks(timeoutNanos)
+			            // Runnable task = taskQueue.poll();
+			            // safeExecute(task);
+			            // task.run();
+                        // task 就是register0方法：io.netty.channel.AbstractChannel.AbstractUnsafe.register0
+                        // selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
+                           register0 return;
+                        // 子死循环结束
+			// 通过runAllTasks执行第一个任务register0 （同时：main线程用得到regFuture添正在加一个ChannelFutureListener（注册完后doBind0））
+			// 执行第1个handler // 添加第二个task任务（任务是添加第3个handler）
+			// 执行doBind0() // 添加第三个任务 （任务是channel.bind(localAddress, promise).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);）
+			// 执行第二个任务 // 任务是添加第3个handler
+			// 执行第三个任务 // bind地址完成后，添加第四个任务
+			// 执行第四个任务 // 对OP_ACCEPT事件感兴趣
+
+		死循环：select感兴趣事件 #526 io.netty.channel.nio.NioEventLoop#run
+		    阻塞select感兴趣事件 #879 io.netty.channel.nio.NioEventLoop#select （等待第一个OP_ACCEPT事件客户端链接）
+	main线程：
+		如果子线程isDone 执行doBind0()
+		如果子线程没结束 让regFuture中的ChannelFutureListener去 执行doBind0()
+
+
+
+===========================================================
+第1个handler： p.addLast(new ChannelInitializer)
+添加：#144 io.netty.bootstrap.ServerBootstrap#init
+执行： 添加第2个handler，添加第二个任务
+底层：
+
+第2个handler：配置ServerBootstrapConfig中的handler
+添加：#150 io.netty.bootstrap.ServerBootstrap#init
+pipeline.addLast(config.handler());
+
+第3个handler：第二个任务执行中添加的
+添加：#156 io.netty.bootstrap.ServerBootstrap#init
+执行：
+pipeline.addLast(new ServerBootstrapAcceptor(
+        ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs,
+        extensions));
+底层：
+
+===========================================================
+第一个任务 对0事件感兴趣
+https://stackoverflow.com/questions/70844903/netty-selector-register-channel-with-0
+添加：#482 io.netty.channel.AbstractChannel.AbstractUnsafe#register
+执行：#485 io.netty.channel.AbstractChannel.AbstractUnsafe#register
+#499 io.netty.channel.AbstractChannel.AbstractUnsafe.register0
+() -> register0(promise)
+底层：#381 io.netty.channel.nio.AbstractNioChannel#doRegister
+selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
+register0 return;
+
+第二个任务
+添加：#153 io.netty.bootstrap.ServerBootstrap#init
+执行：#156 io.netty.bootstrap.ServerBootstrap#init
+添加第3个handler
+pipeline.addLast(new ServerBootstrapAcceptor(
+        ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs,
+        extensions));
+底层：
+
+第三个任务 bind
+添加：#376 io.netty.bootstrap.AbstractBootstrap#doBind0
+执行：#380 io.netty.bootstrap.AbstractBootstrap#doBind0
+if (regFuture.isSuccess()) {
+    channel.bind(localAddress, promise).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+}
+底层：#141 io.netty.channel.socket.nio.NioServerSocketChannel#doBind
+javaChannel().bind(localAddress == 0.0.0.0/0.0.0.0:8080, config.getBacklog() == 128);
+
+第四个任务 对OP_ACCEPT事件感兴趣
+添加：#569 io.netty.channel.AbstractChannel.AbstractUnsafe.bind
+执行：#572 io.netty.channel.AbstractChannel.AbstractUnsafe#bind
+pipeline.fireChannelActive();
+底层：#408 io.netty.channel.nio.AbstractNioChannel#doBeginRead
+selectionKey.interestOps(interestOps | readInterestOp); （interestOps | readInterestOp）= 16
+
+
