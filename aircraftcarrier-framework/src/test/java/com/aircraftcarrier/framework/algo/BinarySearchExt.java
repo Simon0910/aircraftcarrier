@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework;
+package com.aircraftcarrier.framework.algo;
 
 /**
  * 如果有序数组里有重复的，找到最后一个出现的位置，未找到返回应该的位置
