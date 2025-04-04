@@ -1,5 +1,11 @@
 package com.aircraftcarrier.framework.exceltask;
 
+import com.aircraftcarrier.framework.exceltask.refresh.InMemoryRefreshStrategy;
+import com.aircraftcarrier.framework.exceltask.refresh.LocalFileRefreshStrategy;
+import com.aircraftcarrier.framework.exceltask.refresh.NonRefreshStrategy;
+
+import java.io.IOException;
+
 /**
  * AbstractTask
  *
@@ -30,6 +36,17 @@ public abstract class AbstractTask<T extends AbstractExcelRow> implements Task<T
                     if (localConfig == null) {
                         config = localConfig = new TaskConfig.TaskConfigBuilder().build(this);
                     }
+                }
+
+                if (config.isEnableRefresh()) {
+                    this.config.setRefreshStrategy(new LocalFileRefreshStrategy(config));
+                } else {
+                    this.config.setRefreshStrategy(new NonRefreshStrategy(config));
+                }
+                try {
+                    this.config.getRefreshStrategy().preHandle(this);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }

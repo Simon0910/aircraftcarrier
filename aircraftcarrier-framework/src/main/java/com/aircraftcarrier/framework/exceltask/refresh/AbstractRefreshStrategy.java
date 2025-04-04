@@ -1,10 +1,12 @@
 package com.aircraftcarrier.framework.exceltask.refresh;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.aircraftcarrier.framework.concurrent.Notify;
 import com.aircraftcarrier.framework.concurrent.ThreadUtil;
 import com.aircraftcarrier.framework.exceltask.AbstractExcelRow;
 import com.aircraftcarrier.framework.exceltask.ExcelTaskException;
 import com.aircraftcarrier.framework.exceltask.ExcelUtil;
+import com.aircraftcarrier.framework.exceltask.Statistics;
 import com.aircraftcarrier.framework.exceltask.TaskConfig;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Supplier;
 
 /**
  * @author liuzhipeng
@@ -51,20 +53,9 @@ public abstract class AbstractRefreshStrategy implements RefreshStrategy {
      * 定时刷新 map快照 errorMap快照
      * 任务重启后从最新位置开始
      */
-    private final ScheduledExecutorService refreshSnapshotScheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService refreshSnapshotScheduler;
 
-    /**
-     * 统计处理成功的总数
-     */
-    private final LongAdder successNum = new LongAdder();
-    /**
-     * excel invoke num
-     */
-    private int totalReadNum;
-    /**
-     * 统计失败数
-     */
-    private int failNum;
+    private Supplier<Statistics> statisticsSupplier;
 
 
     AbstractRefreshStrategy(TaskConfig config) {
@@ -75,8 +66,11 @@ public abstract class AbstractRefreshStrategy implements RefreshStrategy {
 
 
     @Override
-    public void startRefreshSnapshot() {
-        refreshSnapshotScheduler.scheduleAtFixedRate(() -> {
+    public void startRefreshSnapshot(Supplier<Statistics> statisticsSupplier) {
+        this.statisticsSupplier = statisticsSupplier;
+        this.refreshSnapshotScheduler = Executors.newSingleThreadScheduledExecutor();
+
+        this.refreshSnapshotScheduler.scheduleAtFixedRate(() -> {
             try {
                 // 刷新错误记录
                 refreshErrorMapSnapshot();
@@ -98,7 +92,7 @@ public abstract class AbstractRefreshStrategy implements RefreshStrategy {
         } catch (Exception e) {
             throw new ExcelTaskException("doRefreshSuccessMapSnapshot error", e);
         } finally {
-            log.info("doRefresh successNum {}", successNum);
+            log.info("doRefresh successNum {}", this.statisticsSupplier.get().getSuccessNum());
         }
     }
 
@@ -126,26 +120,21 @@ public abstract class AbstractRefreshStrategy implements RefreshStrategy {
 
     abstract void doRefreshErrorMapSnapshot(Map<String, String> errorMap) throws Exception;
 
-    @Override
-    public void incrementReadNum() {
-        totalReadNum++;
-    }
 
     @Override
-    public void recordErrorRowPosition(AbstractExcelRow row) {
+    public void recordErrorRowPosition(AbstractExcelRow row, Notify notify) {
         synchronized (errorLock) {
             // 不存在增加
             errorMap.computeIfAbsent(ExcelUtil.getRowPosition(row), k -> {
-                failNum++;
+                notify.notify(null);
                 return CharSequenceUtil.EMPTY;
             });
         }
     }
 
     @Override
-    public void recordSuccessRowPosition(AbstractExcelRow row, int successSize) {
+    public void recordSuccessRowPosition(AbstractExcelRow row) {
         successMap.put(ThreadUtil.getThreadNo(), ExcelUtil.getRowPosition(row));
-        successNum.add(successSize);
     }
 
     @Override
@@ -153,12 +142,15 @@ public abstract class AbstractRefreshStrategy implements RefreshStrategy {
         try {
             // 停止刷新快照任务
             refreshSnapshotScheduler.shutdown();
+            refreshSnapshotScheduler = null;
             // 停止前刷新错误记录
             refreshErrorMapSnapshot();
             // 停止前刷新最新快照
             refreshSuccessMapSnapshot();
         } finally {
-            log.info("finish shutdown - doRefresh totalReadNum: {} - successNum: {}, - failNum: {} = other: {}", totalReadNum, successNum, failNum, totalReadNum - successNum.intValue() - failNum);
+            Statistics statistics = statisticsSupplier.get();
+            log.info("finish shutdown - doRefresh totalReadNum: {} - successNum: {}, - failNum: {} = other: {}", statistics.getTotalReadNum(),
+                    statistics.getSuccessNum(), statistics.getFailNum(), statistics.getTotalReadNum() - statistics.getSuccessNum() - statistics.getFailNum());
             try {
                 close();
             } catch (Exception e) {

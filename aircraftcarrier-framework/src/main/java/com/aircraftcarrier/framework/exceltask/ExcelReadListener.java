@@ -2,8 +2,6 @@ package com.aircraftcarrier.framework.exceltask;
 
 import com.aircraftcarrier.framework.concurrent.ExecutorUtil;
 import com.aircraftcarrier.framework.exceltask.abnoraml.AutoCheckAbnormalScheduler;
-import com.aircraftcarrier.framework.exceltask.refresh.InMemoryRefreshStrategy;
-import com.aircraftcarrier.framework.exceltask.refresh.NonRefreshStrategy;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.exception.ExcelAnalysisStopException;
 import com.alibaba.excel.metadata.data.ReadCellData;
@@ -19,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 处理 excel task
@@ -55,25 +54,41 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
     private final AutoCheckAbnormalScheduler autoCheckAbnormalScheduler;
 
 
+    /**
+     * 统计处理成功的总数
+     */
+    private final LongAdder successNum = new LongAdder();
+    /**
+     * excel invoke num
+     */
+    private int totalReadNum;
+    /**
+     * 统计失败数
+     */
+    private int failNum;
+
+    private Statistics statistics = new Statistics();
+
+
     ExcelReadListener(Worker<T> worker, TaskConfig config) throws Exception {
         this.config = config;
         this.batchContainer = new LinkedList<>();
         this.executorService = ExecutorUtil.newCachedThreadPoolBlock(config.getThreadNum(), config.getPoolName());
         this.worker = worker;
 
-        if (config.isEnableRefresh()) {
-            this.config.setRefreshStrategy(new InMemoryRefreshStrategy(config));
-        } else {
-            this.config.setRefreshStrategy(new NonRefreshStrategy(config));
-        }
-
-        this.config.getRefreshStrategy().preHandle(worker.getTask());
-        this.config.getRefreshStrategy().startRefreshSnapshot();
+        this.config.getRefreshStrategy().startRefreshSnapshot(this::getStatisticsSupplier);
         this.maxSuccessSnapshotPosition = this.config.getRefreshStrategy().loadSuccessMapSnapshot();
         this.errorMapSnapshot = this.config.getRefreshStrategy().loadErrorMapSnapshot();
 
         this.autoCheckAbnormalScheduler = new AutoCheckAbnormalScheduler(worker.getTask());
         this.autoCheckAbnormalScheduler.startAutoCheckTimer();
+    }
+
+    private Statistics getStatisticsSupplier() {
+        statistics.setFailNum(failNum);
+        statistics.setSuccessNum(successNum.intValue());
+        statistics.setTotalReadNum(totalReadNum);
+        return statistics;
     }
 
 
@@ -113,7 +128,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
             // 停止invoke
             throw new ExcelAnalysisStopException();
         }
-        this.config.getRefreshStrategy().incrementReadNum();
+        totalReadNum++;
 
         // sheetNo rowNo
         ReadSheetHolder readSheetHolder = context.readSheetHolder();
@@ -160,11 +175,11 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         try {
             worker.doWork(threadBatchList);
             // 记录最大行号
-            this.config.getRefreshStrategy().recordSuccessRowPosition(last, size);
+            recordSuccessRowPosition(last, size);
         } catch (Exception e) {
             log.error("doWork error - threadBatchList [{}~{}]", ExcelUtil.getRowPosition(first), ExcelUtil.getRowPosition(last));
             if (size == 1) {
-                this.config.getRefreshStrategy().recordErrorRowPosition(first);
+                recordErrorRowPosition(first);
                 autoCheckAbnormalScheduler.putAbnormal(ExcelUtil.getRowPosition(first));
                 log.error("doWork error - singeData: {}", JSON.toJSONString(first), e);
                 return;
@@ -174,9 +189,9 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
                     LinkedList<T> singeList = new LinkedList<>();
                     singeList.add(singeData);
                     worker.doWork(singeList);
-                    this.config.getRefreshStrategy().recordSuccessRowPosition(singeData, 1);
+                    recordSuccessRowPosition(singeData, 1);
                 } catch (Exception ex) {
-                    this.config.getRefreshStrategy().recordErrorRowPosition(singeData);
+                    recordErrorRowPosition(singeData);
                     autoCheckAbnormalScheduler.putAbnormal(ExcelUtil.getRowPosition(singeData));
                     log.error("doWork error - singeData: {}", JSON.toJSONString(singeData), ex);
                 }
@@ -184,6 +199,19 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
         } finally {
             threadBatchList.clear();
         }
+    }
+
+    private void recordSuccessRowPosition(T last, int successSize) {
+        this.config.getRefreshStrategy().recordSuccessRowPosition(last);
+        successNum.add(successSize);
+    }
+
+    private void recordErrorRowPosition(T singeData) {
+        this.config.getRefreshStrategy().recordErrorRowPosition(singeData, this::applyFail) ;
+    }
+
+    private void applyFail(String message) {
+        failNum++;
     }
 
     private boolean skipRowPosition(T row) {

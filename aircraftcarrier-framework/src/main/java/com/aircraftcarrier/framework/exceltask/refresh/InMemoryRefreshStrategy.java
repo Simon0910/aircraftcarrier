@@ -81,13 +81,21 @@ public class InMemoryRefreshStrategy extends AbstractRefreshStrategy {
 
     @Override
     public void reset() {
-        this.successMap.clear();
-        this.errorMap.clear();
+        if (successMap != null && !successMap.isEmpty()) {
+            this.successMap.clear();
+        }
+        if (errorMap != null && !errorMap.isEmpty()) {
+            this.errorMap.clear();
+        }
+
     }
 
     @Override
     public void resetSuccessSheetRow(String maxSuccessSheetRow) throws IOException {
-        this.successMap.clear();
-        this.successMap.put(ThreadUtil.getThreadNo(), maxSuccessSheetRow);
+        if (successMap != null) {
+            this.successMap.clear();
+            this.successMap.put(ThreadUtil.getThreadNo(), maxSuccessSheetRow);
+        }
+
     }
 }

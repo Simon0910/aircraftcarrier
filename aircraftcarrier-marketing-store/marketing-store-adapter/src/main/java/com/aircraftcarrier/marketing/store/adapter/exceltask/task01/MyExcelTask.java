@@ -64,14 +64,14 @@ public class MyExcelTask extends AbstractTaskWorker<MyExcelRow> {
      */
     @Override
     public void doWork(LinkedList<MyExcelRow> threadBatchList) {
-        // for (MyExcelRow myExcelData : threadBatchList) {
-        //     // try {
-        //     //     Thread.sleep(0);
-        //     //     log.info("MyExcelTask excelData: {}", JSON.toJSONString(myExcelData));
-        //     // } catch (InterruptedException e) {
-        //     //     throw new RuntimeException(e);
-        //     // }
-        // }
+        for (MyExcelRow myExcelData : threadBatchList) {
+            try {
+                Thread.sleep(50);
+                log.info("MyExcelTask excelData: {}", JSON.toJSONString(myExcelData));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }

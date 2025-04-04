@@ -1,10 +1,13 @@
 package com.aircraftcarrier.framework.exceltask.refresh;
 
+import com.aircraftcarrier.framework.concurrent.Notify;
 import com.aircraftcarrier.framework.exceltask.AbstractExcelRow;
+import com.aircraftcarrier.framework.exceltask.Statistics;
 import com.aircraftcarrier.framework.exceltask.Task;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author liuzhipeng
@@ -36,22 +39,17 @@ public interface RefreshStrategy {
     /**
      * 定时持久化结果快照
      */
-    void startRefreshSnapshot();
-
-    /**
-     * 记录excel 读取数
-     */
-    void incrementReadNum();
+    void startRefreshSnapshot(Supplier<Statistics> statisticsSupplier);
 
     /**
      * 记录错误行到内存
      */
-    void recordErrorRowPosition(AbstractExcelRow row);
+    void recordErrorRowPosition(AbstractExcelRow row, Notify notify);
 
     /**
      * 记录成功结行到内存
      */
-    void recordSuccessRowPosition(AbstractExcelRow row, int successSize);
+    void recordSuccessRowPosition(AbstractExcelRow row);
 
     /**
      * 关闭资源
