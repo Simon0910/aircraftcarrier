@@ -67,7 +67,7 @@ public class ExcelReadListener<T extends AbstractExcelRow> implements ReadListen
      */
     private int failNum;
 
-    private Statistics statistics = new Statistics();
+    private final Statistics statistics = new Statistics();
 
 
     ExcelReadListener(Worker<T> worker, TaskConfig config) throws Exception {
