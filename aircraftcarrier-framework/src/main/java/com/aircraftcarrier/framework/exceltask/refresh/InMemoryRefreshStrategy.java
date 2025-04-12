@@ -4,6 +4,7 @@ import com.aircraftcarrier.framework.concurrent.ThreadUtil;
 import com.aircraftcarrier.framework.exceltask.ExcelUtil;
 import com.aircraftcarrier.framework.exceltask.Task;
 import com.aircraftcarrier.framework.exceltask.TaskConfig;
+import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,7 +72,7 @@ public class InMemoryRefreshStrategy extends AbstractRefreshStrategy {
     @Override
     public Map<String, String> loadErrorMapSnapshot() throws Exception {
         if (this.errorMap == null || this.errorMap.isEmpty()) {
-            return HashMap.newHashMap(16);
+            return MapUtil.newHashMap(16);
         }
 
         Map<String, String> map = Maps.newHashMapWithExpectedSize(this.errorMap.size());

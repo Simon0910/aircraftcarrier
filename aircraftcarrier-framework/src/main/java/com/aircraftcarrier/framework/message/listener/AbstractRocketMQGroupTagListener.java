@@ -4,6 +4,7 @@ import com.aircraftcarrier.framework.exception.NeedRetryException;
 import com.aircraftcarrier.framework.message.Message;
 import com.aircraftcarrier.framework.message.taghandler.AbstractRocketMQGroupTagHandler;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
+import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.ObjectMapperUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public abstract class AbstractRocketMQGroupTagListener implements RocketMQListen
 
     @PostConstruct
     public void init() {
-        Map<String, AbstractRocketMQGroupTagHandler<?>> customMap = HashMap.newHashMap(rmqMessageTagHandlerMap.size());
+        Map<String, AbstractRocketMQGroupTagHandler<?>> customMap = MapUtil.newHashMap(rmqMessageTagHandlerMap.size());
         for (Map.Entry<String, AbstractRocketMQGroupTagHandler<?>> entry : rmqMessageTagHandlerMap.entrySet()) {
             if (selectedHandlerGroup.equals(entry.getValue().handlerGroup())) {
                 String tag = entry.getValue().tag();

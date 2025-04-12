@@ -1,5 +1,7 @@
 package com.aircraftcarrier.framework.tookit;
 
+import com.google.common.collect.Maps;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MapUtil {
 
-    static final double DEFAULT_LOAD_FACTOR = 0.75d;
+    static final double DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
      * MapUtil
@@ -43,6 +45,10 @@ public class MapUtil {
      */
     public static int calculateHashMapCapacity(int numMappings) {
         // com.google.common.collect.Maps.capacity(int expectedSize)
+        // jdk21 HashMap.newHashMap()
+        if (numMappings < 0) {
+            throw new IllegalArgumentException("Negative number of mappings: " + numMappings);
+        }
         return (int) Math.ceil(numMappings / DEFAULT_LOAD_FACTOR);
     }
 }
