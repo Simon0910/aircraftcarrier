@@ -15,9 +15,9 @@ public class Main {
     private static final String PASSWORD = "12345678";
     private static final String AUTHOR = "lzp";
     private static final String[] TABLE_PREFIX = new String[]{"portal_", "farm_"};
-    private static final String OUTPUT_DIR = "/Users/zhipengliu/IdeaProjects/aircraftcarrier/example";
-    private static final String MODULE_NAME_PREFIX = "example";
-    private static final String PARENT_PACKAGE = "com.example";
+    private static final String OUTPUT_DIR = "/Users/zhipengliu/IdeaProjects/gitee/aircraftcarrier/aircraftcarrier-marketing-store";
+    private static final String MODULE_NAME_PREFIX = "marketing-store";
+    private static final String PARENT_PACKAGE = "com.aircraftcarrier.marketing.store";
 
 
     public static void main(String[] args) {
