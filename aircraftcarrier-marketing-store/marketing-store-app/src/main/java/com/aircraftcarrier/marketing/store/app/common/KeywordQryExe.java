@@ -25,16 +25,16 @@ public class KeywordQryExe {
     /**
      * 字段映射
      */
-    private static final Map<String, String> LIKE_FIELD_MAPPING = MapUtil.newHashMap(16);
-    private static final Map<String, String> FIELD_MAPPING = MapUtil.newHashMap(16);
+
     private static final Map<String, String> TABLE_MAPPING = MapUtil.newHashMap(16);
+    private static final Map<String, Map<String, String>> FIELD_MAPPING = MapUtil.newHashMap(16);
 
     static {
-        LIKE_FIELD_MAPPING.put("goodsNo", "goods_no");
+        TABLE_MAPPING.put("product", "t_product");
 
-        FIELD_MAPPING.put("goodsNo", "goods_no");
-
-        TABLE_MAPPING.put("t_product", "product");
+        Map<String, String> tableProductField = MapUtil.newHashMap(16);
+        tableProductField.put("goodsNo", "goods_no");
+        FIELD_MAPPING.put("product", tableProductField);
     }
 
     @Resource
@@ -55,8 +55,9 @@ public class KeywordQryExe {
         if (ArrayUtil.isEmpty(fields)) {
             return Collections.emptyList();
         }
+        Map<String, String> fieldMap = FIELD_MAPPING.get(keywordQry.getTableName());
         for (int i = 0, len = fields.length; i < len; i++) {
-            fields[i] = FIELD_MAPPING.get(fields[i]);
+            fields[i] = fieldMap.get(fields[i]);
         }
         keywordQry.setFields(ArrayUtil.removeBlank(ArrayUtil.distinct(fields)));
         if (ArrayUtil.isEmpty(keywordQry.getFields())) {
@@ -68,10 +69,10 @@ public class KeywordQryExe {
         if (StringUtil.isNotBlank(keyword)) {
 
             // keyword
-            keywordQry.setKeyword(StringUtil.trim(keyword));
+            keywordQry.setKeyword(StringUtil.trim(keyword).concat("%"));
 
             // likeField
-            keywordQry.setLikeField(LIKE_FIELD_MAPPING.get(keywordQry.getLikeField()));
+            keywordQry.setLikeField(fieldMap.get(keywordQry.getLikeField()));
             if (keywordQry.getLikeField() == null) {
                 throw new SysException("like field error");
             }

@@ -9,15 +9,15 @@
     <resultMap id="BaseResultMap" type="${cfg.Do_f}">
 #foreach($field in ${table.fields})
 #if(${field.keyFlag})##生成主键排在第一位
-        <id column="${field.name}" property="${field.propertyName}"/>
+        <id column="${field.name}" javaType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/>
 #end
 #end
 #foreach($field in ${table.commonFields})##生成公共字段
-        <result column="${field.name}" property="${field.propertyName}"/>
+        <result column="${field.name}" javaType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/>
 #end
 #foreach($field in ${table.fields})
 #if(!${field.keyFlag})##生成普通字段
-        <result column="${field.name}" property="${field.propertyName}"/>
+        <result column="${field.name}" javaType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/>
 #end
 #end
     </resultMap>
@@ -25,7 +25,17 @@
 
     <!-- 分页查询条件 | 批量下载查询条件 -->
     <sql id="Page_Where_Clause">
-
+#foreach($field in ${table.allFields})
+    #if(${field.columnType.type.equals("String")})
+        <if test="${field.propertyName} != null and ${field.propertyName} != ''">
+            and ${field.name} = #{${field.propertyName}}
+        </if>
+    #else
+        <if test="${field.propertyName} != null">
+            and ${field.name} = #{${field.propertyName}}
+        </if>
+    #end
+#end
     </sql>
 
     <!-- 分页查询 -->

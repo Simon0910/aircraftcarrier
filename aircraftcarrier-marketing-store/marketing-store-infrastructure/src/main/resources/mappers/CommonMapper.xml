@@ -17,7 +17,7 @@
             AND id > #{lastId}
         </if>
         <if test="likeField != null">
-            AND ${likeField} LIKE CONCAT(#{keyword}, '%')
+            AND ${likeField} LIKE #{keyword}
         </if>
         LIMIT #{pageSize}
     </select>
