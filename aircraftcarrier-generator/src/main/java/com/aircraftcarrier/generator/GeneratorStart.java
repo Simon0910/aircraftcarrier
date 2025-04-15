@@ -108,7 +108,7 @@ public class GeneratorStart {
                 .likeTable(new LikeTable("USER"))
                 .addInclude(tables)
                 .addTablePrefix(tablePrefix)
-                .addFieldSuffix("_flag")
+                //.addFieldSuffix("_flag") // 移除字段后缀
                 // Entity 策略配置
                 .entityBuilder()
                 .superClass(entitySupperClassName)
@@ -201,7 +201,7 @@ public class GeneratorStart {
                 .outputDir(outputDir)
                 .author(author)
                 .enableSwagger()
-                .dateType(DateType.TIME_PACK)
+                .dateType(DateType.ONLY_DATE) // 实体类属性使用Date类型
                 .commentDate("yyyy-MM-dd")
                 .disableOpenDir()
                 .build();
