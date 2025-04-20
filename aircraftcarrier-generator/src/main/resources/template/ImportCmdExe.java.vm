@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.excel.util.BatchRowListener;
 import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
+import com.aircraftcarrier.framework.excel.util.ExcelUtil;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
@@ -73,7 +74,7 @@ public class ${cfg.ImportCmdExe_n} {
         }
 
         ${cfg.Import_n}Upload upload = new ${cfg.Import_n}Upload();
-        EasyExcelReadUtil.checkExcelFile(file);
+        ExcelUtil.checkExcelFile(file);
         EasyExcelReadUtil.readBatchRow(inputStream, ${cfg.Import_n}.class, 0, 0, 1, upload);
         return SingleResponse.ok(upload.getBatchResult());
     }

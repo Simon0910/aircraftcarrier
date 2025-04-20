@@ -21,51 +21,57 @@ import java.util.Date;
 @Setter
 public class BaseDO<T> implements Serializable {
     /**
-     * id
-     */
-    public static final String ID = "id";
-    /**
-     * 创建人
-     */
-    public static final String CREATE_USER = "createUser";
-    /**
-     * 修改人
-     */
-    public static final String UPDATE_USER = "updateUser";
-    /**
-     * 创建时间
-     */
-    public static final String CREATE_TIME = "createTime";
-    /**
-     * 修改时间
-     */
-    public static final String UPDATE_TIME = "updateTime";
-    /**
-     * 0正常 1删除
-     */
-    public static final String DELETED = "deleted";
-    /**
      * serialVersionUID
      */
     private static final long serialVersionUID = 1L;
+
+    /**
+     * id
+     */
+    private static final String ID = "id";
     @JSONField(name = ID)
     @TableId(value = "id", type = IdType.AUTO)
-    protected Long id;
+    private Long id;
+
+    /**
+     * 创建人
+     */
+    private static final String CREATE_USER = "createUser";
     @JSONField(name = CREATE_USER)
     @TableField(fill = FieldFill.INSERT)
-    protected String createUser;
+    private String createUser;
+
+    /**
+     * 修改人
+     */
+    private static final String UPDATE_USER = "updateUser";
     @JSONField(name = UPDATE_USER)
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected String updateUser;
+    private String updateUser;
+
+    /**
+     * 创建时间
+     */
+    private static final String CREATE_TIME = "createTime";
     @JSONField(name = CREATE_TIME)
     @TableField(fill = FieldFill.INSERT)
-    protected Date createTime;
+    private Date createTime;
+
+    /**
+     * 修改时间
+     */
+    private static final String UPDATE_TIME = "updateTime";
     @JSONField(name = UPDATE_TIME)
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected Date updateTime;
+    private Date updateTime;
+
+    /**
+     * 0正常 1删除
+     */
+    private static final String DELETED = "deleted";
     @JSONField(name = DELETED)
     @TableLogic
-    protected Integer deleted;
+    private Integer deleted;
 
     public DeletedEnum getDeletedEnum() {
         return DeletedEnum.convertCode(deleted);

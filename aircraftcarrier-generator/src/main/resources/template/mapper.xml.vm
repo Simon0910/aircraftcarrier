@@ -25,14 +25,22 @@
 
     <!-- 分页查询条件 | 批量下载查询条件 -->
     <sql id="Page_Where_Clause">
-#foreach($field in ${table.allFields})
+#foreach($field in ${table.fields})
     #if(${field.columnType.type.equals("String")})
         <if test="${field.propertyName} != null and ${field.propertyName} != ''">
+        #if(${field.keyWords})
+            and `${field.name}` = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+        #else
             and ${field.name} = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+        #end
         </if>
     #else
         <if test="${field.propertyName} != null">
+        #if(${field.keyWords})
+            and `${field.name}` = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+        #else
             and ${field.name} = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+        #end
         </if>
     #end
 #end

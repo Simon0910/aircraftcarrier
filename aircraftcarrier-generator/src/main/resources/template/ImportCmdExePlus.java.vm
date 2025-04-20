@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.excel.AbstractImportUploadWorker;
 import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
+import com.aircraftcarrier.framework.excel.util.ExcelUtil;
 import com.aircraftcarrier.framework.excel.util.ReadResult;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.model.BatchResult;
@@ -61,7 +62,7 @@ public class ${cfg.ImportCmdExePlus_n} {
             throw new SysException("file error");
         }
 
-        EasyExcelReadUtil.checkExcelFile(file);
+        ExcelUtil.checkExcelFile(file);
         ReadResult<${cfg.Import_n}> readResult = EasyExcelReadUtil.readAllList(inputStream, ${cfg.Import_n}.class, 1);
 
         BatchResult batchResult = new ${cfg.Import_n}Upload().builder().rowList(readResult.getRowList()).batchCheckSize(100).batchInvokeSize(1000).build().doWork();
