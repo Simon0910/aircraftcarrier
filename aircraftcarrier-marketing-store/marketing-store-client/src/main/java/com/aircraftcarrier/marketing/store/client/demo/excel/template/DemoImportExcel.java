@@ -9,6 +9,7 @@ import com.aircraftcarrier.framework.excel.convert.IEnumConverter;
 import com.aircraftcarrier.framework.excel.util.ExcelRow;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.DateTimeFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,7 +43,7 @@ public class DemoImportExcel extends ExcelRow {
     /**
      * 说明
      */
-    @ExcelProperty(value = "说明")
+    @ExcelProperty(value = {"说明"})
     private String description;
 
     /**
@@ -62,25 +63,28 @@ public class DemoImportExcel extends ExcelRow {
     /**
      * 修改人
      */
-    @ExcelProperty(value = "修改人")
+    @ExcelProperty(value = {"修改人"})
     private String updateUser;
 
     /**
      * 创建时间
      */
     @ExcelProperty(value = "创建时间")
+    @DateTimeFormat("yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     /**
      * 修改时间
      */
     @ExcelProperty(value = "修改时间")
+//    @ExcelProperty(value = "", index = 11)
+//    @ExcelProperty(value = " ", index = 11)
     private Date updateTime;
 
     /**
      * 枚举演示
      */
-    @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class)
+    @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class, order = 3)
     @ExcelConvert(sourceEnumClass = DeletedEnum.class)
     @ExcelDropDown(sourceEnumClass = DeletedEnum.class)
     @ExcelComment(row = 1, comment = "枚举演示2")

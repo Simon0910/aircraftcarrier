@@ -69,7 +69,7 @@
         <logger name="druid.sql.Connection" level="info"/>
         <logger name="druid.sql.Statement" level="info"/>
         <logger name="druid.sql.ResultSet" level="info"/>
-        <AsyncRoot level="info" includeLocation="true">
+        <AsyncRoot level="debug" includeLocation="true">
             <AppenderRef ref="console"/>
             <AppenderRef ref="infoFile"/>
             <AppenderRef ref="errorFile"/>

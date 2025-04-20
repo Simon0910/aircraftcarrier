@@ -12,6 +12,7 @@ import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImport
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoPageVo;
 import com.aircraftcarrier.marketing.store.client.demo.view.DemoVo;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -82,5 +83,5 @@ public interface DemoService {
      * @param demoImportExcelCmd demoImportExcelCmd
      * @return SingleResponse<BatchResult>
      */
-    SingleResponse<BatchResult> importExcel(DemoImportExcelCmd demoImportExcelCmd);
+    SingleResponse<BatchResult> importExcel(DemoImportExcelCmd demoImportExcelCmd) throws IOException;
 }

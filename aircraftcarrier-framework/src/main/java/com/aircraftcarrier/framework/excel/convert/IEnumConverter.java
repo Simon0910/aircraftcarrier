@@ -22,12 +22,12 @@ import java.util.Map;
  *
  * @author lzp
  */
-public class IEnumConverter implements Converter<IEnum> {
+public class IEnumConverter implements Converter<IEnum<?>> {
 
-    private final Map<String, Map<String, IEnum>> cached = MapUtil.newHashMap();
+    private final Map<String, Map<String, IEnum<?>>> cached = MapUtil.newHashMap();
 
     @Override
-    public Class supportJavaTypeKey() {
+    public Class<?> supportJavaTypeKey() {
         return IEnum.class;
     }
 
@@ -37,22 +37,22 @@ public class IEnumConverter implements Converter<IEnum> {
     }
 
     @Override
-    public IEnum convertToJavaData(ReadCellData cellData, ExcelContentProperty excelContentProperty,
-                               GlobalConfiguration globalConfiguration) throws ClassNotFoundException {
+    public IEnum<?> convertToJavaData(ReadCellData cellData, ExcelContentProperty excelContentProperty,
+                                      GlobalConfiguration globalConfiguration) throws ClassNotFoundException {
 
         String name = excelContentProperty.getField().getType().getName();
 
-        Map<String, IEnum> stringEnumMap = cached.get(name);
+        Map<String, IEnum<?>> stringEnumMap = cached.get(name);
         if (stringEnumMap == null) {
             cached.computeIfAbsent(name, k -> MapUtil.newHashMap());
             stringEnumMap = cached.get(name);
         }
 
-        IEnum iEnum = stringEnumMap.get(cellData.getStringValue());
+        IEnum<?> iEnum = stringEnumMap.get(cellData.getStringValue());
         if (iEnum == null) {
-            Class<IEnum> anEnum = (Class<IEnum>) Class.forName(name);
-            IEnum[] enumConstants = anEnum.getEnumConstants();
-            for (IEnum enumConstant : enumConstants) {
+            Class<IEnum<?>> anEnum = (Class<IEnum<?>>) Class.forName(name);
+            IEnum<?>[] enumConstants = anEnum.getEnumConstants();
+            for (IEnum<?> enumConstant : enumConstants) {
                 stringEnumMap.put(enumConstant.desc(), enumConstant);
             }
             return stringEnumMap.get(cellData.getStringValue());

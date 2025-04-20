@@ -54,7 +54,7 @@ public class EasyExcelWriteUtil {
         fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.displayName());
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         ExcelWriterBuilder excelWriterBuilder = EasyExcelFactory.write(response.getOutputStream(), modelClass);
-        if (writeHandlers != null && writeHandlers.length > 0) {
+        if (writeHandlers != null) {
             for (WriteHandler writeHandler : writeHandlers) {
                 excelWriterBuilder.registerWriteHandler(writeHandler);
             }
@@ -77,7 +77,7 @@ public class EasyExcelWriteUtil {
             sourceList = new ArrayList<>();
         }
 
-        if (sourceList.size() > 0 && sourceList.get(0).getClass() != modelClass) {
+        if (!sourceList.isEmpty() && sourceList.get(0).getClass() != modelClass) {
             Constructor<T> constructor = modelClass.getDeclaredConstructor();
             List<T> targetList = new ArrayList<>(sourceList.size());
             for (Object source : sourceList) {
@@ -105,7 +105,7 @@ public class EasyExcelWriteUtil {
      * @throws Exception
      */
     public static <T> void exportExcel(HttpServletResponse response, String fileName, String sheetName,
-                                  List<?> sourceList, Class<T> modelClass) throws Exception {
+                                       List<?> sourceList, Class<T> modelClass) throws Exception {
         exportExcelToTarget(response, fileName, sheetName, sourceList, modelClass,
                 new LongestMatchColumnWidthStyleStrategy(),
                 StyleStrategy.customHorizontalCellStyleStrategy(),

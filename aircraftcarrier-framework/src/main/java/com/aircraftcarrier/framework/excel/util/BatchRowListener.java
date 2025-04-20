@@ -27,7 +27,7 @@ public interface BatchRowListener<T extends ExcelRow> {
      * @return boolean
      */
     default boolean invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
-        return false;
+        return true;
     }
 
     /**
@@ -52,14 +52,15 @@ public interface BatchRowListener<T extends ExcelRow> {
      *
      * @param exception       exception
      * @param analysisContext analysisContext
-     * @throws Exception
+     * @throws Exception Exception
      */
     default void onException(Exception exception, AnalysisContext analysisContext) throws Exception {
-        if (exception instanceof ExcelDataConvertException excelDataConvertException) {
-            logger.error("第{}行，第{}列解析异常", excelDataConvertException.getRowIndex(),
-                    excelDataConvertException.getColumnIndex(), excelDataConvertException);
-        } else {
-            throw exception;
+        if (exception instanceof ExcelDataConvertException e) {
+            logger.error("第{}行，第{}列解析异常 ",
+                    e.getRowIndex(),
+                    e.getColumnIndex(),
+                    e);
         }
+        throw exception;
     }
 }

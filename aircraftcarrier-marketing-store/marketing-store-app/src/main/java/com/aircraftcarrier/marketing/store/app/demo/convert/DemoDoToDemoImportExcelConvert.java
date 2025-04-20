@@ -5,7 +5,6 @@ import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImport
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public interface DemoDoToDemoImportExcelConvert {
      * @param bean bean
      * @return LoginUser
      */
-    @Mapping(source = "updateTime", target = "updateTime", ignore = true)
+//    @Mapping(source = "updateTime", target = "updateTime", ignore = true)
     DemoImportExcel convert0(DemoDo bean);
 
     /**

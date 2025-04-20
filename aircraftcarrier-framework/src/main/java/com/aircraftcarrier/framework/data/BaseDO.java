@@ -2,17 +2,13 @@ package com.aircraftcarrier.framework.data;
 
 import com.aircraftcarrier.framework.enums.DeletedEnum;
 import com.alibaba.fastjson.annotation.JSONField;
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * BaseDo
@@ -25,54 +21,48 @@ import java.time.LocalDateTime;
 @Setter
 public class BaseDO<T> implements Serializable {
     /**
-     * serialVersionUID
-     */
-    private static final long serialVersionUID = 1L;
-
-    /**
      * id
      */
     public static final String ID = "id";
-    @JSONField(name = ID)
-    @TableId(value = "id", type = IdType.AUTO)
-    protected Long id;
-
     /**
      * 创建人
      */
     public static final String CREATE_USER = "createUser";
-    @JSONField(name = CREATE_USER)
-    @TableField(fill = FieldFill.INSERT)
-    protected String createUser;
-
     /**
      * 修改人
      */
     public static final String UPDATE_USER = "updateUser";
-    @JSONField(name = UPDATE_USER)
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected String updateUser;
-
     /**
      * 创建时间
      */
     public static final String CREATE_TIME = "createTime";
-    @JSONField(name = CREATE_TIME)
-    @TableField(fill = FieldFill.INSERT)
-    protected LocalDateTime createTime;
-
     /**
      * 修改时间
      */
     public static final String UPDATE_TIME = "updateTime";
-    @JSONField(name = UPDATE_TIME)
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    protected LocalDateTime updateTime;
-
     /**
      * 0正常 1删除
      */
     public static final String DELETED = "deleted";
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+    @JSONField(name = ID)
+    @TableId(value = "id", type = IdType.AUTO)
+    protected Long id;
+    @JSONField(name = CREATE_USER)
+    @TableField(fill = FieldFill.INSERT)
+    protected String createUser;
+    @JSONField(name = UPDATE_USER)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected String updateUser;
+    @JSONField(name = CREATE_TIME)
+    @TableField(fill = FieldFill.INSERT)
+    protected Date createTime;
+    @JSONField(name = UPDATE_TIME)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected Date updateTime;
     @JSONField(name = DELETED)
     @TableLogic
     protected Integer deleted;

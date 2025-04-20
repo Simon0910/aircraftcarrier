@@ -1,6 +1,8 @@
 package com.aircraftcarrier.framework.excel.handler;
 
 import com.aircraftcarrier.framework.excel.annotation.ExcelComment;
+import com.aircraftcarrier.framework.excel.util.ExcelUtil;
+import com.aircraftcarrier.framework.excel.util.Metadata;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.write.handler.RowWriteHandler;
@@ -28,11 +30,17 @@ public class CommentRowWriteHandler implements RowWriteHandler {
     public <T> CommentRowWriteHandler(Class<T> templateClass) {
         Field[] fields = templateClass.getDeclaredFields();
         map = MapUtil.newHashMap(fields.length);
-        for (int i = 0, len = fields.length; i < len; i++) {
-            Field field = fields[i];
+
+        Map<Integer, Metadata> indexNameMap = ExcelUtil.getIndexNameMap(1, templateClass);
+
+        for (Field field : fields) {
             ExcelComment annotation = field.getAnnotation(ExcelComment.class);
             if (null != annotation && StringUtil.isNotBlank(annotation.comment())) {
-                map.put(annotation.index() != -1 ? annotation.index() : i, annotation);
+                indexNameMap.forEach((index, metadata) -> {
+                    if (metadata.getField().getName().equals(field.getName())) {
+                        map.put(index, annotation);
+                    }
+                });
             }
         }
     }

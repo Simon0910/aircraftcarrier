@@ -33,7 +33,7 @@ public class IEnumCodeConverter implements Converter<Object> {
     private final Map<String, Map<String, Object>> descMap = MapUtil.newHashMap(32);
 
     @Override
-    public Class supportJavaTypeKey() {
+    public Class<?> supportJavaTypeKey() {
         return Object.class;
     }
 
@@ -54,9 +54,9 @@ public class IEnumCodeConverter implements Converter<Object> {
         Map<String, Object> stringObjectMap = descMap.get(name);
         if (stringObjectMap == null) {
             Map<String, Object> innerMap = MapUtil.newHashMap(32);
-            Class<IEnum> anEnum = (Class<IEnum>) Class.forName(name);
-            IEnum[] enumConstants = anEnum.getEnumConstants();
-            for (IEnum enumConstant : enumConstants) {
+            Class<IEnum<?>> anEnum = (Class<IEnum<?>>) Class.forName(name);
+            IEnum<?>[] enumConstants = anEnum.getEnumConstants();
+            for (IEnum<?> enumConstant : enumConstants) {
                 innerMap.put(enumConstant.desc(), enumConstant.code());
             }
             descMap.putIfAbsent(name, innerMap);
@@ -77,9 +77,9 @@ public class IEnumCodeConverter implements Converter<Object> {
         Map<Object, String> integerStringMap = codeMap.get(name);
         if (integerStringMap == null) {
             Map<Object, String> innerMap = MapUtil.newHashMap(32);
-            Class<IEnum> anEnum = (Class<IEnum>) Class.forName(name);
-            IEnum[] enumConstants = anEnum.getEnumConstants();
-            for (IEnum enumConstant : enumConstants) {
+            Class<IEnum<?>> anEnum = (Class<IEnum<?>>) Class.forName(name);
+            IEnum<?>[] enumConstants = anEnum.getEnumConstants();
+            for (IEnum<?> enumConstant : enumConstants) {
                 innerMap.put(enumConstant.code(), enumConstant.desc());
             }
             codeMap.putIfAbsent(name, innerMap);

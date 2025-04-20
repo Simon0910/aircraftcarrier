@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -93,7 +94,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public SingleResponse<BatchResult> importExcel(DemoImportExcelCmd demoImportExcelCmd) {
+    public SingleResponse<BatchResult> importExcel(DemoImportExcelCmd demoImportExcelCmd) throws IOException {
         return demoImportCmdExe.execute(demoImportExcelCmd);
     }
 

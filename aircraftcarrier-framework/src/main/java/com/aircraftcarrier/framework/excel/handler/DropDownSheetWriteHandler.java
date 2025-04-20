@@ -2,6 +2,8 @@ package com.aircraftcarrier.framework.excel.handler;
 
 import com.aircraftcarrier.framework.enums.IEnum;
 import com.aircraftcarrier.framework.excel.annotation.ExcelDropDown;
+import com.aircraftcarrier.framework.excel.util.ExcelUtil;
+import com.aircraftcarrier.framework.excel.util.Metadata;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
@@ -15,7 +17,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -31,14 +32,18 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
     public <T> DropDownSheetWriteHandler(Class<T> templateClass) {
         Field[] fields = templateClass.getDeclaredFields();
         map = MapUtil.newHashMap(fields.length);
-        for (int i = 0, len = fields.length; i < len; i++) {
-            Field field = fields[i];
+
+        Map<Integer, Metadata> indexNameMap = ExcelUtil.getIndexNameMap(1, templateClass);
+
+        for (Field field : fields) {
             ExcelDropDown annotation = field.getAnnotation(ExcelDropDown.class);
             if (null != annotation) {
                 String[] sources = resolve(annotation);
-                if (null != sources && sources.length > 0) {
-                    map.put(annotation.index() != -1 ? annotation.index() : i, sources);
-                }
+                indexNameMap.forEach((index, metadata) -> {
+                    if (metadata.getField().getName().equals(field.getName())) {
+                        map.put(index, sources);
+                    }
+                });
             }
         }
     }
@@ -48,7 +53,7 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
     }
 
     private static String[] resolve(ExcelDropDown excelDropDown) {
-        if (!Optional.ofNullable(excelDropDown).isPresent()) {
+        if (Optional.ofNullable(excelDropDown).isEmpty()) {
             return new String[]{};
         }
 
@@ -59,16 +64,16 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
         }
 
         // 通过Enum获取下拉对象
-        Class<? extends IEnum> enumClass = excelDropDown.sourceEnumClass();
+        Class<?> enumClass = excelDropDown.sourceEnumClass();
         if (IEnum.class != enumClass) {
-            Class<IEnum> anEnum;
+            Class<IEnum<?>> anEnum;
             try {
-                anEnum = (Class<IEnum>) Class.forName(enumClass.getName());
+                anEnum = (Class<IEnum<?>>) Class.forName(enumClass.getName());
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                log.error("通过Enum获取下拉对象系统异常 {} ", e.getMessage(), e);
                 throw new SysException("系统异常");
             }
-            IEnum[] enumConstants = anEnum.getEnumConstants();
+            IEnum<?>[] enumConstants = anEnum.getEnumConstants();
             return Arrays.stream(enumConstants).map(IEnum::desc).toArray(String[]::new);
         }
 
@@ -78,8 +83,8 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
             DropDownInterface dropDownInterface = null;
             try {
                 dropDownInterface = dropDownClass.getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("获取动态的下拉数据系统异常 {} ", e.getMessage(), e);
                 throw new SysException("系统异常");
             }
             String[] dynamicSource = dropDownInterface.getSource();
@@ -103,7 +108,7 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (map.size() < 1) {
+        if (map.isEmpty()) {
             return;
         }
         // 这里可以对cell进行任何操作

@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * @author Fighter168
  */
-public final class AutoEnumTypeHandler<E extends IEnum> extends BaseTypeHandler<E> {
+public final class AutoEnumTypeHandler<E extends IEnum<?>> extends BaseTypeHandler<E> {
 
     private final Class<E> type;
     private final Map<Object, E> mappings;
