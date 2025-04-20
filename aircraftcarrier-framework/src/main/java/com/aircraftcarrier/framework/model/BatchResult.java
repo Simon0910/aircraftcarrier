@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.model;
 
 
+import com.aircraftcarrier.framework.excel.util.ReadResult;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 
 import java.io.Serializable;
@@ -20,15 +21,13 @@ import java.util.TreeMap;
 public class BatchResult implements Serializable {
 
     /**
-     * serialVersionUID
-     */
-    private static final long serialVersionUID = 1L;
-
-    /**
      * 批量结果明细类型
      */
     public static final String BATCH_RESULT_ERROR = "BATCH_RESULT_ERROR";
-
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
     /**
      * rowNo: 行号
      */
@@ -96,6 +95,14 @@ public class BatchResult implements Serializable {
      */
     public BatchResult() {
         this(100);
+    }
+
+    /**
+     * BatchResult 构造
+     */
+    public BatchResult(ReadResult<?> readResult) {
+        this();
+        readResult.getErrors().forEach(this::addErrorMsg);
     }
 
     /**
@@ -309,18 +316,18 @@ public class BatchResult implements Serializable {
 
     /**
      * 导出excel并提示错误信息
-     */
-    public void setDownloadUrl(String downloadUrl) {
-        this.downloadUrl = downloadUrl;
-    }
-
-    /**
-     * 导出excel并提示错误信息
      *
      * @return downloadUrl
      */
     public String getDownloadUrl() {
         return downloadUrl;
+    }
+
+    /**
+     * 导出excel并提示错误信息
+     */
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
     }
 
 }

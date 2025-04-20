@@ -62,6 +62,13 @@ public class DemoImportExcel extends ExcelRow {
     private BigDecimal amount;
 
     /**
+     * 日期
+     */
+    @ExcelProperty(value = "日期")
+    private Date dateTime;
+
+
+    /**
      * 创建人
      */
     @ExcelProperty(value = "创建人")

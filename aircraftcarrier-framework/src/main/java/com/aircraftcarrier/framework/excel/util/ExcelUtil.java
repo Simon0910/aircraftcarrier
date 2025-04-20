@@ -1,9 +1,12 @@
 package com.aircraftcarrier.framework.excel.util;
 
+import com.aircraftcarrier.framework.exception.BizException;
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.excel.util.ListUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -20,6 +23,32 @@ import java.util.TreeMap;
  * @since 1.0
  */
 public class ExcelUtil {
+
+
+    /**
+     * 分隔符
+     */
+    private static final String POINT = ".";
+
+    /**
+     * 校验excel 只支持xlsx
+     *
+     * @param file file
+     * @throws RuntimeException RuntimeException
+     */
+    public static void checkExcelFile(MultipartFile file) throws BizException {
+        if (file == null) {
+            throw new BizException("file 不能为空");
+        }
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !ExcelTypeEnum.XLSX.getValue().equals(
+                originalFilename.substring(originalFilename.lastIndexOf(POINT)))) {
+            throw new BizException("格式只支持xlsx");
+        }
+    }
+
+
+
     /**
      * getIndexNameMap
      * 通过class获取类字段信息

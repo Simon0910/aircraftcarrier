@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.excel.util;
 import com.aircraftcarrier.framework.excel.convert.BigDecimalConvert;
 import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.ErrorCode;
-import com.aircraftcarrier.framework.exception.ToolException;
+import com.aircraftcarrier.framework.exception.SysException;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.context.AnalysisContext;
@@ -11,16 +11,17 @@ import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.metadata.ReadSheet;
-import com.alibaba.excel.support.ExcelTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 工具类，实现excel的读取，大数据量时无内存溢出问题，格式只支持xlsx
@@ -36,11 +37,6 @@ public class EasyExcelReadUtil {
      * empty file
      */
     private static final String EMPTY_FILE = "上传文件为空";
-
-    /**
-     * 分隔符
-     */
-    private static final String POINT = ".";
 
     /**
      * 默认批次大小
@@ -60,7 +56,7 @@ public class EasyExcelReadUtil {
     private static void doRead(ExcelReaderBuilder builder,
                                Integer startSheetNo,
                                Integer endSheetNo,
-                               Integer headRowNumber) {
+                               Integer headRowNumber) throws Exception {
         // read excel convert
         builder.registerConverter(new BigDecimalConvert());
 
@@ -73,25 +69,7 @@ public class EasyExcelReadUtil {
                 ReadSheet readSheet = EasyExcelFactory.readSheet(start).headRowNumber(headRowNumber).build();
                 excelReader.read(readSheet);
             }
-            excelReader.finish();
-        }
-    }
-
-
-    /**
-     * 校验excel 只支持xlsx
-     *
-     * @param file file
-     * @throws RuntimeException RuntimeException
-     */
-    public static void checkExcelFile(MultipartFile file) throws BizException {
-        if (file == null) {
-            throw new BizException("file 不能为空");
-        }
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || !ExcelTypeEnum.XLSX.getValue().equals(
-                originalFilename.substring(originalFilename.lastIndexOf(POINT)))) {
-            throw new BizException("格式只支持xlsx");
+            // excelReader.finish();
         }
     }
 
@@ -114,7 +92,7 @@ public class EasyExcelReadUtil {
                 object = field.get(row);
             } catch (IllegalAccessException e) {
                 log.error("field.get(row) error: ", e);
-                throw new ToolException(ErrorCode.INTERNAL_SERVER_ERROR, "field.get(row) error");
+                throw new SysException(ErrorCode.INTERNAL_SERVER_ERROR, "field.get(row) error");
             }
             if (object instanceof CharSequence cs && StringUtils.hasText(cs)) {
                 return false;
@@ -126,7 +104,7 @@ public class EasyExcelReadUtil {
         return true;
     }
 
-    private static <T extends ExcelRow> AnalysisEventListener<T> buildAnalysisEventListener(Class<T> head, List<T> rowList, Map<Integer, String> errors) {
+    private static <T extends ExcelRow> AnalysisEventListener<T> buildAnalysisEventListener(Class<T> head, List<T> rowList) {
         return new AnalysisEventListener<>() {
             boolean isEmpty = true;
             int headIndex = 0;
@@ -158,13 +136,6 @@ public class EasyExcelReadUtil {
 
             @Override
             public void onException(Exception exception, AnalysisContext analysisContext) throws Exception {
-                if (exception instanceof ExcelDataConvertException e) {
-                    log.error("第{}行，第{}列解析异常 ",
-                            e.getRowIndex(),
-                            e.getColumnIndex(),
-                            e);
-                    errors.put(e.getRowIndex(), MessageFormat.format("第{}行，第{}列解析异常", e.getRowIndex(), e.getColumnIndex()));
-                }
                 throw exception;
             }
         };
@@ -204,7 +175,11 @@ public class EasyExcelReadUtil {
 
             @Override
             public void onException(Exception exception, AnalysisContext analysisContext) throws Exception {
-                singleRowListener.onException(exception, analysisContext);
+                try {
+                    singleRowListener.onException(exception, analysisContext);
+                } catch (Exception ignore) {
+                }
+                throw exception;
             }
         };
     }
@@ -252,7 +227,11 @@ public class EasyExcelReadUtil {
 
             @Override
             public void onException(Exception exception, AnalysisContext analysisContext) throws Exception {
-                batchRowListener.onException(exception, analysisContext);
+                try {
+                    batchRowListener.onException(exception, analysisContext);
+                } catch (Exception ignore) {
+                }
+                throw exception;
             }
         };
     }
@@ -321,16 +300,25 @@ public class EasyExcelReadUtil {
     public static <T extends ExcelRow> ReadResult<T> readAllList(InputStream inputStream, Class<T> head,
                                                                  Integer startSheetNo, Integer endSheetNo,
                                                                  Integer headRowNumber) {
-        TreeMap<Integer, String> errors = new TreeMap<>();
-        List<T> rowList = new ArrayList<>();
+        ReadResult<T> readResult = new ReadResult<>();
 
         ExcelReaderBuilder builder = EasyExcelFactory.read(inputStream, head,
-                EasyExcelReadUtil.buildAnalysisEventListener(head, rowList, errors));
-        EasyExcelReadUtil.doRead(builder, startSheetNo, endSheetNo, headRowNumber);
+                EasyExcelReadUtil.buildAnalysisEventListener(head, readResult.getRowList()));
 
-        ReadResult<T> readResult = new ReadResult<>();
-        readResult.setRowList(rowList);
-        readResult.setErrors(errors);
+        try {
+            EasyExcelReadUtil.doRead(builder, startSheetNo, endSheetNo, headRowNumber);
+        } catch (Exception e) {
+            if (e instanceof ExcelDataConvertException ee) {
+                int row = ee.getRowIndex() + 1;
+                int columnIndex = ee.getColumnIndex() + 1;
+                log.error("第{}行，第{}列解析异常 {}", row, columnIndex, ee.getCause().getMessage(), ee);
+                readResult.putError(ee.getRowIndex(),
+                        MessageFormat.format("第{0}行，第{1}列解析异常: {2}",
+                                row, columnIndex, ee.getCause().getMessage()));
+            } else {
+                readResult.putError(-1, MessageFormat.format("excel read error: {0}", e.getMessage()));
+            }
+        }
         return readResult;
     }
 
@@ -342,7 +330,7 @@ public class EasyExcelReadUtil {
      * @throws RuntimeException RuntimeException
      */
     public static <T extends ExcelRow> void readSingleRow(InputStream inputStream, Class<T> head,
-                                                          SingleRowListener<T> singleRowListener) {
+                                                          SingleRowListener<T> singleRowListener) throws Exception {
         EasyExcelReadUtil.readSingleRow(inputStream, head,
                 null, null,
                 1,
@@ -358,7 +346,7 @@ public class EasyExcelReadUtil {
      */
     public static <T extends ExcelRow> void readSingleRow(InputStream inputStream, Class<T> head,
                                                           Integer headRowNumber,
-                                                          SingleRowListener<T> singleRowListener) {
+                                                          SingleRowListener<T> singleRowListener) throws Exception {
         EasyExcelReadUtil.readSingleRow(inputStream, head,
                 null, null,
                 headRowNumber,
@@ -378,7 +366,7 @@ public class EasyExcelReadUtil {
     public static <T extends ExcelRow> void readSingleRow(InputStream inputStream, Class<T> head,
                                                           Integer startSheetNo, Integer endSheetNo,
                                                           Integer headRowNumber,
-                                                          SingleRowListener<T> singleRowListener) {
+                                                          SingleRowListener<T> singleRowListener) throws Exception {
         ExcelReaderBuilder builder = EasyExcelFactory.read(inputStream, head,
                 buildAnalysisEventListener(singleRowListener, head));
         EasyExcelReadUtil.doRead(builder, startSheetNo, endSheetNo, headRowNumber);
@@ -392,7 +380,7 @@ public class EasyExcelReadUtil {
      * @throws RuntimeException RuntimeException
      */
     public static <T extends ExcelRow> void readBatchRow(InputStream inputStream, Class<T> head,
-                                                         BatchRowListener<T> batchRowListener) {
+                                                         BatchRowListener<T> batchRowListener) throws Exception {
         EasyExcelReadUtil.readBatchRow(inputStream, head,
                 null, null,
                 1,
@@ -409,7 +397,7 @@ public class EasyExcelReadUtil {
      */
     public static <T extends ExcelRow> void readBatchRow(InputStream inputStream, Class<T> head,
                                                          Integer headRowNumber,
-                                                         BatchRowListener<T> batchRowListener) {
+                                                         BatchRowListener<T> batchRowListener) throws Exception {
         EasyExcelReadUtil.readBatchRow(inputStream, head,
                 null, null,
                 headRowNumber,
@@ -432,7 +420,7 @@ public class EasyExcelReadUtil {
     public static <T extends ExcelRow> void readBatchRow(InputStream inputStream, Class<T> head,
                                                          Integer startSheetNo, Integer endSheetNo,
                                                          Integer headRowNumber,
-                                                         BatchRowListener<T> batchRowListener) {
+                                                         BatchRowListener<T> batchRowListener) throws Exception {
         ExcelReaderBuilder builder = EasyExcelFactory.read(inputStream, head,
                 buildAnalysisEventListener(batchRowListener, head));
         EasyExcelReadUtil.doRead(builder, startSheetNo, endSheetNo, headRowNumber);

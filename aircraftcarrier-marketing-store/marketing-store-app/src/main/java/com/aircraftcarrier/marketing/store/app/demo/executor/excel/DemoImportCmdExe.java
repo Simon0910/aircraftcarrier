@@ -5,6 +5,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.excel.AbstractImportUploadWorker;
 import com.aircraftcarrier.framework.excel.ImportUploadWorkerBuilder;
 import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
+import com.aircraftcarrier.framework.excel.util.ExcelUtil;
 import com.aircraftcarrier.framework.excel.util.ReadResult;
 import com.aircraftcarrier.framework.model.BatchResult;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeMap;
 
 
 /**
@@ -48,8 +50,11 @@ public class DemoImportCmdExe {
      */
     public SingleResponse<BatchResult> execute(DemoImportExcelCmd importCmd) throws IOException {
         MultipartFile file = importCmd.getFile();
-        EasyExcelReadUtil.checkExcelFile(file);
+        ExcelUtil.checkExcelFile(file);
         ReadResult<DemoImportExcel> readResult = EasyExcelReadUtil.readAllList(file.getInputStream(), DemoImportExcel.class, 1);
+        if (readResult.isNotOk()) {
+            return SingleResponse.ok(new BatchResult(readResult));
+        }
 
         BatchResult batchResult = ImportUploadWorkerBuilder.<DemoImportExcel>builder().worker(new DemoImportImportUpload()).rowList(readResult.getRowList()).batchCheckSize(100).batchInvokeSize(1000).build().doWork();
 //        BatchResult batchResult = new DemoImportImportUpload().builder().rowList(readResult.getRowList()).batchCheckSize(100).batchInvokeSize(1000).build().doWork();
@@ -57,7 +62,7 @@ public class DemoImportCmdExe {
 //        EasyExcelReadUtil.readBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (list, context) -> {
 //            System.out.println(JSON.toJSONString(list));
 //        });
-        return null;
+        return SingleResponse.ok(batchResult);
     }
 
     /**
@@ -115,6 +120,14 @@ public class DemoImportCmdExe {
             }
             if (Objects.isNull(row.getDeleted())) {
                 batchResult.addErrorMsg(row.getRowNo(), "删除标识,0:正常,1:删除为null");
+                return false;
+            }
+            if (Objects.isNull(row.getAmount())) {
+                batchResult.addErrorMsg(row.getRowNo(), "金额为空");
+                return false;
+            }
+            if (Objects.isNull(row.getDateTime())) {
+                batchResult.addErrorMsg(row.getRowNo(), "日期为空");
                 return false;
             }
             return true;

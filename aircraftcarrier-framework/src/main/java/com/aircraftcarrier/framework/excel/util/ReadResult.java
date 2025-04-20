@@ -3,6 +3,7 @@ package com.aircraftcarrier.framework.excel.util;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -12,6 +13,18 @@ import java.util.TreeMap;
 @Getter
 @Setter
 public class ReadResult<T> {
-    List<T> rowList;
-    TreeMap<Integer, String> errors;
+    List<T> rowList = new ArrayList<>();
+    TreeMap<Integer, String> errors = new TreeMap<>();
+
+    public boolean isOk() {
+        return errors.isEmpty();
+    }
+
+    public boolean isNotOk() {
+        return !isOk();
+    }
+
+    public void putError(Integer rowIndex, String format) {
+        errors.put(rowIndex, format);
+    }
 }

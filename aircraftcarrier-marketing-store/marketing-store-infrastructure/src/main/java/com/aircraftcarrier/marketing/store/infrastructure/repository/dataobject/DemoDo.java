@@ -2,10 +2,12 @@ package com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject
 
 import com.aircraftcarrier.framework.data.BaseDO;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 审批流配置 Do
@@ -47,5 +49,10 @@ public class DemoDo extends BaseDO<DemoDo> {
      * 金额
      */
     private BigDecimal amount;
+
+    /**
+     * 日期
+     */
+    private Date dateTime;
 
 }
