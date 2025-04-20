@@ -1,5 +1,6 @@
 package com.aircraftcarrier.framework.excel.util;
 
+import com.aircraftcarrier.framework.excel.convert.BigDecimalConvert;
 import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.exception.ToolException;
@@ -60,6 +61,9 @@ public class EasyExcelReadUtil {
                                Integer startSheetNo,
                                Integer endSheetNo,
                                Integer headRowNumber) {
+        // read excel convert
+        builder.registerConverter(new BigDecimalConvert());
+
         try (ExcelReader excelReader = builder.headRowNumber(headRowNumber).autoTrim(true).build()) {
             if (startSheetNo == null || endSheetNo == null) {
                 excelReader.readAll();

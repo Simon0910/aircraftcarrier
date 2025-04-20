@@ -5,6 +5,8 @@ import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 审批流配置 Do
  *
@@ -40,5 +42,10 @@ public class DemoDo extends BaseDO<DemoDo> {
      * 枚举演示
      */
     private DataTypeEnum dataType;
+
+    /**
+     * 金额
+     */
+    private BigDecimal amount;
 
 }

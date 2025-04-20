@@ -1,6 +1,7 @@
 package com.aircraftcarrier.framework.excel.util;
 
 import cn.hutool.core.collection.CollUtil;
+import com.aircraftcarrier.framework.excel.convert.BigDecimalConvert;
 import com.aircraftcarrier.framework.excel.handler.CommentRowWriteHandler;
 import com.aircraftcarrier.framework.excel.handler.DropDownSheetWriteHandler;
 import com.aircraftcarrier.framework.excel.strategy.StyleStrategy;
@@ -54,6 +55,10 @@ public class EasyExcelWriteUtil {
         fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.displayName());
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         ExcelWriterBuilder excelWriterBuilder = EasyExcelFactory.write(response.getOutputStream(), modelClass);
+
+        // write excel convert
+        excelWriterBuilder.registerConverter(new BigDecimalConvert());
+
         if (writeHandlers != null) {
             for (WriteHandler writeHandler : writeHandlers) {
                 excelWriterBuilder.registerWriteHandler(writeHandler);

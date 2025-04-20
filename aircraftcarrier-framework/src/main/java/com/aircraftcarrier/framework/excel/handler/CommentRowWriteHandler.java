@@ -46,27 +46,26 @@ public class CommentRowWriteHandler implements RowWriteHandler {
     }
 
     @Override
+    public void beforeRowCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Integer rowIndex,
+                                Integer relativeRowIndex, Boolean isHead) {
+    }
+
+    @Override
     public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row,
                                 Integer relativeRowIndex, Boolean isHead) {
         if (Boolean.TRUE.equals(isHead) && !map.isEmpty()) {
             Sheet sheet = writeSheetHolder.getSheet();
             Drawing<?> drawingPatriarch = sheet.createDrawingPatriarch();
             map.forEach((index, excelComment) -> {
-                if (row.getRowNum() != excelComment.row()) {
-                    return;
-                }
-                // 在第一行 第二列创建一个批注
+                // 批注大小，位置
                 XSSFClientAnchor xssfClientAnchor = new XSSFClientAnchor(
                         0, 0, 0, 0,
-                        index,
-                        relativeRowIndex,
-                        excelComment.width(),
-                        excelComment.height());
+                        index, row.getRowNum(), index + excelComment.width(), row.getRowNum() + excelComment.height());
                 Comment comment = drawingPatriarch.createCellComment(xssfClientAnchor);
                 // 输入批注信息
                 comment.setString(new XSSFRichTextString(excelComment.comment()));
                 // 将批注添加到单元格对象中
-                sheet.getRow(0).getCell(1).setCellComment(comment);
+                row.getCell(index).setCellComment(comment);
             });
         }
     }

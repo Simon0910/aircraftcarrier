@@ -3,6 +3,7 @@ package com.aircraftcarrier.marketing.store.app.demo.executor.excel;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.excel.AbstractImportUploadWorker;
+import com.aircraftcarrier.framework.excel.ImportUploadWorkerBuilder;
 import com.aircraftcarrier.framework.excel.util.EasyExcelReadUtil;
 import com.aircraftcarrier.framework.excel.util.ReadResult;
 import com.aircraftcarrier.framework.model.BatchResult;
@@ -12,7 +13,6 @@ import com.aircraftcarrier.marketing.store.client.demo.excel.DemoImportExcelCmd;
 import com.aircraftcarrier.marketing.store.client.demo.excel.template.DemoImportExcel;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.DemoRepository;
 import com.aircraftcarrier.marketing.store.infrastructure.repository.dataobject.DemoDo;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,12 +51,12 @@ public class DemoImportCmdExe {
         EasyExcelReadUtil.checkExcelFile(file);
         ReadResult<DemoImportExcel> readResult = EasyExcelReadUtil.readAllList(file.getInputStream(), DemoImportExcel.class, 1);
 
-//        BatchResult batchResult = ImportUploadWorkerBuilder.<DemoImportExcel>builder().worker(new DemoImportImportUpload()).rowList(readResult.getRowList()).batchCheckSize(100).batchInvokeSize(1000).build().doWork();
+        BatchResult batchResult = ImportUploadWorkerBuilder.<DemoImportExcel>builder().worker(new DemoImportImportUpload()).rowList(readResult.getRowList()).batchCheckSize(100).batchInvokeSize(1000).build().doWork();
 //        BatchResult batchResult = new DemoImportImportUpload().builder().rowList(readResult.getRowList()).batchCheckSize(100).batchInvokeSize(1000).build().doWork();
 //        return SingleResponse.ok(batchResult);
-        EasyExcelReadUtil.readBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (list, context) -> {
-            System.out.println(JSON.toJSONString(list));
-        });
+//        EasyExcelReadUtil.readBatchRow(file.getInputStream(), DemoImportExcel.class, 0, 0, 1, (list, context) -> {
+//            System.out.println(JSON.toJSONString(list));
+//        });
         return null;
     }
 

@@ -1,10 +1,6 @@
 package com.aircraftcarrier.framework.excel.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * @author lzp
@@ -13,15 +9,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelComment {
+    int width() default 2;
 
-    // 如果没有index, 使用字段的下标
-    int index() default -1;
-
-    int row() default 0;
-
-    int width() default 3;
-
-    int height() default 5;
+    int height() default 2;
 
     String comment() default "";
 

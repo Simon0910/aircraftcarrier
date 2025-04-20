@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 自定义Sql注入
@@ -24,7 +25,8 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime now = LocalDateTime.now();
+        Date now = new Date();
         String loginUserName = LoginUserUtil.getLoginUserName();
         this.setFieldValByName(CREATE_TIME, now, metaObject);
         this.setFieldValByName(CREATE_USER, loginUserName, metaObject);

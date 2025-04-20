@@ -13,6 +13,7 @@ import com.alibaba.excel.annotation.format.DateTimeFormat;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -51,8 +52,14 @@ public class DemoImportExcel extends ExcelRow {
      */
     @ExcelProperty(value = "枚举演示1", converter = IEnumConverter.class)
     @ExcelDropDown(sourceEnumClass = DataTypeEnum.class)
-    @ExcelComment(row = 1, comment = "枚举演示1")
+    @ExcelComment(width = 1, height = 10, comment = "枚举演示1")
     private DataTypeEnum dataType;
+
+    /**
+     * 金额
+     */
+    @ExcelProperty(value = "金额")
+    private BigDecimal amount;
 
     /**
      * 创建人
@@ -87,6 +94,6 @@ public class DemoImportExcel extends ExcelRow {
     @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class, order = 3)
     @ExcelConvert(sourceEnumClass = DeletedEnum.class)
     @ExcelDropDown(sourceEnumClass = DeletedEnum.class)
-    @ExcelComment(row = 1, comment = "枚举演示2")
+    @ExcelComment(width = 10, height = 1, comment = "枚举演示2")
     private Integer deleted;
 }
