@@ -9,15 +9,15 @@
     <resultMap id="BaseResultMap" type="${cfg.Do_f}">
 #foreach($field in ${table.fields})
 #if(${field.keyFlag})##生成主键排在第一位
-        <id column="${field.name}" jdbcType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/>
+        <id column="${field.name}" jdbcType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/><!--${field.comment}-->
 #end
 #end
 #foreach($field in ${table.commonFields})##生成公共字段
-        <result column="${field.name}" jdbcType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/>
+        <result column="${field.name}" jdbcType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/><!--${field.comment}-->
 #end
 #foreach($field in ${table.fields})
 #if(!${field.keyFlag})##生成普通字段
-        <result column="${field.name}" jdbcType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/>
+        <result column="${field.name}" jdbcType="${field.metaInfo.jdbcType}" property="${field.propertyName}"/><!--${field.comment}-->
 #end
 #end
     </resultMap>
@@ -27,41 +27,61 @@
     <sql id="Page_Where_Clause">
 #foreach($field in ${table.fields})
     #if(${field.columnType.type.equals("String")})
+        <!--${field.comment}-->
         <if test="${field.propertyName} != null and ${field.propertyName} != ''">
         #if(${field.keyWords})
-            and `${field.name}` = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+            and t.`${field.name}` = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
         #else
-            and ${field.name} = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+            and t.${field.name} = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
         #end
         </if>
     #else
+        <!--${field.comment}-->
         <if test="${field.propertyName} != null">
         #if(${field.keyWords})
-            and `${field.name}` = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+            and t.`${field.name}` = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
         #else
-            and ${field.name} = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
+            and t.${field.name} = #{${field.propertyName},jdbcType=${field.metaInfo.jdbcType}}
         #end
         </if>
     #end
 #end
     </sql>
 
+    <!--分页排序 ｜ 批量下载排序-->
+    <sql id="Page_Order_By">
+        ORDER BY t.id
+    </sql>
+
+    <!--分页查询Table列 ｜ 批量下载列-->
+    <sql id="Page_Table_Column">
+        t.id<!--主键-->
+#foreach($field in ${table.fields})
+        ,t.${field.name}<!--${field.comment}-->
+#end
+    </sql>
+
     <!-- 分页查询 -->
     <select id="listPage" resultType="${cfg.Do_f}">
         SELECT
-        ${table.allFieldNames}
-        FROM ${table.name}
-        WHERE deleted = 0
-        <include refid="Page_Where_Clause"/>
-        ORDER BY id desc
+        <include refid="Page_Table_Column"/>
+        FROM ${table.name} t
+        <where>
+            t.deleted = 0
+            <include refid="Page_Where_Clause"/>
+        </where>
+        <include refid="Page_Order_By"/>
     </select>
 
     <!-- 批量导出 -->
     <select id="excelExport" resultType="${cfg.Do_f}">
         SELECT
-        ${table.allFieldNames}
-        FROM ${table.name}
-        WHERE deleted = 0
-        <include refid="Page_Where_Clause"/>
+        <include refid="Page_Table_Column"/>
+        FROM ${table.name} t
+        <where>
+            t.deleted = 0
+            <include refid="Page_Where_Clause"/>
+        </where>
+        <include refid="Page_Order_By"/>
     </select>
 </mapper>
