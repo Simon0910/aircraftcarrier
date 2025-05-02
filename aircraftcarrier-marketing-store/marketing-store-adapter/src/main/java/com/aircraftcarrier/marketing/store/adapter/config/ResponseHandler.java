@@ -1,5 +1,6 @@
 package com.aircraftcarrier.marketing.store.adapter.config;
 
+import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.model.response.Response;
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.MessageUtil;
@@ -37,6 +38,9 @@ public class ResponseHandler implements ResponseBodyAdvice<Object> {
                                   ServerHttpResponse serverHttpResponse) {
         if (responseBody instanceof Response response) {
             response.setResponseId(TraceIdUtil.getTraceId());
+            if (ErrorCode.PARAMS_GET_ERROR.equals(response.getCode())) {
+                return response;
+            }
             response.setMsg(MessageUtil.getMessage(response.getCode(), response.getMsg()));
         }
         return responseBody;

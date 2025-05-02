@@ -41,12 +41,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({HttpMediaTypeNotSupportedException.class, HttpRequestMethodNotSupportedException.class})
     public SingleResponse<Object> httpHandler(ServletException e, HttpServletResponse response) {
-        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
+        return this.doArgumentNotValid(e.getMessage(), e, response);
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class})
     public SingleResponse<Object> httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e, HttpServletResponse response) {
-        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, e.getMessage(), e, response);
+        return this.doArgumentNotValid(e.getMessage(), e, response);
     }
 
     @ExceptionHandler({BizException.class})
@@ -61,22 +61,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({BindException.class})
     public SingleResponse<Object> bindExceptionHandler(BindException e, HttpServletResponse response) {
-        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, "", e, response);
+        return this.doArgumentNotValid("", e, response);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
     public SingleResponse<Object> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e, HttpServletResponse response) {
         BindingResult bindingResult = e.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-        StringBuilder sb = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         for (Iterator<FieldError> iterator = fieldErrors.iterator(); iterator.hasNext(); ) {
             FieldError fieldError = iterator.next();
-            sb.append(fieldError.getField()).append(":").append(fieldError.getDefaultMessage());
+            builder.append(fieldError.getField()).append(":").append(fieldError.getDefaultMessage());
             if (iterator.hasNext()) {
-                sb.append("; ");
+                builder.append("; ");
             }
         }
-        return this.doHandle(ErrorCode.PARAMS_GET_ERROR, sb.toString(), e, response);
+        return this.doArgumentNotValid(builder.toString(), e, response);
     }
 
     @ExceptionHandler({ExcelAnalysisException.class})
@@ -102,6 +102,11 @@ public class GlobalExceptionHandler {
     private SingleResponse<Object> doHandle(String code, String msg, Exception e, HttpServletResponse response) {
         log.error("doHandle: ", e);
         return SingleResponse.error(code, msg, e.getMessage());
+    }
+
+    private SingleResponse<Object> doArgumentNotValid(String msg, Exception e, HttpServletResponse response) {
+        log.error("doArgumentNotValid: {}", e.getMessage(), e);
+        return SingleResponse.error(ErrorCode.PARAMS_GET_ERROR, msg);
     }
 
 }

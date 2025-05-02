@@ -6,6 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -35,12 +40,32 @@ public class ${cfg.AddCmd_n} extends AbstractCommand {
      */
 #end
     @ApiModelProperty(value = "${field.comment}", required = true)
-#if("$!field.propertyType" == "String")
+    #if("$!field.propertyType" == "String")
     @NotBlank(message = "${field.comment}参数不能传空")
-    @Size(max = 80, message = "${field.comment}长度不能大于80")
-#elseif("$!field.propertyType" != "String")
+    @Size(max = ${field.metaInfo.length}, message = "${field.comment}长度不能大于${field.metaInfo.length}")
+    #elseif("$!field.propertyType" == "BigDecimal")
+        #if($field.metaInfo.length > 0)
+            #set($decimalLength = $field.metaInfo.length)
+            #set($decimalScale = $field.metaInfo.scale)
+            #set($digitsInteger = $($decimalLength - $decimalScale))
+            #set($decimalMax = "")
+            #foreach($i in [1..$digitsInteger])
+                #set($decimalMax = "${decimalMax}9")
+            #end
+            #if($decimalScale > 0)
+                #set($decimalMax = $decimalMax + ".")
+                #foreach($i in [1..$decimalScale])
+                    #set($decimalMax = "${decimalMax}9")
+                #end
+            #end
+        #end
     @NotNull(message = "${field.comment}参数必传")
-#end
+    @Digits(integer = ${digitsInteger}, fraction = ${field.metaInfo.scale}, message = "${field.comment}不符合${field.type}格式")
+    @DecimalMin(value = "0", message = "${field.comment}最小不能小于0")
+    @DecimalMax(value = "${decimalMax}", message = "${field.comment}最大不能大于${decimalMax}")
+    #else
+    @NotNull(message = "${field.comment}参数必传")
+    #end
     private ${field.propertyType} ${field.propertyName};
 #end
 ## ----------  END 字段循环遍历  ----------
