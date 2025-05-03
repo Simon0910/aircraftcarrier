@@ -110,13 +110,14 @@ public class BigDecimalSheetWriteHandler implements SheetWriteHandler {
             validation.createErrorBox("提示", message);
             sheet.addValidationData(validation);
 
+            // TODO: 2025/5/3 integer, scale
             DataValidationConstraint digitsConstraint = validationHelper.createCustomConstraint(formulaMap.get(index));
             DataValidation digitsValidation = validationHelper.createValidation(digitsConstraint, rangeList);
             // 阻止输入非下拉选项的值
             digitsValidation.setErrorStyle(DataValidation.ErrorStyle.STOP);
             digitsValidation.setShowErrorBox(true);
             digitsValidation.setSuppressDropDownArrow(true);
-            message = String.format("此值与单元格定义格式int(%s), scale(%s)不一致", excelBigDecimal.integer(), excelBigDecimal.scale());
+            message = String.format("此值与单元格定义格式integer(%s), scale(%s)不一致", excelBigDecimal.integer(), excelBigDecimal.scale());
             digitsValidation.createErrorBox("提示", message);
             sheet.addValidationData(digitsValidation);
         });
