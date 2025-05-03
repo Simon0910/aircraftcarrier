@@ -123,7 +123,7 @@ public class GeneratorStart {
                 .naming(NamingStrategy.underline_to_camel)
                 .columnNaming(NamingStrategy.underline_to_camel)
                 .addIgnoreColumns("deleted")
-                .addSuperEntityColumns("id", "create_user", "create_Time", "update_user", "update_time", "deleted")
+                .addSuperEntityColumns("id", "create_user", "create_Time", "update_user", "update_time", "deleted", "version")
                 .addTableFills(new Column("create_time", FieldFill.INSERT))
                 .addTableFills(new Property("updateTime", FieldFill.INSERT_UPDATE))
                 .idType(IdType.AUTO)

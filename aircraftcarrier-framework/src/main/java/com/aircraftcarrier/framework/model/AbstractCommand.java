@@ -1,5 +1,7 @@
 package com.aircraftcarrier.framework.model;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +30,11 @@ public abstract class AbstractCommand implements Serializable {
      * 当前操作人
      */
     protected String operator;
+
+    /**
+     * 数据版本号
+     */
+    private Long version;
 
     /**
      * initCreate

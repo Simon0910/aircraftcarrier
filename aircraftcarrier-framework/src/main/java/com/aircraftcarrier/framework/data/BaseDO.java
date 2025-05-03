@@ -73,6 +73,13 @@ public class BaseDO<T> implements Serializable {
     @TableLogic
     private Integer deleted;
 
+    /**
+     * 数据版本号
+     */
+    @TableField("version")
+    @Version
+    private Long version;
+
     public DeletedEnum getDeletedEnum() {
         return DeletedEnum.convertCode(deleted);
     }

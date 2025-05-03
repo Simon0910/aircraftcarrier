@@ -21,9 +21,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelDropDown {
 
-    // 如果没有index, 使用字段的下标
-    int index() default -1;
-
     // 固定下拉内容
     String[] source() default {};
 

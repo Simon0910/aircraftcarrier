@@ -2,7 +2,6 @@ package ${cfg.AddCmdExe_p};
 
 import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
-import com.aircraftcarrier.framework.tookit.BeanUtil;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import ${cfg.AddCmd_f};
 import ${cfg.Repository_f};
@@ -32,7 +31,7 @@ public class ${cfg.AddCmdExe_n} {
 
     public SingleResponse<Void> execute(${cfg.AddCmd_n} addCmd) {
         beforeCheck(addCmd);
-        ${entity} ${cfg.Do_n_i} = BeanUtil.convert(addCmd, ${entity}.class);
+        ${entity} ${cfg.Do_n_i} = copyAdd(addCmd);
         ${RepositoryI}.add${table.originEntityName}(${cfg.Do_n_i}, addCmd.getOperator());
         return SingleResponse.ok();
     }
@@ -47,5 +46,22 @@ public class ${cfg.AddCmdExe_n} {
         if (StringUtil.isBlank(addCmd.getOperator())) {
             throw new BizException("当前操作人为空");
         }
+    }
+
+    /**
+     * 复制用户确认后的信息
+     *
+     * @param addCmd 添加Cmd
+     * @return Entity 用户确认后的信息
+     */
+    private ${entity} copyAdd(${cfg.AddCmd_n} addCmd) {
+    ${entity} ${cfg.Do_n_i} = new ${entity}();
+
+    #foreach($field in ${table.fields})
+        #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
+        ${cfg.Do_n_i}.set${sfN}(addCmd.get${sfN}());
+    #end
+
+        return ${cfg.Do_n_i};
     }
 }

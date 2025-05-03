@@ -1,12 +1,16 @@
 package ${cfg.EditCmdExe_p};
 
+import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.model.response.SingleResponse;
+import com.aircraftcarrier.framework.security.core.LoginUserUtil;
 import ${cfg.EditCmd_f};
 import ${cfg.Repository_f};
 import ${cfg.Do_f};
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -28,9 +32,10 @@ public class ${cfg.EditCmdExe_n} {
 
 
     public SingleResponse<Void> execute(${cfg.EditCmd_n} editCmd) {
-        beforeCheck(editCmd);
+        ${entity} originEntity = beforeCheck(editCmd);
         ${entity} ${cfg.Do_n_i} = copyEdit(editCmd);
-        ${RepositoryI}.editSave(${cfg.Do_n_i}, editCmd.getOperator());
+        ${cfg.Do_n_i}.setId(originEntity.getId());
+        ${RepositoryI}.editSave(editCmd.getOperator(), editCmd.getVersion(), ${cfg.Do_n_i});
         return SingleResponse.ok();
     }
 
@@ -40,11 +45,20 @@ public class ${cfg.EditCmdExe_n} {
      *
      * @param editCmd editCmd
      */
-    private void beforeCheck(${cfg.EditCmd_n} editCmd) {
-        // 1. Entity entity = getById(editCmd.getId());
-        // if (editCmd.getBizNo() != entity.getBizNo()) throw 用户错误
-        // 针对多个人看到同一条记录的情况, 并做编辑时的乐观锁+版本号解决冲突
-        // 2. if editCmd.getVersion() != entity.getVersion() throw 其他管理员已编辑,请重试
+    private ${entity} beforeCheck(${cfg.EditCmd_n} editCmd) {
+        if (editCmd.getVersion() == null) {
+            throw new BizException("版本号参数不能为空");
+        }
+        // 1. 查询原始数据
+        ${entity} entity = ${RepositoryI}.getDetail(editCmd.getId());
+        if (entity == null) {
+            throw new BizException("数据不存在");
+        }
+        // 2. 针对多个人看到同一条记录的情况, 做编辑更新时的乐观锁+版本号解决冲突
+         if (!Objects.equals(editCmd.getVersion(), entity.getVersion())) {
+            throw new BizException("数据已被其他人修改，请刷新页面");
+         }
+         return entity;
     }
 
     /**
@@ -55,10 +69,12 @@ public class ${cfg.EditCmdExe_n} {
      */
     private ${entity} copyEdit(${cfg.EditCmd_n} editCmd) {
         ${entity} ${cfg.Do_n_i} = new ${entity}();
+
 #foreach($field in ${table.fields})
     #set ($sfN = ${field.propertyName.substring(0, 1).toUpperCase()} + ${field.propertyName.substring(1)})
         ${cfg.Do_n_i}.set${sfN}(editCmd.get${sfN}());
 #end
+
         return ${cfg.Do_n_i};
     }
 }

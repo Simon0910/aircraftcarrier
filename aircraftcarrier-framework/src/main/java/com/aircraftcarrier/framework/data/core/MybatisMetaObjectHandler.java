@@ -37,7 +37,7 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.setFieldValByName(UPDATE_TIME, LocalDateTime.now(), metaObject);
+        this.setFieldValByName(UPDATE_TIME, new Date(), metaObject);
         this.setFieldValByName(UPDATE_USER, LoginUserUtil.getLoginUserName(), metaObject);
     }
 }

@@ -65,6 +65,7 @@
     <select id="listPage" resultType="${cfg.Do_f}">
         SELECT
         <include refid="Page_Table_Column"/>
+        ,t.`version`
         FROM ${table.name} t
         <where>
             t.deleted = 0

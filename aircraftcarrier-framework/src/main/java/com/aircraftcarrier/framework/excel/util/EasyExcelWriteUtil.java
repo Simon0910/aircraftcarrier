@@ -2,8 +2,7 @@ package com.aircraftcarrier.framework.excel.util;
 
 import cn.hutool.core.collection.CollUtil;
 import com.aircraftcarrier.framework.excel.convert.BigDecimalConvert;
-import com.aircraftcarrier.framework.excel.handler.CommentRowWriteHandler;
-import com.aircraftcarrier.framework.excel.handler.DropDownSheetWriteHandler;
+import com.aircraftcarrier.framework.excel.handler.*;
 import com.aircraftcarrier.framework.excel.strategy.StyleStrategy;
 import com.aircraftcarrier.framework.tookit.StringUtil;
 import com.alibaba.excel.EasyExcelFactory;
@@ -115,6 +114,9 @@ public class EasyExcelWriteUtil {
                 new LongestMatchColumnWidthStyleStrategy(),
                 StyleStrategy.customHorizontalCellStyleStrategy(),
                 new DropDownSheetWriteHandler(modelClass),
+                new ExcelSizeSheetWriteHandler(modelClass),
+                new NumberSheetWriteHandler(modelClass),
+                new BigDecimalSheetWriteHandler(modelClass),
                 new CommentRowWriteHandler(modelClass));
     }
 

@@ -2,11 +2,13 @@ package ${cfg.Repository_p};
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
+import com.aircraftcarrier.framework.exception.BizException;
 import com.aircraftcarrier.framework.exception.SysException;
 import ${cfg.MybatisPlus_f};
 import ${cfg.Do_f};
 import ${cfg.mapper_f};
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -70,11 +72,14 @@ public class ${cfg.Repository_n} {
     /**
      * editSave
      *
-     * @param updateSelectiveDo updateSelectiveDo
      * @param operator          operator
-     * @return ProductDetailsDo
+     * @param version           version
+     * @param updateSelectiveDo updateSelectiveDo
+     * @return ${entity}
      */
-    public ${entity} editSave(${entity} updateSelectiveDo, String operator) {
+    public ${entity} editSave(String operator,
+                              Long version,
+                              ${entity} updateSelectiveDo) {
         if (CharSequenceUtil.isBlank(operator)) {
             throw new SysException("editSave operator must not be empty!");
         }
@@ -83,8 +88,15 @@ public class ${cfg.Repository_n} {
         }
         // 针对多个人看到同一条记录的情况并发时, 并做编辑时的乐观锁+版本号解决冲突
         // update table set xx = xx, version = version + 1 where version = editCmd.getVersion()
-        // return 0 throw 系统繁忙,请重试
-        ${mapperI}.updateById(updateSelectiveDo);
+        // return 0 throw 数据已被其他人修改，请刷新页面
+        updateSelectiveDo.setVersion(version + 1);
+        boolean update = new LambdaUpdateChainWrapper<>(${mapperI})
+                .eq(${entity}::getId, updateSelectiveDo.getId())
+                .eq(${entity}::getVersion, version)
+                .update(updateSelectiveDo);
+        if (!update) {
+            throw new BizException("数据已被其他人修改，请刷新页面");
+        }
         return updateSelectiveDo;
     }
 

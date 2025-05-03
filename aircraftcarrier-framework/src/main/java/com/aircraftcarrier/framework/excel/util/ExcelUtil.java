@@ -30,6 +30,24 @@ public class ExcelUtil {
      */
     private static final String POINT = ".";
 
+
+    /**
+     * 将列索引转换为Excel列字母（如 0→A, 1→B, 26→AA）
+     */
+    public static String getColumnLetter(int columnIndex) {
+        if (columnIndex < 0) {
+            throw new IllegalArgumentException("列索引不能为负数");
+        }
+        StringBuilder columnName = new StringBuilder();
+        while (columnIndex >= 0) {
+            int remainder = columnIndex % 26;
+            columnName.insert(0, (char) ('A' + remainder));
+            columnIndex = (columnIndex / 26) - 1;
+        }
+        return columnName.toString();
+    }
+
+
     /**
      * 校验excel 只支持xlsx
      *
@@ -46,7 +64,6 @@ public class ExcelUtil {
             throw new BizException("格式只支持xlsx");
         }
     }
-
 
 
     /**

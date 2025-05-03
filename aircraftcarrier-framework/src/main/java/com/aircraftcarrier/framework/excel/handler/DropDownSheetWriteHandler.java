@@ -48,10 +48,6 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
         }
     }
 
-    public DropDownSheetWriteHandler(Map<Integer, String[]> map) {
-        this.map = map;
-    }
-
     private static String[] resolve(ExcelDropDown excelDropDown) {
         if (Optional.ofNullable(excelDropDown).isEmpty()) {
             return new String[]{};
