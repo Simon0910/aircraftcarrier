@@ -55,7 +55,13 @@
 
     <!--分页查询Table列 ｜ 批量下载列-->
     <sql id="Page_Table_Column">
-        t.id<!--主键-->
+#foreach($field in ${table.commonFields})
+#if($foreach.index == 0)##生成主键排在第一位
+        t.${field.name}<!--${field.comment}-->
+#else
+        ,t.${field.name}<!--${field.comment}-->
+#end
+#end
 #foreach($field in ${table.fields})
         ,t.${field.name}<!--${field.comment}-->
 #end
@@ -65,7 +71,6 @@
     <select id="listPage" resultType="${cfg.Do_f}">
         SELECT
         <include refid="Page_Table_Column"/>
-        ,t.`version`
         FROM ${table.name} t
         <where>
             t.deleted = 0
