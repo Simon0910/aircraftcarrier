@@ -17,11 +17,11 @@ public class Demo {
              * 配合
              * {@link DiscardPolicyNew#rejectedExecution(java.lang.Runnable, java.util.concurrent.ThreadPoolExecutor)}
              */
-            Future.State state = f.state();
-            System.out.println(state);
-            if (f.isCancelled()) {
-                break;
-            }
+//            Future.State state = f.state();
+//            System.out.println(state);
+//            if (f.isCancelled()) {
+//                break;
+//            }
         }
 
     }

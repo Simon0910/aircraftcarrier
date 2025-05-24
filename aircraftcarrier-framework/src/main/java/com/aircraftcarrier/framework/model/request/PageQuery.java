@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.security.core.parameters.P;
 
 import javax.validation.constraints.NotNull;
 
@@ -35,5 +36,12 @@ public class PageQuery extends AbstractRequest {
     @ApiModelProperty(value = "每页的数量, 最大值1000", required = true, example = "10")
     @Range(min = 1, max = 1000, message = "最小1,最大1000")
     private Integer pageSize;
+
+    public static PageQuery newInstance(Integer pageNum, Integer pageSize) {
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNum(pageNum);
+        pageQuery.setPageSize(pageSize);
+        return pageQuery;
+    }
 
 }
