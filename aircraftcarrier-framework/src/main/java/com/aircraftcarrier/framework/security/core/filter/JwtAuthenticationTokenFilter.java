@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.security.core.filter;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.aircraftcarrier.framework.exception.ErrorCode;
 import com.aircraftcarrier.framework.security.config.SecurityProperties;
 import com.aircraftcarrier.framework.security.core.LoginUser;
@@ -34,7 +34,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String token = SecurityFrameworkUtil.obtainAuthorization(request, securityProperties.getTokenHeader());
-        if (StrUtil.isBlank(token)) {
+        if (CharSequenceUtil.isBlank(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             ResponseWriterUtil.responseMessage(ErrorCode.UNAUTHORIZED, "token must not be null", "", response);
             return;
         }
@@ -52,6 +53,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             }
         } catch (Throwable ex) {
             logger.error("验证 token 失败", ex);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             ResponseWriterUtil.responseMessage(ErrorCode.TOKEN_INVALID, "验证 token 失败", "", response);
             return;
         }

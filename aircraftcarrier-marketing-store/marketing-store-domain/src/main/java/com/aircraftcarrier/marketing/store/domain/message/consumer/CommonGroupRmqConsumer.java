@@ -18,7 +18,7 @@ import java.util.Map;
  * @since 1.0
  */
 @Slf4j
-@Component
+//@Component
 @RocketMQMessageListener(topic = "${rocketmq.topic}"
         , consumerGroup = ConsumerGroup.my_common_group
         , consumeMode = ConsumeMode.ORDERLY

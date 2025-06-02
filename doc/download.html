@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel文件下载器</title>
+</head>
+<script>
+    async function downloadExcel() {
+        // 请求参数
+        const requestBody = {
+        };
+
+        try {
+            // 发送 POST 请求
+            const response = await fetch('http://127.0.0.1:8383/web/demo/export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer mock-1'
+                },
+                credentials: 'include', // 后端setAllowCredentials(true)
+                body: JSON.stringify(requestBody),
+            });
+
+            // 检查响应状态
+            if (!response.ok) throw new Error(`请求失败: ${response.status}`);
+
+            // 获取二进制 Blob
+            const blob = await response.blob();
+
+            // 创建临时下载链接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '文件名.xlsx'; // 设置下载文件名
+            document.body.appendChild(a);
+            a.click();
+
+            // 清理资源
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        } catch (error) {
+            console.error('下载失败:', error);
+        }
+    }
+
+</script>
+<button onclick="downloadExcel()">下载文件</button>
+</html>

@@ -21,6 +21,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.annotation.Resource;
 
@@ -167,6 +170,24 @@ public class FrameworkWebSecurityAutoConfiguration extends WebSecurityConfigurer
 
     private String api(String url) {
         return webProperties.getApiPrefix() + url;
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+
+        // 配置CORS策略
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:63342/");
+        config.addAllowedOrigin("https://production-domain.com");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.setMaxAge(3600L);
+        config.addExposedHeader("*");
+
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 
 }
