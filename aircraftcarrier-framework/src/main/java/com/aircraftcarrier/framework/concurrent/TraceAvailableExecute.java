@@ -2,9 +2,9 @@ package com.aircraftcarrier.framework.concurrent;
 
 import com.aircraftcarrier.framework.support.trace.TraceIdUtil;
 import com.aircraftcarrier.framework.tookit.Log;
+import com.aircraftcarrier.framework.tookit.MapUtil;
 import org.slf4j.MDC;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -21,7 +21,8 @@ public class TraceAvailableExecute {
         // 传递context
         Map<String, String> curMdcMap = MDC.getCopyOfContextMap();
         if (curMdcMap == null) {
-            curMdcMap = new HashMap<>();
+            curMdcMap = MapUtil.newHashMap(parentContext.size() + 1);
+            MDC.setContextMap(curMdcMap);
         }
         curMdcMap.putAll(parentContext);
 
@@ -43,9 +44,6 @@ public class TraceAvailableExecute {
         }
         curMdcMap.put(TraceIdUtil.TRACE_ID, traceId);
         Log.startByTid(current);
-
-        // new ContextMap
-        MDC.setContextMap(curMdcMap);
 
         try {
             return supplier.get();

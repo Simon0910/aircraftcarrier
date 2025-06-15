@@ -140,25 +140,25 @@ public class LogUtilTest {
 
             log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             rr = Log.getInfoLog("5555 .");
-            log.error(rr, e); // ok
+//            log.error(rr, e); // ok
             Assert.isTrue("5555 .".equals(rr));
 
-            log.error(rr, e, e2); // ok
+//            log.error(rr, e, e2); // ok
 
             rr = Log.getInfoLog("5555 {}.");
-            log.error(rr, "1", e); // ok
+//            log.error(rr, "1", e); // ok
             Assert.isTrue("5555 {}.".equals(rr));
 
             rr = Log.getInfoLog("5555 {}.");
-            log.error(rr, e);                   // 多一个{}
+//            log.error(rr, e);                   // 多一个{}
             Assert.isTrue("5555 {}.".equals(rr));
 
             rr = Log.getInfoLog("5555 {} {}.");
-            log.error(rr, "1", e, "3");      // e参数中间只打印messge 当string使用 3被忽略
+//            log.error(rr, "1", e, "3");      // e参数中间只打印messge 当string使用 3被忽略
             Assert.isTrue("5555 {} {}.".equals(rr));
 
             rr = Log.getInfoLog("5555 {} {} {}.");
-            log.error(rr, "1", e, "3");   // e参数中间只打印messge 当string使用
+//            log.error(rr, "1", e, "3");   // e参数中间只打印messge 当string使用
             Assert.isTrue("5555 {} {} {}.".equals(rr));
             log.info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
@@ -414,64 +414,64 @@ public class LogUtilTest {
 
             log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             rr = Log.getInfoLogJson("5555 .");
-            log.error(rr, e); // ok
+//            log.error(rr, e); // ok
             Assert.isTrue((Log.getFullTid() + "5555 .").equals(rr));
 
-            log.error(rr, e, e2); // ok
+//            log.error(rr, e, e2); // ok
 
             rr = Log.getInfoLogJson("5555 {}.");
-            log.error(rr, "1", e); // ok
+//            log.error(rr, "1", e); // ok
             Assert.isTrue((Log.getFullTid() + "5555 {}.").equals(rr));
 
             rr = Log.getInfoLogJson("5555 {}.");
-            log.error(rr, e);                   // 多一个{}
+//            log.error(rr, e);                   // 多一个{}
             Assert.isTrue((Log.getFullTid() + "5555 {}.").equals(rr));
 
             rr = Log.getInfoLogJson("5555 {} {}.");
-            log.error(rr, "1", e, "3");      // e参数中间只打印messge 当string使用 3被忽略
+//            log.error(rr, "1", e, "3");      // e参数中间只打印messge 当string使用 3被忽略
             Assert.isTrue((Log.getFullTid() + "5555 {} {}.").equals(rr));
 
             rr = Log.getInfoLogJson("5555 {} {} {}.");
-            log.error(rr, "1", e, "3");   // e参数中间只打印messge 当string使用
+//            log.error(rr, "1", e, "3");   // e参数中间只打印messge 当string使用
             Assert.isTrue((Log.getFullTid() + "5555 {} {} {}.").equals(rr));
             log.info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
 
             rr = Log.getInfoLogJson("5555.", e);
-            log.error(rr); // ok
+//            log.error(rr); // ok
             String expect = Log.getFullTid() + "5555." + lineSeparator +
                     "java.lang.RuntimeException: 错误了！" + lineSeparator +
                     "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)" + lineSeparator;
             Assert.isTrue(expect.equals(rr));
 
             rr = Log.getInfoLogJson("5555.", e, e2);
-            log.error(rr); // ok
+//            log.error(rr); // ok
             expect = Log.getFullTid() + "5555." + lineSeparator +
                     "java.lang.RuntimeException: 最后一个错误了！" + lineSeparator +
                     "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:24)" + lineSeparator;
             Assert.isTrue(expect.equals(rr));
 
             rr = Log.getInfoLogJson("5555 {}.", "1", e);
-            log.error(rr); // ok
+//            log.error(rr); // ok
             expect = Log.getFullTid() + "5555 1." + lineSeparator +
                     "java.lang.RuntimeException: 错误了！" + lineSeparator +
                     "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)" + lineSeparator;
             Assert.isTrue(expect.equals(rr));
 
             rr = Log.getInfoLogJson("5555 {}.", e);
-            log.error(rr); // 多一个{}
+//            log.error(rr); // 多一个{}
             expect = Log.getFullTid() + "5555 {}." + lineSeparator +
                     "java.lang.RuntimeException: 错误了！" + lineSeparator +
                     "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)" + lineSeparator;
             Assert.isTrue(expect.equals(rr));
 
             rr = Log.getInfoLogJson("5555 {} {}.", "1", e, "3");
-            log.error(rr); // e参数中间只打印messge 当string使用
+//            log.error(rr); // e参数中间只打印messge 当string使用
             expect = Log.getFullTid() + "5555 1 java.lang.RuntimeException: 错误了！.";
             Assert.isTrue(expect.equals(rr));
 
             rr = Log.getInfoLogJson("5555 {} {} {}.", "1", e, "3");
-            log.error(rr); // e参数中间只打印messge 当string使用
+//            log.error(rr); // e参数中间只打印messge 当string使用
             expect = Log.getFullTid() + "5555 1 java.lang.RuntimeException: 错误了！ 3.";
             Assert.isTrue(expect.equals(rr));
 
@@ -479,16 +479,16 @@ public class LogUtilTest {
             Log.setModule("case7");
 
             rr = Log.getInfoLogJson("5555 {} {} {}", "1", e);
-            log.error(rr, "2", "3");
+//            log.error(rr, "2", "3");
             expect = Log.getFullTid() + "5555 1 {} {}" + lineSeparator +
                     "java.lang.RuntimeException: 错误了！" + lineSeparator +
                     "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)" + lineSeparator;
             Assert.isTrue(expect.equals(rr));
 
-            log.error(rr, "2", e2);
+//            log.error(rr, "2", e2);
 
             rr = Log.getInfoLogJson("5555 {} {} {}", e);
-            log.error(rr, e2);
+//            log.error(rr, e2);
             expect = Log.getFullTid() + "5555 {} {} {}" + lineSeparator +
                     "java.lang.RuntimeException: 错误了！" + lineSeparator +
                     "\tat com.aircraftcarrier.framework.tookit.LogUtilTest.main(LogUtilTest.java:23)" + lineSeparator;
@@ -498,22 +498,22 @@ public class LogUtilTest {
             Log.setModule("case8 推荐写法");
 
             rr = Log.getInfoLog("666 {}, {}, {}");
-            log.error(rr, Log.toJsonString(orderInfo), Log.toJsonString(emptyObject), Log.toJsonString(orderInfo), e); // 推荐
+//            log.error(rr, Log.toJsonString(orderInfo), Log.toJsonString(emptyObject), Log.toJsonString(orderInfo), e); // 推荐
             Assert.isTrue((Log.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {}, {}, {}").equals(rr));
 
 
             rr = Log.getInfoLog("666 {}, {}, {}");
-            log.error(rr, Log.toJsonString(orderInfo), Log.toJsonString(nullObject), Log.toJsonString(orderInfo), e); // 推荐
+//            log.error(rr, Log.toJsonString(orderInfo), Log.toJsonString(nullObject), Log.toJsonString(orderInfo), e); // 推荐
             Assert.isTrue((Log.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {}, {}, {}").equals(rr));
 
 
             rr = Log.getInfoLogJson("666 {}, {}, {}", orderInfo, emptyObject, orderInfo);
-            log.error(rr, e); // 推荐
+//            log.error(rr, e); // 推荐
             Assert.isTrue((Log.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, { }, {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}").equals(rr));
 
 
             rr = Log.getInfoLogJson("666 {}, {}, {}", orderInfo, nullObject, orderInfo);
-            log.error(rr, e); // 推荐
+//            log.error(rr, e); // 推荐
             Assert.isTrue((Log.getTid() + "【新的Tid哦】【case8 推荐写法】 - 666 {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}, null, {\"orderNo\":\"123\",\"id\":\"1\",\"orderInfoDetail\":{ }}").equals(rr));
 
 
@@ -528,12 +528,12 @@ public class LogUtilTest {
         } catch (Exception ex) {
             Log.setFixAndModule("11", "22");
             // 原生
-            log.error("原生接口错误", ex);
-            log.error("===================");
+//            log.error("原生接口错误", ex);
+//            log.info("===================");
             // tid
             String errorLog = Log.getErrorLogJson("接口错误2", ex);
-            log.error(errorLog);
-            log.error("===================");
+//            log.error(errorLog);
+//            log.info("===================");
             // tid
             Log.errorToJson("接口错误3", ex);
             Log.resetFixAndModule();
