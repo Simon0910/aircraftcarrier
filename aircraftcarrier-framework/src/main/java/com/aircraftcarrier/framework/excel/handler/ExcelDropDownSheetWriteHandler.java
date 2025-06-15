@@ -4,7 +4,6 @@ import com.aircraftcarrier.framework.enums.IEnum;
 import com.aircraftcarrier.framework.excel.annotation.ExcelDropDown;
 import com.aircraftcarrier.framework.excel.util.ExcelUtil;
 import com.aircraftcarrier.framework.excel.util.Metadata;
-import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
@@ -61,16 +60,9 @@ public class ExcelDropDownSheetWriteHandler implements SheetWriteHandler {
         }
 
         // 通过Enum获取下拉对象
-        Class<?> enumClass = excelDropDown.sourceEnumClass();
-        if (IEnum.class != enumClass) {
-            Class<IEnum<?>> anEnum;
-            try {
-                anEnum = (Class<IEnum<?>>) Class.forName(enumClass.getName());
-            } catch (ClassNotFoundException e) {
-                log.error("通过Enum获取下拉对象系统异常 {} ", e.getMessage(), e);
-                throw new SysException("系统异常");
-            }
-            IEnum<?>[] enumConstants = anEnum.getEnumConstants();
+        Class<? extends IEnum> enumClass = excelDropDown.sourceEnumClass();
+        if (enumClass.isEnum() && IEnum.class != enumClass) {
+            IEnum<?>[] enumConstants = enumClass.getEnumConstants();
             return Arrays.stream(enumConstants).map(IEnum::getDesc).toArray(String[]::new);
         }
 
