@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.common.enums;
 
+import com.aircraftcarrier.framework.enums.EnumUtil;
 import com.aircraftcarrier.framework.enums.IEnum;
-import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -29,13 +29,7 @@ public enum DataTypeEnum implements IEnum<Integer> {
     /**
      * MAPPINGS
      */
-    private static final Map<Integer, DataTypeEnum> MAPPINGS = MapUtil.newHashMap(values().length);
-
-    static {
-        for (DataTypeEnum value : values()) {
-            MAPPINGS.put(value.getCode(), value);
-        }
-    }
+    private static final Map<Integer, DataTypeEnum> MAPPINGS = EnumUtil.initMapping(DataTypeEnum.class);
 
     /**
      * code

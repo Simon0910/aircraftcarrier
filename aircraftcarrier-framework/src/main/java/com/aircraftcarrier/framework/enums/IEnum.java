@@ -21,4 +21,5 @@ public interface IEnum<K extends Serializable> {
      */
     String getDesc();
 
+
 }

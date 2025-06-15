@@ -1,5 +1,6 @@
 package ${cfg.XxxEnum_p};
 
+import com.aircraftcarrier.framework.enums.EnumUtil;
 import com.aircraftcarrier.framework.enums.IEnum;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.aircraftcarrier.framework.tookit.StringPool;
@@ -23,27 +24,22 @@ public enum XxxEnum implements IEnum<Integer> {
      * ONE
      */
     ONE(1, "ONE"),
+
     /**
      * TWO
      */
     TWO(2, "TWO");
 
-
     /**
      * MAPPINGS
      */
-    private static final Map<Integer, XxxEnum> MAPPINGS = MapUtil.newHashMap(values().length);
-
-    static {
-        for (XxxEnum value : values()) {
-            MAPPINGS.put(value.getCode(), value);
-        }
-    }
+    private static final Map<Integer, XxxEnum> MAPPINGS = EnumUtil.initMapping(XxxEnum.class);
 
     /**
      * code
      */
     private final Integer code;
+
     /**
      * desc
      */
@@ -53,7 +49,7 @@ public enum XxxEnum implements IEnum<Integer> {
      * 解析code ==> 枚举
      *
      * @param code code
-     * @return 枚举对象
+     * @return anEnum
      */
     public static XxxEnum resolve(Integer code) {
         return MAPPINGS.get(code);
@@ -65,22 +61,12 @@ public enum XxxEnum implements IEnum<Integer> {
      * @param code code
      * @return desc
      */
-    public static String transformCode(Integer code) {
+    public static String resolveCode(Integer code) {
         XxxEnum enumItem = resolve(code);
         if (enumItem == null) {
             return StringPool.EMPTY;
         }
         return enumItem.getDesc();
-    }
-
-    @Override
-    public Integer code() {
-        return code;
-    }
-
-    @Override
-    public String desc() {
-        return desc;
     }
 
 }

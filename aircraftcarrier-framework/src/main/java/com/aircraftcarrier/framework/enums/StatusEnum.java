@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.enums;
 
-import com.aircraftcarrier.framework.tookit.MapUtil;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -8,7 +8,9 @@ import java.util.Map;
 /**
  * @author lzp
  */
+
 @Getter
+@AllArgsConstructor
 public enum StatusEnum implements IEnum<Integer> {
     /**
      * 开启
@@ -22,21 +24,10 @@ public enum StatusEnum implements IEnum<Integer> {
     /**
      * MAPPINGS
      */
-    private static final Map<Integer, StatusEnum> MAPPINGS = MapUtil.newHashMap(values().length);
-
-    static {
-        for (StatusEnum value : values()) {
-            MAPPINGS.put(value.getCode(), value);
-        }
-    }
+    private static final Map<Integer, StatusEnum> MAPPINGS = EnumUtil.initMapping(StatusEnum.class);
 
     private final Integer code;
     private final String desc;
-
-    StatusEnum(Integer code, String desc) {
-        this.code = code;
-        this.desc = desc;
-    }
 
     /**
      * code => 枚举

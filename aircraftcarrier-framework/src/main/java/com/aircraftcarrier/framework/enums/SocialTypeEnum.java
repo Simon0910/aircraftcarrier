@@ -1,6 +1,5 @@
 package com.aircraftcarrier.framework.enums;
 
-import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -51,13 +50,7 @@ public enum SocialTypeEnum implements IEnum<Integer> {
     /**
      * MAPPINGS
      */
-    private static final Map<Integer, SocialTypeEnum> MAPPINGS = MapUtil.newHashMap(values().length);
-
-    static {
-        for (SocialTypeEnum value : values()) {
-            MAPPINGS.put(value.getCode(), value);
-        }
-    }
+    private static final Map<Integer, SocialTypeEnum> MAPPINGS = EnumUtil.initMapping(SocialTypeEnum.class);
 
     /**
      * 类型

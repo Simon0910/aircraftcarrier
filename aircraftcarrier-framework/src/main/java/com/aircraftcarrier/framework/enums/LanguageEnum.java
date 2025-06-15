@@ -1,6 +1,6 @@
 package com.aircraftcarrier.framework.enums;
 
-import com.aircraftcarrier.framework.tookit.MapUtil;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Locale;
@@ -9,7 +9,9 @@ import java.util.Map;
 /**
  * @author lzp
  */
+
 @Getter
+@AllArgsConstructor
 public enum LanguageEnum implements IEnum<String> {
     /**
      * zh-CN
@@ -36,21 +38,10 @@ public enum LanguageEnum implements IEnum<String> {
     /**
      * MAPPINGS
      */
-    private static final Map<String, LanguageEnum> MAPPINGS = MapUtil.newHashMap(values().length);
-
-    static {
-        for (LanguageEnum value : values()) {
-            MAPPINGS.put(value.getCode(), value);
-        }
-    }
+    private static final Map<String, LanguageEnum> MAPPINGS = EnumUtil.initMapping(LanguageEnum.class);
 
     private final String code;
     private final String desc;
-
-    LanguageEnum(String code, String desc) {
-        this.code = code;
-        this.desc = desc;
-    }
 
     /**
      * languageTag => 枚举

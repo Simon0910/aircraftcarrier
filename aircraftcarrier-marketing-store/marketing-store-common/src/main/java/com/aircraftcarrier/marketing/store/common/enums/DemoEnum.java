@@ -1,7 +1,7 @@
 package com.aircraftcarrier.marketing.store.common.enums;
 
+import com.aircraftcarrier.framework.enums.EnumUtil;
 import com.aircraftcarrier.framework.enums.IEnum;
-import com.aircraftcarrier.framework.tookit.MapUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -30,13 +30,7 @@ public enum DemoEnum implements IEnum<Integer> {
     /**
      * MAPPINGS
      */
-    private static final Map<Integer, DemoEnum> MAPPINGS = MapUtil.newHashMap(values().length);
-
-    static {
-        for (DemoEnum value : values()) {
-            MAPPINGS.put(value.getCode(), value);
-        }
-    }
+    private static final Map<Integer, DemoEnum> MAPPINGS = EnumUtil.initMapping(DemoEnum.class);
 
     /**
      * code
