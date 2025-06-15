@@ -47,13 +47,4 @@ public enum DemoEnum implements IEnum<Integer> {
      */
     private final String desc;
 
-    @Override
-    public Integer code() {
-        return code;
-    }
-
-    @Override
-    public String desc() {
-        return desc;
-    }
 }

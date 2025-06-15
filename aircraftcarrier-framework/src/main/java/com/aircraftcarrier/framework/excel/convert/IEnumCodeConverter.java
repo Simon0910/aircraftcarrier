@@ -57,7 +57,7 @@ public class IEnumCodeConverter implements Converter<Object> {
             Class<IEnum<?>> anEnum = (Class<IEnum<?>>) Class.forName(name);
             IEnum<?>[] enumConstants = anEnum.getEnumConstants();
             for (IEnum<?> enumConstant : enumConstants) {
-                innerMap.put(enumConstant.desc(), enumConstant.code());
+                innerMap.put(enumConstant.getDesc(), enumConstant.getCode());
             }
             descMap.putIfAbsent(name, innerMap);
             stringObjectMap = descMap.get(name);
@@ -80,7 +80,7 @@ public class IEnumCodeConverter implements Converter<Object> {
             Class<IEnum<?>> anEnum = (Class<IEnum<?>>) Class.forName(name);
             IEnum<?>[] enumConstants = anEnum.getEnumConstants();
             for (IEnum<?> enumConstant : enumConstants) {
-                innerMap.put(enumConstant.code(), enumConstant.desc());
+                innerMap.put(enumConstant.getCode(), enumConstant.getDesc());
             }
             codeMap.putIfAbsent(name, innerMap);
             integerStringMap = codeMap.get(name);

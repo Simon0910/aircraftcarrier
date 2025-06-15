@@ -53,7 +53,7 @@ public class IEnumConverter implements Converter<IEnum<?>> {
             Class<IEnum<?>> anEnum = (Class<IEnum<?>>) Class.forName(name);
             IEnum<?>[] enumConstants = anEnum.getEnumConstants();
             for (IEnum<?> enumConstant : enumConstants) {
-                stringEnumMap.put(enumConstant.desc(), enumConstant);
+                stringEnumMap.put(enumConstant.getDesc(), enumConstant);
             }
             return stringEnumMap.get(cellData.getStringValue());
         }
@@ -64,6 +64,6 @@ public class IEnumConverter implements Converter<IEnum<?>> {
     @Override
     public WriteCellData<String> convertToExcelData(IEnum iEnum, ExcelContentProperty excelContentProperty,
                                                     GlobalConfiguration globalConfiguration) {
-        return new WriteCellData<>(iEnum.desc());
+        return new WriteCellData<>(iEnum.getDesc());
     }
 }

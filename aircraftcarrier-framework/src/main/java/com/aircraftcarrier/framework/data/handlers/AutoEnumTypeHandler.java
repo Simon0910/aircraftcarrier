@@ -36,7 +36,7 @@ public final class AutoEnumTypeHandler<E extends IEnum<?>> extends BaseTypeHandl
         }
         this.mappings = MapUtil.newHashMap(enums.length);
         for (E e : enums) {
-            this.mappings.put(e.code(), e);
+            this.mappings.put(e.getCode(), e);
         }
     }
 
@@ -45,11 +45,11 @@ public final class AutoEnumTypeHandler<E extends IEnum<?>> extends BaseTypeHandl
                                     JdbcType jdbcType) throws SQLException {
         if (jdbcType == null) {
             // 新增时, 判断DO里枚举是否为null
-            ps.setObject(i, parameter.code());
+            ps.setObject(i, parameter.getCode());
             return;
         }
         //BaseTypeHandler已经帮我们做了parameter的null判断
-        ps.setObject(i, parameter.code(), jdbcType.TYPE_CODE);
+        ps.setObject(i, parameter.getCode(), jdbcType.TYPE_CODE);
     }
 
     @Override

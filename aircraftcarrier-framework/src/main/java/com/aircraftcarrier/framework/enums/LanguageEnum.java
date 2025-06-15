@@ -40,36 +40,27 @@ public enum LanguageEnum implements IEnum<String> {
 
     static {
         for (LanguageEnum value : values()) {
-            MAPPINGS.put(value.getLanguageTag(), value);
+            MAPPINGS.put(value.getCode(), value);
         }
     }
 
-    private final String languageTag;
-    private final String displayLanguage;
+    private final String code;
+    private final String desc;
 
-    LanguageEnum(String languageTag, String displayLanguage) {
-        this.languageTag = languageTag;
-        this.displayLanguage = displayLanguage;
+    LanguageEnum(String code, String desc) {
+        this.code = code;
+        this.desc = desc;
     }
 
     /**
      * languageTag => 枚举
      */
-    public static LanguageEnum resolve(String languageTag) {
-        return MAPPINGS.get(languageTag);
+    public static LanguageEnum resolve(String code) {
+        return MAPPINGS.get(code);
     }
 
-    public static LanguageEnum convertCode(String languageTag) {
-        return MAPPINGS.get(languageTag);
+    public static LanguageEnum convertCode(String desc) {
+        return MAPPINGS.get(desc);
     }
 
-    @Override
-    public String code() {
-        return languageTag;
-    }
-
-    @Override
-    public String desc() {
-        return displayLanguage;
-    }
 }

@@ -37,19 +37,11 @@ public enum DeletedEnum implements IEnum<Integer> {
     }
 
     private final Integer code;
-    private final String name;
+    private final String desc;
 
-    DeletedEnum(Integer code, String name) {
+    DeletedEnum(Integer code, String desc) {
         this.code = code;
-        this.name = name;
-    }
-
-    public static Integer normalCode() {
-        return NORMAL.getCode();
-    }
-
-    public static Integer deletedCode() {
-        return DELETED.getCode();
+        this.desc = desc;
     }
 
     /**
@@ -61,16 +53,6 @@ public enum DeletedEnum implements IEnum<Integer> {
 
     public static DeletedEnum convertCode(Integer code) {
         return MAPPINGS.get(code);
-    }
-
-    @Override
-    public Integer code() {
-        return code;
-    }
-
-    @Override
-    public String desc() {
-        return name;
     }
 
 }

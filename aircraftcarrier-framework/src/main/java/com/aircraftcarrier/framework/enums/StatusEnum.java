@@ -31,11 +31,11 @@ public enum StatusEnum implements IEnum<Integer> {
     }
 
     private final Integer code;
-    private final String name;
+    private final String desc;
 
-    StatusEnum(Integer code, String name) {
+    StatusEnum(Integer code, String desc) {
         this.code = code;
-        this.name = name;
+        this.desc = desc;
     }
 
     /**
@@ -47,16 +47,6 @@ public enum StatusEnum implements IEnum<Integer> {
 
     public static StatusEnum convertCode(Integer code) {
         return MAPPINGS.get(code);
-    }
-
-    @Override
-    public Integer code() {
-        return code;
-    }
-
-    @Override
-    public String desc() {
-        return name;
     }
 
 }

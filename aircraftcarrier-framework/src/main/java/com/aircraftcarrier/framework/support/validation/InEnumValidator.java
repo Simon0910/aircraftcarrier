@@ -24,7 +24,7 @@ public class InEnumValidator implements ConstraintValidator<InEnum, Object> {
         } else {
             mappings = MapUtil.newHashMap(enumConstants.length);
             for (IEnum<?> enumConstant : enumConstants) {
-                mappings.put(enumConstant.code(), StringPool.EMPTY);
+                mappings.put(enumConstant.getCode(), StringPool.EMPTY);
             }
         }
     }

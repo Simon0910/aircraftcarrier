@@ -63,14 +63,4 @@ public enum DataTypeEnum implements IEnum<Integer> {
     }
 
 
-    @Override
-    public Integer code() {
-        return code;
-    }
-
-    @Override
-    public String desc() {
-        return desc;
-    }
-
 }

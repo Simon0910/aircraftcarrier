@@ -8,6 +8,10 @@ public class ToolException extends BaseException {
 
     private static final long serialVersionUID = 1L;
 
+    public ToolException(String errMessage, Throwable e) {
+        this(ErrorCode.SYS, errMessage, e);
+    }
+
     public ToolException(String errCode, String errMessage) {
         super(errCode, errMessage);
     }

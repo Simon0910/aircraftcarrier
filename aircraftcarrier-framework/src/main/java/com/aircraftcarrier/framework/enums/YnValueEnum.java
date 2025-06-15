@@ -37,11 +37,11 @@ public enum YnValueEnum implements IEnum<Integer> {
     }
 
     private final Integer code;
-    private final String name;
+    private final String desc;
 
-    YnValueEnum(Integer code, String name) {
+    YnValueEnum(Integer code, String desc) {
         this.code = code;
-        this.name = name;
+        this.desc = desc;
     }
 
     public static Integer yesCode() {
@@ -61,16 +61,6 @@ public enum YnValueEnum implements IEnum<Integer> {
 
     public static YnValueEnum convertCode(Integer code) {
         return MAPPINGS.get(code);
-    }
-
-    @Override
-    public Integer code() {
-        return code;
-    }
-
-    @Override
-    public String desc() {
-        return name;
     }
 
 }

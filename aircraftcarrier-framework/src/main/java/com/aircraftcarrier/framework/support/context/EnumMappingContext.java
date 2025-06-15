@@ -54,7 +54,7 @@ public class EnumMappingContext {
         for (IEnum<?> member : members) {
             Map<String, Object> anObj = MapUtil.newHashMap(2);
             anObj.put(NAME, ((Enum<?>) member).name());
-            anObj.put(DESC, member.desc());
+            anObj.put(DESC, member.getDesc());
             list.add(anObj);
         }
         return list;

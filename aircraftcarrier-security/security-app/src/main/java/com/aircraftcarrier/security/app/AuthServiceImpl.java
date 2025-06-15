@@ -27,7 +27,7 @@ public class AuthServiceImpl extends AbstractUsernamePasswordAuthentication impl
         LoginUser loginUser = new LoginUser();
         loginUser.setId(1L);
         loginUser.setUsername("admin");
-        loginUser.setStatus(StatusEnum.ENABLE.code());
+        loginUser.setStatus(StatusEnum.ENABLE.getCode());
         return loginUser;
     }
 

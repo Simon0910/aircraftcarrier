@@ -1,14 +1,11 @@
 package com.aircraftcarrier.framework.excel.handler;
 
-import cn.hutool.extra.spring.SpringUtil;
 import com.aircraftcarrier.framework.enums.IEnum;
 import com.aircraftcarrier.framework.excel.annotation.ExcelDropDown;
 import com.aircraftcarrier.framework.excel.util.ExcelUtil;
 import com.aircraftcarrier.framework.excel.util.Metadata;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
-import com.aircraftcarrier.framework.tookit.BeanUtil;
-import com.aircraftcarrier.framework.tookit.FieldAnnotationUtils;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -19,7 +16,6 @@ import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -75,7 +71,7 @@ public class ExcelDropDownSheetWriteHandler implements SheetWriteHandler {
                 throw new SysException("系统异常");
             }
             IEnum<?>[] enumConstants = anEnum.getEnumConstants();
-            return Arrays.stream(enumConstants).map(IEnum::desc).toArray(String[]::new);
+            return Arrays.stream(enumConstants).map(IEnum::getDesc).toArray(String[]::new);
         }
 
         // 获取动态的下拉数据

@@ -55,27 +55,16 @@ public enum SocialTypeEnum implements IEnum<Integer> {
 
     static {
         for (SocialTypeEnum value : values()) {
-            MAPPINGS.put(value.getType(), value);
+            MAPPINGS.put(value.getCode(), value);
         }
     }
 
     /**
      * 类型
      */
-    private final Integer type;
+    private final Integer code;
     /**
      * 类型的标识
      */
-    private final String source;
-
-
-    @Override
-    public Integer code() {
-        return type;
-    }
-
-    @Override
-    public String desc() {
-        return source;
-    }
+    private final String desc;
 }

@@ -12,13 +12,13 @@ public interface IEnum<K extends Serializable> {
      *
      * @return Object
      */
-    K code();
+    K getCode();
 
     /**
      * 获取页面展示值
      *
      * @return String
      */
-    String desc();
+    String getDesc();
 
 }
