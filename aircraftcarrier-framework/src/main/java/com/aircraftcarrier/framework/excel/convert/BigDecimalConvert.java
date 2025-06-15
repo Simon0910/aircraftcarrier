@@ -13,10 +13,13 @@ import java.text.DecimalFormat;
 
 public class BigDecimalConvert implements Converter<BigDecimal> {
 
+    private static final String COMMA = ",";
+    private static final String EMPTY = "";
+
     private final DecimalFormat decimalFormat;
 
     public BigDecimalConvert() {
-        this("0.00");
+        this("#,##0.00");
     }
 
     public BigDecimalConvert(String pattern) {
@@ -25,28 +28,29 @@ public class BigDecimalConvert implements Converter<BigDecimal> {
     }
 
     @Override
-    public Class<?> supportJavaTypeKey() {
+    public Class<BigDecimal> supportJavaTypeKey() {
         return BigDecimal.class;
     }
 
     @Override
     public CellDataTypeEnum supportExcelTypeKey() {
-        return CellDataTypeEnum.NUMBER;
+        return CellDataTypeEnum.STRING;
     }
 
 
     @Override
     public BigDecimal convertToJavaData(ReadCellData<?> cellData, ExcelContentProperty contentProperty,
                                         GlobalConfiguration globalConfiguration) throws Exception {
-        BigDecimal originalNumberValue = cellData.getOriginalNumberValue();
-//        String format = decimalFormat.format(originalNumberValue);
-        return originalNumberValue.setScale(2, RoundingMode.HALF_UP);
+        if (cellData.getStringValue().contains(COMMA)) {
+            return new BigDecimal(cellData.getStringValue().replace(COMMA, EMPTY))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+        return new BigDecimal(cellData.getStringValue()).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
-    public WriteCellData<?> convertToExcelData(BigDecimal value, ExcelContentProperty contentProperty,
+    public WriteCellData<BigDecimal> convertToExcelData(BigDecimal value, ExcelContentProperty contentProperty,
                                                GlobalConfiguration globalConfiguration) throws Exception {
-        String formatResult = decimalFormat.format(value);
-        return new WriteCellData<>(formatResult);
+        return new WriteCellData<>(decimalFormat.format(value));
     }
 }
