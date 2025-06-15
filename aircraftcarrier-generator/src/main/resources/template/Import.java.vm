@@ -1,8 +1,8 @@
 package ${cfg.Import_p};
 
+import com.aircraftcarrier.framework.excel.annotation.valid.ExcelBigDecimal;
+import com.aircraftcarrier.framework.excel.annotation.valid.ExcelSize;
 import com.aircraftcarrier.framework.excel.util.ExcelRow;
-import com.aircraftcarrier.framework.excel.valid.ExcelBigDecimal;
-import com.aircraftcarrier.framework.excel.valid.ExcelSize;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import io.swagger.annotations.ApiModelProperty;
