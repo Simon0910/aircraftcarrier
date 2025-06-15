@@ -1,10 +1,15 @@
 package com.aircraftcarrier.marketing.store.client.demo.excel.template;
 
 import com.aircraftcarrier.framework.enums.DeletedEnum;
-import com.aircraftcarrier.framework.excel.annotation.*;
+import com.aircraftcarrier.framework.excel.annotation.ExcelComment;
+import com.aircraftcarrier.framework.excel.annotation.ExcelDropDown;
+import com.aircraftcarrier.framework.excel.annotation.convert.ExcelIEnumCodeConvert;
+import com.aircraftcarrier.framework.excel.annotation.valid.ExcelBigDecimal;
+import com.aircraftcarrier.framework.excel.annotation.valid.ExcelNumber;
 import com.aircraftcarrier.framework.excel.convert.IEnumCodeConverter;
 import com.aircraftcarrier.framework.excel.convert.IEnumConverter;
 import com.aircraftcarrier.framework.excel.util.ExcelRow;
+import com.aircraftcarrier.marketing.store.client.demo.excel.suport.UnitDropDown;
 import com.aircraftcarrier.marketing.store.common.enums.DataTypeEnum;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
@@ -109,7 +114,7 @@ public class DemoImportExcel extends ExcelRow {
      * 枚举演示
      */
     @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class, order = 3)
-    @ExcelConvert(sourceEnumClass = DeletedEnum.class)
+    @ExcelIEnumCodeConvert(sourceEnumClass = DeletedEnum.class)
     @ExcelDropDown(sourceEnumClass = DeletedEnum.class)
     @ExcelComment(width = 10, height = 1, comment = "枚举演示2")
     private Integer deleted;
@@ -121,4 +126,9 @@ public class DemoImportExcel extends ExcelRow {
     @NotNull(message = "宽度参数必传")
     @ExcelNumber(formula1 = 0, formula2 = 200)
     private Integer weight;
+
+
+    @ExcelProperty(value = "单位")
+    @ExcelDropDown(sourceClass = UnitDropDown.class)
+    private String unit;
 }

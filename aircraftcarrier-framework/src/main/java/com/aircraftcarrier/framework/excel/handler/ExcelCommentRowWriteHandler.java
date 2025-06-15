@@ -23,11 +23,11 @@ import java.util.Map;
  *
  * @author Jiaju Zhuang
  */
-public class CommentRowWriteHandler implements RowWriteHandler {
+public class ExcelCommentRowWriteHandler implements RowWriteHandler {
 
     private final Map<Integer, ExcelComment> map;
 
-    public <T> CommentRowWriteHandler(Class<T> templateClass) {
+    public <T> ExcelCommentRowWriteHandler(Class<T> templateClass) {
         Field[] fields = templateClass.getDeclaredFields();
         map = MapUtil.newHashMap(fields.length);
 

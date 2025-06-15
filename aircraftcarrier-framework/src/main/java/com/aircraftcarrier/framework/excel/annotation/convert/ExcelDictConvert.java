@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.excel.annotation;
+package com.aircraftcarrier.framework.excel.annotation.convert;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface DictFormat {
+public @interface ExcelDictConvert {
 
     /**
      * 例如说，SysDictTypeConstants、InfDictTypeConstants

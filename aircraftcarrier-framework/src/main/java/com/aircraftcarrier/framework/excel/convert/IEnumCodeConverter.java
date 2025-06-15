@@ -1,7 +1,7 @@
 package com.aircraftcarrier.framework.excel.convert;
 
 import com.aircraftcarrier.framework.enums.IEnum;
-import com.aircraftcarrier.framework.excel.annotation.ExcelConvert;
+import com.aircraftcarrier.framework.excel.annotation.convert.ExcelIEnumCodeConvert;
 import com.aircraftcarrier.framework.exception.SysException;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.alibaba.excel.converters.Converter;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * excel上传枚举code, 使用的枚举参数接受
  * 枚举需要继承IEnum
- * 并且需要配合 {@link ExcelConvert} 指定接受的枚举类型
+ * 并且需要配合 {@link ExcelIEnumCodeConvert} 指定接受的枚举类型
  *
  * <pre> {@code
  * @ExcelProperty(value = "枚举演示2", converter = IEnumCodeConverter.class)
@@ -45,7 +45,7 @@ public class IEnumCodeConverter implements Converter<Object> {
     @Override
     public Object convertToJavaData(ReadCellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
         Field field = contentProperty.getField();
-        ExcelConvert annotation = field.getAnnotation(ExcelConvert.class);
+        ExcelIEnumCodeConvert annotation = field.getAnnotation(ExcelIEnumCodeConvert.class);
         if (annotation == null || annotation.sourceEnumClass() == IEnum.class) {
             throw new SysException("The @ExcelConvert annotation is missing");
         }
@@ -68,7 +68,7 @@ public class IEnumCodeConverter implements Converter<Object> {
     @Override
     public WriteCellData<String> convertToExcelData(Object value, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
         Field field = contentProperty.getField();
-        ExcelConvert annotation = field.getAnnotation(ExcelConvert.class);
+        ExcelIEnumCodeConvert annotation = field.getAnnotation(ExcelIEnumCodeConvert.class);
         if (annotation == null || annotation.sourceEnumClass() == IEnum.class) {
             throw new SysException("The @ExcelConvert annotation is missing");
         }

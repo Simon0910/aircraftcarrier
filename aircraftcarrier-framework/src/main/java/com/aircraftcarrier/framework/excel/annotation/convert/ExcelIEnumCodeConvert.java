@@ -1,4 +1,4 @@
-package com.aircraftcarrier.framework.excel.annotation;
+package com.aircraftcarrier.framework.excel.annotation.convert;
 
 import com.aircraftcarrier.framework.enums.IEnum;
 
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExcelConvert {
+public @interface ExcelIEnumCodeConvert {
 
     // 需要转换的枚举
     Class<? extends IEnum> sourceEnumClass() default IEnum.class;

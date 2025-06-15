@@ -4,6 +4,9 @@ import cn.hutool.core.collection.CollUtil;
 import com.aircraftcarrier.framework.excel.CountingOutputStream;
 import com.aircraftcarrier.framework.excel.convert.BigDecimalConvert;
 import com.aircraftcarrier.framework.excel.handler.*;
+import com.aircraftcarrier.framework.excel.handler.valid.BigDecimalSheetWriteHandler;
+import com.aircraftcarrier.framework.excel.handler.valid.ExcelSizeSheetWriteHandler;
+import com.aircraftcarrier.framework.excel.handler.valid.NumberSheetWriteHandler;
 import com.aircraftcarrier.framework.excel.strategy.StyleStrategy;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.write.builder.ExcelWriterBuilder;
@@ -61,11 +64,11 @@ public class EasyExcelWriteUtil {
         exportExcelToTarget(response, fileName, sheetName, sourceList, modelClass,
                 new LongestMatchColumnWidthStyleStrategy(),
                 StyleStrategy.customHorizontalCellStyleStrategy(),
-                new DropDownSheetWriteHandler(modelClass),
+                new ExcelDropDownSheetWriteHandler(modelClass),
                 new ExcelSizeSheetWriteHandler(modelClass),
                 new NumberSheetWriteHandler(modelClass),
                 new BigDecimalSheetWriteHandler(modelClass),
-                new CommentRowWriteHandler(modelClass));
+                new ExcelCommentRowWriteHandler(modelClass));
     }
 
     /**

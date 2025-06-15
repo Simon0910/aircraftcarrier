@@ -3,7 +3,7 @@ package com.aircraftcarrier.framework.excel.convert;
 import cn.hutool.core.convert.Convert;
 import com.aircraftcarrier.framework.dict.core.model.DictData;
 import com.aircraftcarrier.framework.dict.core.util.DictFrameworkUtils;
-import com.aircraftcarrier.framework.excel.annotation.DictFormat;
+import com.aircraftcarrier.framework.excel.annotation.convert.ExcelDictConvert;
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.GlobalConfiguration;
@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DictConvert implements Converter<Object> {
 
     private static String getType(ExcelContentProperty contentProperty) {
-        return contentProperty.getField().getAnnotation(DictFormat.class).value();
+        return contentProperty.getField().getAnnotation(ExcelDictConvert.class).value();
     }
 
     @Override

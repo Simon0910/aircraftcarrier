@@ -1,10 +1,14 @@
 package com.aircraftcarrier.framework.excel.handler;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.aircraftcarrier.framework.enums.IEnum;
 import com.aircraftcarrier.framework.excel.annotation.ExcelDropDown;
 import com.aircraftcarrier.framework.excel.util.ExcelUtil;
 import com.aircraftcarrier.framework.excel.util.Metadata;
 import com.aircraftcarrier.framework.exception.SysException;
+import com.aircraftcarrier.framework.tookit.ApplicationContextUtil;
+import com.aircraftcarrier.framework.tookit.BeanUtil;
+import com.aircraftcarrier.framework.tookit.FieldAnnotationUtils;
 import com.aircraftcarrier.framework.tookit.MapUtil;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -15,6 +19,7 @@ import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -25,11 +30,11 @@ import java.util.Optional;
  * @author lzp
  */
 @Slf4j
-public class DropDownSheetWriteHandler implements SheetWriteHandler {
+public class ExcelDropDownSheetWriteHandler implements SheetWriteHandler {
 
     private final Map<Integer, String[]> map;
 
-    public <T> DropDownSheetWriteHandler(Class<T> templateClass) {
+    public <T> ExcelDropDownSheetWriteHandler(Class<T> templateClass) {
         Field[] fields = templateClass.getDeclaredFields();
         map = MapUtil.newHashMap(fields.length);
 
@@ -76,13 +81,7 @@ public class DropDownSheetWriteHandler implements SheetWriteHandler {
         // 获取动态的下拉数据
         Class<? extends DropDownInterface> dropDownClass = excelDropDown.sourceClass();
         if (DropDownInterface.class != dropDownClass) {
-            DropDownInterface dropDownInterface = null;
-            try {
-                dropDownInterface = dropDownClass.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                log.error("获取动态的下拉数据系统异常 {} ", e.getMessage(), e);
-                throw new SysException("系统异常");
-            }
+            DropDownInterface dropDownInterface = ApplicationContextUtil.getBean(dropDownClass);
             String[] dynamicSource = dropDownInterface.getSource();
             if (null != dynamicSource && dynamicSource.length > 0) {
                 return dynamicSource;
