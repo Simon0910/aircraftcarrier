@@ -55,11 +55,19 @@ public class CronUtil {
                                                      ZonedDateTime from,
                                                      int count) {
         List<ZonedDateTime> executions = new ArrayList<>();
-        Optional<ZonedDateTime> next = getNextExecutionTime(expression, from);
 
-        for (int i = 0; i < count && next.isPresent(); i++) {
-            executions.add(next.get());
-            next = getNextExecutionTime(expression, next.get());
+        Cron cron = parser.parse(expression);
+        ExecutionTime executionTime = ExecutionTime.forCron(cron);
+
+        ZonedDateTime current = from;
+        for (int i = 0; i < count; i++) {
+            Optional<ZonedDateTime> next = executionTime.nextExecution(current);
+            if (next.isPresent()) {
+                executions.add(next.get());
+                current = next.get();
+            } else {
+                break;
+            }
         }
 
         return executions;
